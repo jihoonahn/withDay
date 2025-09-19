@@ -1,0 +1,16 @@
+import ProjectDescription
+import ProjectDescriptionHelpers
+import TuistUI
+
+let project = {{ name }}().module()
+
+struct {{ name }}: Module {
+    var body: some Module {
+        ProjectContainer(
+            name: typeName,
+            target: .{{ layer }}
+        ) {
+            {{ target }}
+        }
+    }
+}

@@ -1,0 +1,51 @@
+{
+  "originHash" : "e89acee817e23f6dadf1ef10ac5542f194300b0b7aa16b93c1bebe01f6486457",
+  "pins" : [
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "309a47b2b1d9b5e991f36961c983ecec72275be3",
+        "version" : "1.6.1"
+      }
+    },
+    {
+      "identity" : "swift-cli",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pelagornis/swift-cli",
+      "state" : {
+        "revision" : "de24dbe19edf3a26b0c70486ebde3bf70250bdc3",
+        "version" : "0.1.2"
+      }
+    },
+    {
+      "identity" : "swift-command",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pelagornis/swift-command",
+      "state" : {
+        "revision" : "a447aab3a90512fa8c791a910eb53d116487e4e1",
+        "version" : "1.3.1"
+      }
+    },
+    {
+      "identity" : "swift-file",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pelagornis/swift-file",
+      "state" : {
+        "revision" : "c193707fff23617c82c0f04ea2f1ec570a93fe34",
+        "version" : "1.2.3"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log",
+      "state" : {
+        "revision" : "3d8596ed08bd13520157f0355e35caed215ffbfa",
+        "version" : "1.6.3"
+      }
+    }
+  ],
+  "version" : 3
+}
