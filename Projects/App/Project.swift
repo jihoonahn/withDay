@@ -16,7 +16,12 @@ struct App: Module {
                 resources: ["Resources/**"],
                 configuration: .App,
                 dependencies: [
+                    .external(name: "Rex"),
                     .feature(target: "BaseFeature"),
+                    .feature(target: "RootFeature"),
+                    .feature(target: "LoginFeature"),
+                    .feature(target: "MainFeature"),
+                    .feature(target: "HomeFeature"),
                     .domain(target: "BaseDomain"),
                     .core(target: "CoreNetwork"),
                     .shared()

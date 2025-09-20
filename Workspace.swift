@@ -1,9 +1,9 @@
 import ProjectDescription
 import TuistUI
 
-let workspace = ModulerApp().module()
+let workspace = WithDay().module()
 
-struct ModulerApp: Module {
+struct WithDay: Module {
     var body: some Module {
         Workspace {
             Path("Projects/App")

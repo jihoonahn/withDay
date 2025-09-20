@@ -28,9 +28,11 @@ public extension TargetDependency {
             path: .relativeToCore(target),
         )
     }
-    static func shared(type: MicroTargetType = .sources) -> TargetDependency {
+    static func shared(
+        type: MicroTargetType = .sources
+    ) -> TargetDependency {
         .project(
-            target: "\(type.rawValue)",
+            target: "Shared\(type.rawValue)",
             path: .relativeToShared(),
         )
     }

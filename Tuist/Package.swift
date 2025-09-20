@@ -5,16 +5,24 @@ import PackageDescription
     import struct ProjectDescription.PackageSettings
 
     let packageSettings = PackageSettings(
-        // Customize the product types for specific package product
-        // Default is .staticFramework
-        // productTypes: ["Alamofire": .framework,]
-        productTypes: [:]
+        productTypes: [
+            "Rex": .framework
+        ],
+        baseSettings: .settings(
+            configurations: [
+                .debug(name: "DEV"),
+                .debug(name:  "STAGE"),
+                .release(name: "PROD")
+            ]
+        )
     )
 #endif
 
 let package = Package(
     name: "Package",
     dependencies: [
-        
+        .package(url: "https://github.com/pelagornis/swift-rex", .upToNextMajor(from: "0.1.1")),
+        .package(url: "https://github.com/supabase/supabase-swift.git", from: "2.32.0"),
+        .package(url: "https://github.com/apple/swift-log", from: "1.6.4")
     ]
 )

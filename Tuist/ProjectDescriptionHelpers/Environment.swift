@@ -2,7 +2,7 @@ import ProjectDescription
 import TuistUI
 
 public struct AppEnvironment: ModuleObject {
-    public let organizationName = ""
+    public let organizationName = "me.jihoon"
     public let baseSettings: SettingsDictionary = [:]
     public let packageplatform: [ProjectDescription.PackagePlatform] = [.iOS]
     public let destinations = Destinations.iOS
