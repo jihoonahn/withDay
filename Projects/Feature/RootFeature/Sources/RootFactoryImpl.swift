@@ -1,7 +1,6 @@
 import SwiftUI
 import Rex
 import RootFeatureInterface
-import Shared
 
 public struct RootFactoryImpl: RootFactory {
     private let store: Store<RootReducer>
@@ -37,4 +36,3 @@ public extension RootFactoryImpl {
         return RootFactoryImpl(store: store)
     }
 }
-

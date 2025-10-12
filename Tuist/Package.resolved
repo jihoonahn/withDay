@@ -1,6 +1,15 @@
 {
-  "originHash" : "7ec4679f05106531ff8deaf8dd488e81a2d56c2cec84460afd51efb131b4cc7a",
+  "originHash" : "9bf763e5d0247f7633f179c207ed0ba9f19484ca3b3bc645adfdc1dec3e6ab44",
   "pins" : [
+    {
+      "identity" : "refineui-system-icons",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pelagornis/refineui-system-icons",
+      "state" : {
+        "revision" : "43b55e4138f57fc5481911ab499d8b79157cad44",
+        "version" : "0.3.14"
+      }
+    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",

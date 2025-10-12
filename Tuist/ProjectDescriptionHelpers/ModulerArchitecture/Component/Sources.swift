@@ -7,6 +7,7 @@ public struct Sources: TargetConvertable {
     let destinations: Destinations
     let product: Product
     let infoPlist: InfoPlist
+    let sources: SourceFilesList
     let resources: ResourceFileElements
     let target: AppConfiguration.XCConfigTarget
     let dependencies: [TargetDependency]
@@ -15,6 +16,7 @@ public struct Sources: TargetConvertable {
         name: String,
         product: Product = .staticLibrary,
         infoPlist: InfoPlist = .default,
+        sources: SourceFilesList = .sources,
         resources: ResourceFileElements = [],
         configuration target: AppConfiguration.XCConfigTarget = .Shared,
         dependencies: [TargetDependency] = []
@@ -23,6 +25,7 @@ public struct Sources: TargetConvertable {
         self.destinations = env.destinations
         self.product = product
         self.infoPlist = infoPlist
+        self.sources = sources
         self.resources = resources
         self.target = target
         self.dependencies = dependencies
@@ -33,6 +36,7 @@ public struct Sources: TargetConvertable {
         destinations: Destinations,
         product: Product = .staticLibrary,
         infoPlist: InfoPlist = .default,
+        sources: SourceFilesList = .sources,
         resources: ResourceFileElements = [],
         configuration target: AppConfiguration.XCConfigTarget = .Shared,
         dependencies: [TargetDependency] = []
@@ -41,6 +45,7 @@ public struct Sources: TargetConvertable {
         self.destinations = destinations
         self.product = product
         self.infoPlist = infoPlist
+        self.sources = sources
         self.resources = resources
         self.target = target
         self.dependencies = dependencies
@@ -54,7 +59,7 @@ public struct Sources: TargetConvertable {
             bundleId: "\(env.organizationName).\(name)",
             deploymentTargets: env.deploymentTargets,
             infoPlist: infoPlist,
-            sources: .sources,
+            sources: sources,
             resources: resources,
             dependencies: dependencies,
             settings: .settings(

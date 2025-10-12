@@ -1,5 +1,5 @@
 import SwiftUI
-import BaseFeature
+import Rex
 
 public protocol RootFactory {
     func makeInterface() -> RootInterface

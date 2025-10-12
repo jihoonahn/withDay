@@ -1,4 +1,4 @@
-import BaseFeature
+import Rex
 
 public struct RootState: StateType {
     public enum Flow: Sendable, Codable, CaseIterable {

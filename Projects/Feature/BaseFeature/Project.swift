@@ -11,8 +11,8 @@ struct BaseFeature: Module {
             Sources(
                 name: typeName,
                 dependencies: [
-                    .external(name: "Rex"),
-                    .external(name: "Logging")
+                    .shared(target: "Dependency"),
+                    .shared(target: "Designsystem")
                 ]
             )
             Tests(name: typeName, dependencies: [

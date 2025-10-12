@@ -13,6 +13,9 @@ struct BaseDomain: Module {
             Sources(
                 name: typeName,
                 product: .framework,
+                dependencies: [
+                    .external(name: "Supabase")
+                ]
             )
             Tests(
                 name: typeName,

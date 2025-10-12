@@ -1,5 +1,5 @@
 import Foundation
-import BaseFeature
+import Rex
 
 public protocol RootInterface {
     var stateStream: AsyncStream<RootState> { get }

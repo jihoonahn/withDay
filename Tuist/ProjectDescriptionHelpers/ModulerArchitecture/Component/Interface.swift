@@ -14,7 +14,9 @@ public struct Interface: TargetConvertable {
     ) {
         self.name = name + "Interface"
         self.target = target
-        self.dependencies = dependencies
+        self.dependencies = dependencies + [
+            .shared(target: "Dependency")
+        ]
     }
 
     public func build() -> ProjectDescription.Target {

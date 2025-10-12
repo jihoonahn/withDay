@@ -15,7 +15,10 @@ struct MainFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
-                    .feature(target: "HomeFeature", type: .interface)
+                    .feature(target: "HomeFeature", type: .interface),
+                    .feature(target: "AlarmFeature", type: .interface),
+                    .feature(target: "WeatherFeature", type: .interface),
+                    .feature(target: "SettingFeature", type: .interface)
                 ]
             )
             Interface(name: typeName)

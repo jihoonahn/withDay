@@ -1,6 +1,6 @@
 import Rex
 import RootFeatureInterface
-import Shared
+import BaseFeature
 
 public class RootStore: RootInterface {
     private let store: Store<RootReducer>
@@ -32,5 +32,17 @@ public class RootStore: RootInterface {
         return store.getInitialState()
     }
     
-    private func setupEventBusObserver() {}
+    private func setupEventBusObserver() {
+        Task {
+            await GlobalEventBus.shared.subscribe { event in
+                guard let rootEvent = event as? RootEvent else { return }
+                switch rootEvent {
+                case .loginSuccess:
+                    self.send(.switchToMain)
+                case .logout:
+                    self.send(.switchToLogin)
+                }
+            }
+        }
+    }
 }
