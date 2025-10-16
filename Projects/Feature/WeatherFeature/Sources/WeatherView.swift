@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import WeatherFeatureInterface
+import Designsystem
 
 public struct WeatherView: View {
     let interface: WeatherInterface
@@ -13,15 +14,61 @@ public struct WeatherView: View {
     }
     
     public var body: some View {
-        Group {
-            Text("Setting")
+        NavigationView {
+            ZStack {
+                JColor.background.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 헤더
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(state.currentWeather?.location ?? "서울")
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(JColor.textPrimary)
+                                
+                                Text("현재 위치")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundColor(JColor.textSecondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                interface.send(.refreshWeather)
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(JColor.primary)
+                                    .frame(width: 40, height: 40)
+                                    .background(JColor.primary.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        
+                        // 여기에 날씨 컨텐츠 추가
+                        Text("Weather Content")
+                            .font(.title)
+                            .foregroundColor(JColor.textPrimary)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .padding(.bottom, 100)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
+        .navigationBarHidden(true)
         .task {
             for await newState in interface.stateStream {
                 await MainActor.run {
                     self.state = newState
                 }
             }
+        }
+        .onAppear {
+            interface.send(.loadWeather)
         }
     }
 }

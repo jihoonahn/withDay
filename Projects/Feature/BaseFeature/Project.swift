@@ -12,7 +12,8 @@ struct BaseFeature: Module {
                 name: typeName,
                 dependencies: [
                     .shared(target: "Dependency"),
-                    .shared(target: "Designsystem")
+                    .shared(target: "Designsystem"),
+                    .shared(target: "Utility")
                 ]
             )
             Tests(name: typeName, dependencies: [

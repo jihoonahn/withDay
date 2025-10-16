@@ -9,6 +9,9 @@ public struct LoginReducer: Reducer {
         case .selectToGoogleOauth:
             state.loginStatus = true
             return []
+        case .selectToAppleOauth:
+            state.loginStatus = true
+            return []
         }
     }
 }

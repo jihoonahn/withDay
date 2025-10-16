@@ -20,9 +20,16 @@ struct Shared: Module {
                 name: "Designsystem",
                 destinations: .iOS,
                 sources: "Sources/Designsystem/**",
-                resources: "Resources/**",
                 dependencies: [
                     .external(name: "RefineUIIcons"),
+                    .external(name: "Logging")
+                ]
+            )
+            Sources(
+                name: "Utility",
+                destinations: .iOS,
+                sources: "Sources/Utility/**",
+                dependencies: [
                     .external(name: "Logging")
                 ]
             )

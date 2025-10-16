@@ -1,4 +1,5 @@
 import Rex
+import RefineUIIcons
 
 public struct MainState: StateType {
     public enum Flow: Sendable, Codable, CaseIterable {
@@ -17,6 +18,19 @@ public struct MainState: StateType {
                 return "Weather"
             case .setting:
                 return "Setting"
+            }
+        }
+        
+        public var icon: RefineUIIcons {
+            switch self {
+            case .home:
+                return .home32Regular
+            case .alarm:
+                return .clockAlarm32Regular
+            case .weather:
+                return .weatherCloudy32Regular
+            case .setting:
+                return .settings32Regular
             }
         }
     }

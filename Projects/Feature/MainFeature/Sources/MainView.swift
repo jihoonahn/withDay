@@ -7,6 +7,7 @@ import WeatherFeatureInterface
 import SettingFeatureInterface
 import Dependency
 import RefineUIIcons
+import Designsystem
 
 public struct MainView: View {
     let interface: MainInterface
@@ -28,21 +29,31 @@ public struct MainView: View {
     }
     
     public var body: some View {
-        VStack {
-            ZStack {
-                switch state.flow {
-                case .home:
-                    homeFactory.makeView()
-                case .alarm:
-                    alarmFactory.makeView()
-                case .weather:
-                    weatherFactory.makeView()
-                case .setting:
-                    settingFactory.makeView()
-                }
+        ZStack {
+            switch state.flow {
+            case .home:
+                homeFactory.makeView()
+            case .alarm:
+                alarmFactory.makeView()
+            case .weather:
+                weatherFactory.makeView()
+            case .setting:
+                settingFactory.makeView()
             }
-            MainTabbarView(state: state)
-            Image(refineUIIcon: .accessTime20Filled)
+            
+            VStack(spacing: 0) {
+                Spacer()
+                TabBar(
+                    selected: Binding(
+                        get: { state.flow },
+                        set: { newFlow in
+                            interface.send(.changeTab(to: newFlow))
+                        }
+                    ),
+                    items: tabBarItems,
+                    haptic: true
+                )
+            }
         }
         .ignoresSafeArea()
         .task {
@@ -53,21 +64,10 @@ public struct MainView: View {
             }
         }
     }
-}
-
-/// MainTabbarView
-struct MainTabbarView: View {
-    @State private var state: MainState
-
-    init(state: MainState) {
-        self.state = state
-    }
     
-    var body: some View {
-        HStack(spacing: 40) {
-            ForEach(MainState.Flow.allCases, id: \.self) {_ in 
-                
-            }
+    private var tabBarItems: [TabBarItem<MainState.Flow>] {
+        MainState.Flow.allCases.map { flow in
+            TabBarItem(identifier: flow, icon: flow.icon)
         }
     }
 }

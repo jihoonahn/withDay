@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = App().module()
+let project = WithDay().module()
 
-struct App: Module {
+struct WithDay: Module {
     @Constant var env = AppEnvironment()
 
     var body: some Module {
