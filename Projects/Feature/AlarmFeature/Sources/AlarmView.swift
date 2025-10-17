@@ -20,14 +20,13 @@ public struct AlarmView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // 헤더
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("알람")
+                                Text("Alarm")
                                     .font(.system(size: 28, weight: .bold))
                                     .foregroundColor(JColor.textPrimary)
                                 
-                                Text("\(state.alarms.count)개의 알람")
+                                Text("3시간 30분 후 기상")
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(JColor.textSecondary)
                             }
@@ -37,8 +36,7 @@ public struct AlarmView: View {
                             Button(action: {
                                 // 알람 추가 액션
                             }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 18, weight: .medium))
+                                Image(refineUIIcon: .add24Regular)
                                     .foregroundColor(JColor.primary)
                                     .frame(width: 40, height: 40)
                                     .background(JColor.primary.opacity(0.1))
@@ -48,11 +46,9 @@ public struct AlarmView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         
-                        // 여기에 알람 목록 추가
-                        Text("Alarm Content")
-                            .font(.title)
-                            .foregroundColor(JColor.textPrimary)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        VStack(spacing: 18) {
+                            
+                        }
                     }
                     .padding(.bottom, 100)
                 }

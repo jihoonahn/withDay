@@ -14,7 +14,7 @@ struct BaseDomain: Module {
                 name: typeName,
                 product: .framework,
                 dependencies: [
-                    .external(name: "Supabase")
+                    .shared(target: "Utility")
                 ]
             )
             Tests(

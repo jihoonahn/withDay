@@ -16,7 +16,6 @@ public struct LoginView: View {
     
     public var body: some View {
         ZStack {
-            // 배경
             JColor.background.ignoresSafeArea()
             
             VStack(spacing: 0) {

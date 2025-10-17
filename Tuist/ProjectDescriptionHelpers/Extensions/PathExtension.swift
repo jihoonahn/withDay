@@ -19,7 +19,7 @@ public extension ProjectDescription.Path {
     static func relativeToCore(_ path: String) -> Self {
         return .relativeToRoot("Projects/Core/\(path)")
     }
-    static func relativeToShared() -> Self {
-        return .relativeToRoot("Projects/Shared")
+    static func relativeToShared(_ path: String) -> Self {
+        return .relativeToRoot("Projects/Shared/\(path)")
     }
 }

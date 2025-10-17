@@ -23,7 +23,7 @@ public struct HomeView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         HStack {
-                            Text(Date.now.toString())
+                            Text(state.homeTitle)
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundColor(JColor.textPrimary)
 

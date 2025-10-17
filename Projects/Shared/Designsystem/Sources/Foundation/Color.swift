@@ -17,7 +17,8 @@ public enum JColor {
     public static let error = Color(hex: "#FF453A")
 
     public static let divider = Color(hex: "#2C2C2E")
-
+    public static let border = Color(hex: "#4D4D4D")
+    
     public static func dynamic(light: Color, dark: Color) -> Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
