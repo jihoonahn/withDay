@@ -14,7 +14,6 @@ struct AlarmDomain: Module {
                 name: typeName,
                 dependencies: [
                     .domain(target: "BaseDomain"),
-                    .core(target: "AlarmCore", type: .interface)
                 ]
             )
         }

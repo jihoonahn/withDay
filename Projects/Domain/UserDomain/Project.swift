@@ -14,7 +14,6 @@ struct UserDomain: Module {
                 name: typeName,
                 dependencies: [
                     .domain(target: "BaseDomain"),
-                    .core(target: "SupabaseCore")
                 ]
             )
         }

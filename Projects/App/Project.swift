@@ -27,7 +27,9 @@ struct WithDay: Module {
                     .domain(target: "BaseDomain"),
                     .core(target: "NetworkCore"),
                     .core(target: "SupabaseCore"),
-                    .shared(target: "Dependency")
+                    .core(target: "AlarmCore"),
+                    .shared(target: "Dependency"),
+                    .shared(target: "Utility")
                 ]
             )
         }

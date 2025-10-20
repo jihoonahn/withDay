@@ -13,10 +13,17 @@ struct SupabaseCore: Module {
             Sources(
                 name: typeName,
                 dependencies: [
-                    .core(target: typeName, type: .interface)
+                    .core(target: typeName, type: .interface),
+                    .external(name: "Supabase")
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "UserDomain", type: .interface),
+                    .domain(target: "MemoDomain", type: .interface)
+                ]
+            )
             Testing(
                 name: typeName,
                 dependencies: [

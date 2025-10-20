@@ -1,7 +1,7 @@
 import Foundation
+import AlarmDomainInterface
 
-public protocol AlarmRepository {
+public protocol SupabaseAlarmStorage {
     func fetchAlarms(for userId: UUID) async throws -> [AlarmEntity]
     func saveAlarm(_ alarm: AlarmEntity) async throws
-    func syncAlarms(for userId: UUID) async throws
 }

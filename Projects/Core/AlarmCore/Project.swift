@@ -16,7 +16,13 @@ struct AlarmCore: Module {
                     .core(target: typeName, type: .interface)
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "AlarmDomain", type: .interface),
+                    .core(target: "SupabaseCore", type: .interface)
+                ]
+            )
             Testing(
                 name: typeName,
                 dependencies: [

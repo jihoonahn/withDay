@@ -14,11 +14,24 @@ import WeatherFeatureInterface
 import WeatherFeature
 import SettingFeatureInterface
 import SettingFeature
+import AlarmDomainInterface
+import AlarmCore
+import SwiftData
 
 public class AppDependencies {
-    public static func setup() {
+    public static func setup(modelContext: ModelContext) {
         let container = DIContainer.shared
 
+        // MARK: - Core Services
+        container.register(AlarmRepository.self) {
+            return AlarmCoreFactoryImpl.makeRepository(context: modelContext)
+        }
+        
+        container.register(AlarmUseCase.self) {
+            return AlarmCoreFactoryImpl.makeUseCase(context: modelContext)
+        }
+
+        // MARK: - Feature Factories
         container.register(RootFactory.self) {
             return RootFactoryImpl.create()
         }
@@ -36,7 +49,8 @@ public class AppDependencies {
         }
 
         container.register(AlarmFactory.self) {
-            return AlarmFactoryImpl.create()
+            let useCase = container.resolve(AlarmUseCase.self)
+            return AlarmFactoryImpl.create(useCase: useCase)
         }
 
         container.register(WeatherFactory.self) {

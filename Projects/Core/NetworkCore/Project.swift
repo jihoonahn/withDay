@@ -16,7 +16,12 @@ struct NetworkCore: Module {
                     .core(target: typeName, type: .interface)
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "WeatherDomain", type: .interface)
+                ]
+            )
             Testing(
                 name: typeName,
                 dependencies: [

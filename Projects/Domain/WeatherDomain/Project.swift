@@ -14,7 +14,6 @@ struct WeatherDomain: Module {
                 name: typeName,
                 dependencies: [
                     .domain(target: "BaseDomain"),
-                    .core(target: "NetworkCore", type: .interface)
                 ]
             )
         }
