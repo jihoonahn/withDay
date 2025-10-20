@@ -2,19 +2,19 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = CoreNetwork().module()
+let project = MemoDomain().module()
 
-struct CoreNetwork: Module {
+struct MemoDomain: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,
-            target: .Core
+            target: .Domain
         ) {
-            Sources(name: typeName)
-            Tests(
+            Interface(
                 name: typeName,
                 dependencies: [
-                    .core(target: typeName)
+                    .domain(target: "BaseDomain"),
+                    .core(target: "SupabaseCore")
                 ]
             )
         }

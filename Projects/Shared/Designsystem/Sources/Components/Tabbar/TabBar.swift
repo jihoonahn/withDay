@@ -43,7 +43,10 @@ public struct TabBar<ID: Hashable>: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(darkBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(JColor.border, lineWidth: 1)
+        )
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
     }

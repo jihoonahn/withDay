@@ -37,7 +37,7 @@ public struct AlarmView: View {
                                 // 알람 추가 액션
                             }) {
                                 Image(refineUIIcon: .add24Regular)
-                                    .foregroundColor(JColor.primary)
+                                    .foregroundColor(JColor.textPrimary)
                                     .frame(width: 40, height: 40)
                                     .background(JColor.primary.opacity(0.1))
                                     .clipShape(Circle())

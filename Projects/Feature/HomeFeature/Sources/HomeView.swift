@@ -30,10 +30,9 @@ public struct HomeView: View {
                             Spacer()
                             
                             Button(action: {
-                                
+                                interface.send(.showMemoSheet(true))
                             }) {
-                                Image(refineUIIcon: .alert24Regular)
-                                    .font(.system(size: 18, weight: .medium))
+                                Image(refineUIIcon: .note24Regular)
                                     .foregroundColor(JColor.textPrimary)
                                     .frame(width: 40, height: 40)
                                     .background(JColor.surface.opacity(0.8))
@@ -43,7 +42,6 @@ public struct HomeView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         
-                        // 여기에 컨텐츠 추가
                         Text("Home Content")
                             .font(.title)
                             .foregroundColor(JColor.textPrimary)
@@ -52,6 +50,18 @@ public struct HomeView: View {
                     .padding(.bottom, 100)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .sheet(isPresented: Binding(
+                get: {
+                    state.sheetAction
+                }, set: { value in
+                    interface.send(.showMemoSheet(value))
+                })
+            ) {
+                MemoView(
+                    interface: interface,
+                    state: state
+                )
             }
         }
         .navigationBarHidden(true)

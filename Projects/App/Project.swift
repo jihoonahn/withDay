@@ -25,7 +25,8 @@ struct WithDay: Module {
                     .feature(target: "WeatherFeature"),
                     .feature(target: "SettingFeature"),
                     .domain(target: "BaseDomain"),
-                    .core(target: "CoreNetwork"),
+                    .core(target: "NetworkCore"),
+                    .core(target: "SupabaseCore"),
                     .shared(target: "Dependency")
                 ]
             )

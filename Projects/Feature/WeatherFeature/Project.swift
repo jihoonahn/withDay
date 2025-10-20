@@ -17,7 +17,12 @@ struct WeatherFeature: Module {
                     .feature(target: typeName, type: .interface),
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "WeatherDomain", type: .interface)
+                ]
+            )
             Example(
                 name: typeName,
                 dependencies: [

@@ -39,7 +39,7 @@ public struct WeatherView: View {
                             }) {
                                 Image(systemName: "arrow.clockwise")
                                     .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(JColor.primary)
+                                    .foregroundColor(JColor.textPrimary)
                                     .frame(width: 40, height: 40)
                                     .background(JColor.primary.opacity(0.1))
                                     .clipShape(Circle())

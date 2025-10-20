@@ -4,28 +4,50 @@ extension Scheme {
     public static func makeScheme(
         name: String,
         hasExampleTarget: Bool = false,
+        hasSourceTarget: Bool = true,
+        hasInterfaceTarget: Bool = true,
+        hasTestTarget: Bool = true,
         target: ConfigurationName
     ) -> Scheme {
-        
-        let buildAction = hasExampleTarget
-        ? BuildAction.buildAction(targets: ["\(name)Example"])
-        : BuildAction.buildAction(targets: ["\(name)"])
-        
-        let testAction = hasExampleTarget
-        ? TestAction.targets(
-            ["\(name)Tests"],
-            configuration: target,
-            options: .options(
-                coverage: true,
-                codeCoverageTargets: ["\(name)Example"]
-            )
-        )
+
+        let buildTargets: [TargetReference] = {
+            if hasExampleTarget {
+                return ["\(name)Example"]
+            } else if hasSourceTarget {
+                return ["\(name)"]
+            } else {
+                return []
+            }
+        }()
+
+        let buildAction = BuildAction.buildAction(targets: buildTargets)
+
+        let testTargets: [TestableTarget] = {
+            if hasTestTarget {
+                return ["\(name)Tests"]
+            } else {
+                return []
+            }
+        }()
+
+        let coverageTargets: [TargetReference] = {
+            if hasExampleTarget {
+                return ["\(name)Example"]
+            } else if hasSourceTarget {
+                return ["\(name)"]
+            } else {
+                return []
+            }
+        }()
+
+        let testAction: TestAction? = testTargets.isEmpty
+        ? nil
         : TestAction.targets(
-            ["\(name)Tests"],
+            testTargets,
             configuration: target,
             options: .options(
                 coverage: true,
-                codeCoverageTargets: ["\(name)"]
+                codeCoverageTargets: coverageTargets
             )
         )
         

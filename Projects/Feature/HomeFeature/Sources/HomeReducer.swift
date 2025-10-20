@@ -5,6 +5,12 @@ public struct HomeReducer: Reducer {
     public init() {}
 
     public func reduce(state: inout HomeState, action: HomeAction) -> [Effect<HomeAction>] {
-        return []
+        switch action {
+        case .viewAppear:
+            return []
+        case let .showMemoSheet(status):
+            state.sheetAction = status
+            return []
+        }
     }
 }

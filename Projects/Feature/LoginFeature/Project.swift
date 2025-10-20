@@ -17,7 +17,12 @@ struct LoginFeature: Module {
                     .feature(target: typeName, type: .interface)
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "UserDomain", type: .interface)
+                ]
+            )
             Example(
                 name: typeName,
                 dependencies: [

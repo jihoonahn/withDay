@@ -17,7 +17,6 @@ public struct SettingView: View {
         NavigationView {
             ZStack {
                 JColor.background.ignoresSafeArea()
-                
                 ScrollView {
                     VStack(spacing: 16) {
                         VStack(spacing: 20) {
@@ -33,63 +32,81 @@ public struct SettingView: View {
                             .padding(.top, 20)
                         }
                         SettingSection {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("지훈님")
-                                        .font(JTypography.subtitle)
-                                        .foregroundStyle(.white)
-                                    Text("ahnjh2004")
-                                        .foregroundStyle(JColor.textSecondary)
+                            NavigationLink(destination: ProfileView(
+                                    interface: interface,
+                                    state: state
+                                )
+                            ) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Text("\(state.name)님")
+                                            .font(JTypography.subtitle)
+                                            .foregroundStyle(.white)
+                                        Text(state.email)
+                                            .foregroundStyle(JColor.textSecondary)
+                                    }
+                                    .padding(.vertical, 12)
+                                    Spacer()
+                                    
+                                    Image(refineUIIcon: .chevronRight16Regular)
+                                        .foregroundStyle(.gray)
                                 }
-                                .padding(.vertical, 12)
-                                Spacer()
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                         SettingSection(title: "일반") {
-                            SettingRow(title: "언어 설정") {
-                                Text("한국어")
-                                    .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "알림") {
-                                Text("Alarm")
-                                    .foregroundStyle(.gray)
-                            }
+                            SettingRow(
+                                title: "언어설정",
+                                navigationView: {
+                                    LanguageView()
+                                },
+                                trailing: {
+                                    Text("한국어")
+                                        .foregroundStyle(.gray)
+                                }
+                            )
+ 
+                            SettingRow(
+                                title: "알림",
+                                navigationView: {
+                                    AlarmSetting()
+                                }
+                            )
+
                         }
                         SettingSection(
                             title: "도움말"
                         ) {
-                            SettingRow(title: "1:1 문의 내역") {
-                                Text("바로가기")
+                            SettingRow(title: "공지사항", trailing: {
+                                Image(refineUIIcon: .chevronRight16Regular)
                                     .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "고객센터") {
-                                Text("바로가기")
-                                    .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "공지사항") {
-                                Text("바로가기")
-                                    .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "개인정보 처리방침") {
-                                Text("바로가기")
-                                    .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "서비스 이용약관") {
-                                Text("바로가기")
-                                    .foregroundStyle(.gray)
-                            }
-                            SettingRow(title: "버전") {
+                            })
+                            SettingRow(
+                                title: "개인정보 처리방침",
+                                trailing: {
+                                    Image(refineUIIcon: .chevronRight16Regular)
+                                        .foregroundStyle(.gray)
+                                }
+                            )
+                            SettingRow(
+                                title: "서비스 이용약관",
+                                trailing: {
+                                    Image(refineUIIcon: .chevronRight16Regular)
+                                        .foregroundStyle(.gray)
+                                }
+                            )
+                            SettingRow(title: "버전", trailing: {
                                 Text("1.0.0")
                                     .foregroundStyle(.gray)
-                            }
+                            })
                         }
                         SettingSection {
-                            HStack {
-                                Spacer()
-                                Text("로그아웃")
-                                    .foregroundStyle(.red)
-                                Spacer()
+                            Button("로그아웃") {
+                                interface.send(.logout)
                             }
+                            .foregroundStyle(JColor.error)
+                            .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                         }
                     }
@@ -132,13 +149,32 @@ public struct SettingView: View {
     }
 
     @ViewBuilder
-    func SettingRow(title: String, @ViewBuilder trailing: () -> some View) -> some View {
-        HStack {
-            Text(title)
-                .foregroundStyle(.white)
-            Spacer()
-            trailing()
+    func SettingRow<Destination: View, Trailing: View>(
+        title: String,
+        @ViewBuilder navigationView: () -> Destination = { EmptyView() },
+        @ViewBuilder trailing: @escaping () -> Trailing = { EmptyView() }
+    ) -> some View {
+        let destination = navigationView()
+        if destination is EmptyView {
+            HStack {
+                Text(title)
+                    .foregroundStyle(.white)
+                Spacer()
+                trailing()
+            }
+            .padding(.vertical, 8)
+        } else {
+            NavigationLink(destination: destination) {
+                HStack {
+                    Text(title)
+                        .foregroundStyle(.white)
+                    Spacer()
+                    trailing()
+                }
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
-        .padding(.vertical, 8)
     }
 }

@@ -9,7 +9,7 @@ public enum JColor {
     public static let textSecondary = Color(hex: "#A1A1A6")
     public static let textDisabled = Color(hex: "#5E5E5E")
 
-    public static let primary = Color(hex: "#3182F6")
+    public static let primary = Color(hex: "#2C2C2E")
     public static let primaryVariant = Color(hex: "#2B73DB")
 
     public static let success = Color(hex: "#30D158")

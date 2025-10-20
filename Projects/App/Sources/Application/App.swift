@@ -16,6 +16,7 @@ struct WithDayApp: App {
     var body: some Scene {
         WindowGroup {
             rootFactory.makeView()
+                .preferredColorScheme(.dark)
         }
     }
 }
