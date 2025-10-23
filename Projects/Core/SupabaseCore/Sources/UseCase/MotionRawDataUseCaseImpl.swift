@@ -1,11 +1,3 @@
-//
-//  MotionRawDataUseCaseImpl.swift
-//  SupabaseCore
-//
-//  Created by Jihoonahn on 10/23/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
-
 import Foundation
 import MotionRawDataDomainInterface
 

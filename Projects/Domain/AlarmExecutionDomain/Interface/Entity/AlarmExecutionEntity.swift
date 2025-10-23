@@ -1,4 +1,5 @@
 import Foundation
+import Helpers
 
 public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public let id: UUID
@@ -10,7 +11,7 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public var completedTime: Date?
     public var motionCompleted: Bool
     public var motionAttempts: Int
-    public var motionData: [String: String] // JSON 데이터
+    public var motionData: AnyJSON
     public var wakeConfidence: Double?
     public var postureChanges: Int?
     public var snoozeCount: Int
@@ -29,7 +30,7 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
         completedTime: Date? = nil,
         motionCompleted: Bool,
         motionAttempts: Int,
-        motionData: [String : String],
+        motionData: AnyJSON,
         wakeConfidence: Double? = nil,
         postureChanges: Int? = nil,
         snoozeCount: Int,

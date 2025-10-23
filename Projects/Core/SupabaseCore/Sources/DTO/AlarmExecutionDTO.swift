@@ -1,5 +1,6 @@
 import Foundation
 import AlarmExecutionDomainInterface
+import Helpers
 
 struct AlarmExecutionDTO: Codable {
     let id: UUID
@@ -11,7 +12,7 @@ struct AlarmExecutionDTO: Codable {
     let completedTime: Date?
     let motionCompleted: Bool
     let motionAttempts: Int
-    let motionData: [String: String]
+    let motionData: AnyJSON
     let wakeConfidence: Double?
     let postureChanges: Int?
     let snoozeCount: Int

@@ -25,8 +25,4 @@ public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
     public func update(_ execution: AlarmExecutionEntity) async throws {
         try await alarmExecutionService.updateExecution(execution)
     }
-    
-    public func updateStatus(id: UUID, status: String) async throws {
-        try await alarmExecutionService.updateExecutionStatus(id: id, status: status)
-    }
 }

@@ -2,4 +2,7 @@ OTHER_SWIFT_FLAGS[config=DEV][sdk=*] = $(inherited) -DDEV
 OTHER_SWIFT_FLAGS[config=STAGE][sdk=*] = $(inherited) -DSTAGE
 OTHER_SWIFT_FLAGS[config=PROD][sdk=*] = $(inherited) -DPROD
 
+SUPABASE_URL = $(SUPABASE_URL)
+SUPABASE_ANON_KEY = $(SUPABASE_ANON_KEY)
+
 ENABLE_BITCODE = NO

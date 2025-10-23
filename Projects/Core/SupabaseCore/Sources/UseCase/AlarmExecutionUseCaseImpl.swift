@@ -21,9 +21,16 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
     }
     
     public func markMotionDetected(id: UUID, motionData: [String: Any], wakeConfidence: Double) async throws {
-        // Note: 현재 구현은 제한적입니다.
-        // 실제로는 해당 execution을 가져와서 motionDetectedTime과 motionData를 업데이트해야 합니다.
-        // 이를 위해서는 AlarmExecutionService에 부분 업데이트 메서드가 필요합니다.
+        guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
+            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [NSLocalizedDescriptionKey: "Execution not found"])
+        }
+
+        execution.motionDetectedTime = Date()
+        execution.motionData = motionData
+        execution.wakeConfidence = wakeConfidence
+
+        execution.status = "motion_detected"
+        try await alarmExecutionRepository.update(execution)
     }
     
     public func completeExecution(id: UUID) async throws {
