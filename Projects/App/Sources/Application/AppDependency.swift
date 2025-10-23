@@ -19,17 +19,8 @@ import AlarmCore
 import SwiftData
 
 public class AppDependencies {
-    public static func setup(modelContext: ModelContext) {
+    public static func setup() {
         let container = DIContainer.shared
-
-        // MARK: - Core Services
-        container.register(AlarmRepository.self) {
-            return AlarmCoreFactoryImpl.makeRepository(context: modelContext)
-        }
-        
-        container.register(AlarmUseCase.self) {
-            return AlarmCoreFactoryImpl.makeUseCase(context: modelContext)
-        }
 
         // MARK: - Feature Factories
         container.register(RootFactory.self) {

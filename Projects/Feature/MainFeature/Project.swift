@@ -21,7 +21,12 @@ struct MainFeature: Module {
                     .feature(target: "SettingFeature", type: .interface)
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .external(name: "RefineUIIcons")
+                ]
+            )
             Example(
                 name: typeName,
                 dependencies: [

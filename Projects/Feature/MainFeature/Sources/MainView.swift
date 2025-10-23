@@ -31,12 +31,8 @@ public struct MainView: View {
     public var body: some View {
         ZStack {
             switch state.flow {
-            case .home:
-                homeFactory.makeView()
             case .alarm:
                 alarmFactory.makeView()
-            case .weather:
-                weatherFactory.makeView()
             case .setting:
                 settingFactory.makeView()
             }

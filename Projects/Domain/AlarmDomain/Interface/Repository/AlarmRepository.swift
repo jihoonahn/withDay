@@ -1,7 +1,9 @@
 import Foundation
 
 public protocol AlarmRepository {
-    func fetchAlarms(for userId: UUID) async throws -> [AlarmEntity]
-    func saveAlarm(_ alarm: AlarmEntity) async throws
-    func syncAlarms(for userId: UUID) async throws
+    func fetchAlarms(userId: UUID) async throws -> [AlarmEntity]
+    func createAlarm(_ alarm: AlarmEntity) async throws
+    func updateAlarm(_ alarm: AlarmEntity) async throws
+    func deleteAlarm(alarmId: UUID) async throws
+    func toggleAlarm(alarmId: UUID, isEnabled: Bool) async throws
 }

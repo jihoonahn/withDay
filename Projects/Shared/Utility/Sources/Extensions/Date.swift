@@ -8,4 +8,10 @@ extension Date {
         formatter.dateFormat = format
         return formatter.string(from: self)
     }
+
+    public func isoTimeString() -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate, .withTime, .withColonSeparatorInTime]
+        return formatter.string(from: self)
+    }
 }

@@ -1,7 +1,9 @@
 import Foundation
 
 public protocol AlarmUseCase {
-    func getAlarms(for userId: UUID) -> [AlarmEntity]
-    func addAlarm(_ alarm: AlarmEntity)
-    func syncAlarms(for userId: UUID) async throws
+    func fetchAll(userId: UUID) async throws -> [AlarmEntity]
+    func create(_ alarm: AlarmEntity) async throws
+    func update(_ alarm: AlarmEntity) async throws
+    func delete(id: UUID) async throws
+    func toggle(id: UUID, isEnabled: Bool) async throws
 }

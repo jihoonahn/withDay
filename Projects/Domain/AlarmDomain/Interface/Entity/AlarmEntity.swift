@@ -1,34 +1,59 @@
 import Foundation
-import SwiftData
 
-@Model
-public class AlarmEntity {
-    @Attribute(.unique) public var id: UUID
-    public var userId: UUID
-    public var title: String
-    public var time: DateComponents
-    public var specificDate: Date?
-    public var repeatPattern: String
-    public var daysOfWeek: [String]?
-    public var isActive: Bool
-
+public struct AlarmEntity: Identifiable, Codable, Equatable, Sendable {
+    public let id: UUID
+    public let userId: UUID
+    public var label: String?
+    public var time: String // “HH:mm” 형식
+    public var repeatDays: [Int]
+    public var snoozeEnabled: Bool
+    public var snoozeInterval: Int
+    public var snoozeLimit: Int
+    public var soundName: String
+    public var soundURL: String?
+    public var vibrationPattern: String?
+    public var volumeOverride: Int?
+    public var linkedMemoIds: [UUID]
+    public var showMemosOnAlarm: Bool
+    public var isEnabled: Bool
+    public let createdAt: Date
+    public let updatedAt: Date
+    
     public init(
-        id: UUID = UUID(),
+        id: UUID,
         userId: UUID,
-        title: String,
-        time: DateComponents,
-        specificDate: Date?,
-        repeatPattern: String,
-        daysOfWeek: [String]?,
-        isActive: Bool
+        label: String?,
+        time: String,
+        repeatDays: [Int],
+        snoozeEnabled: Bool,
+        snoozeInterval: Int,
+        snoozeLimit: Int,
+        soundName: String,
+        soundURL: String?,
+        vibrationPattern: String?,
+        volumeOverride: Int?,
+        linkedMemoIds: [UUID],
+        showMemosOnAlarm: Bool,
+        isEnabled: Bool,
+        createdAt: Date,
+        updatedAt: Date
     ) {
         self.id = id
         self.userId = userId
-        self.title = title
+        self.label = label
         self.time = time
-        self.specificDate = specificDate
-        self.repeatPattern = repeatPattern
-        self.daysOfWeek = daysOfWeek
-        self.isActive = isActive
+        self.repeatDays = repeatDays
+        self.snoozeEnabled = snoozeEnabled
+        self.snoozeInterval = snoozeInterval
+        self.snoozeLimit = snoozeLimit
+        self.soundName = soundName
+        self.soundURL = soundURL
+        self.vibrationPattern = vibrationPattern
+        self.volumeOverride = volumeOverride
+        self.linkedMemoIds = linkedMemoIds
+        self.showMemosOnAlarm = showMemosOnAlarm
+        self.isEnabled = isEnabled
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 }
