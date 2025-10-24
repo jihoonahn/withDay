@@ -1,0 +1,64 @@
+import Foundation
+import SwiftData
+import SwiftDataCoreInterface
+
+@MainActor
+public final class AlarmServiceImpl: AlarmService {
+    private let container: ModelContainer
+
+    public init(container: ModelContainer) {
+        self.container = container
+    }
+
+    public func fetchAlarms(userId: UUID) async throws -> [AlarmModel] {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<AlarmModel>(
+            predicate: #Predicate { alarm in
+                alarm.userId == userId
+            },
+            sortBy: [SortDescriptor(\.createdAt)]
+        )
+        return try context.fetch(descriptor)
+    }
+
+    public func saveAlarm(_ alarm: AlarmModel) async throws {
+        let context = container.mainContext
+        context.insert(alarm)
+        try context.save()
+    }
+
+    public func updateAlarm(_ alarm: AlarmModel) async throws {
+        let context = container.mainContext
+        alarm.updatedAt = Date()
+        try context.save()
+    }
+
+    public func deleteAlarm(id: UUID) async throws {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<AlarmModel>(
+            predicate: #Predicate { alarm in
+                alarm.id == id
+            }
+        )
+        
+        if let alarm = try context.fetch(descriptor).first {
+            context.delete(alarm)
+            try context.save()
+        }
+    }
+
+    public func toggleAlarm(id: UUID, isEnabled: Bool) async throws {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<AlarmModel>(
+            predicate: #Predicate { alarm in
+                alarm.id == id
+            }
+        )
+        
+        if let alarm = try context.fetch(descriptor).first {
+            alarm.isEnabled = isEnabled
+            alarm.updatedAt = Date()
+            try context.save()
+        }
+    }
+}

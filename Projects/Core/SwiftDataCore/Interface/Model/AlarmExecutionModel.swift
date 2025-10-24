@@ -1,10 +1,11 @@
+import SwiftData
 import Foundation
-import Helpers
 
-public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
-    public let id: UUID
-    public let userId: UUID
-    public let alarmId: UUID
+@Model
+public final class AlarmExecutionModel {
+    @Attribute(.unique) public var id: UUID
+    public var userId: UUID
+    public var alarmId: UUID
     public var scheduledTime: Date
     public var triggeredTime: Date?
     public var motionDetectedTime: Date?
@@ -16,10 +17,10 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public var postureChanges: Int?
     public var snoozeCount: Int
     public var totalWakeDuration: Int?
-    public var status: String // "scheduled", "triggered", "motion_detected", "completed", "missed"
+    public var status: String
     public var viewedMemoIds: [UUID]
-    public let createdAt: Date
-
+    public var createdAt: Date
+    
     public init(
         id: UUID,
         userId: UUID,
@@ -28,16 +29,16 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
         triggeredTime: Date? = nil,
         motionDetectedTime: Date? = nil,
         completedTime: Date? = nil,
-        motionCompleted: Bool,
-        motionAttempts: Int,
-        motionData: AnyJSON,
+        motionCompleted: Bool = false,
+        motionAttempts: Int = 0,
+        motionData: Data,
         wakeConfidence: Double? = nil,
         postureChanges: Int? = nil,
-        snoozeCount: Int,
+        snoozeCount: Int = 0,
         totalWakeDuration: Int? = nil,
-        status: String,
-        viewedMemoIds: [UUID],
-        createdAt: Date
+        status: String = "scheduled",
+        viewedMemoIds: [UUID] = [],
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.userId = userId
