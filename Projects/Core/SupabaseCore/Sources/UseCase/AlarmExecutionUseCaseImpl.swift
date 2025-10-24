@@ -34,6 +34,24 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
     }
     
     public func completeExecution(id: UUID) async throws {
-        try await alarmExecutionRepository.updateStatus(id: id, status: "completed")
+        guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
+            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [
+                    NSLocalizedDescriptionKey: "Execution not found"
+            ])
+        }
+        
+        execution.completedTime = Date.now
+        execution.status = "completed"
+        execution.motionCompleted = true
+
+        if let motionDetectedTime = execution.motionDetectedTime {
+            let duration = Date.now.timeIntervalSince(motionDetectedTime)
+            execution.totalWakeDuration = Int(duration)
+        } else {
+            let duration = Date.now.timeIntervalSince(execution.createdAt)
+            execution.totalWakeDuration = Int(duration)
+        }
+
+        try await alarmExecutionRepository.update(execution)
     }
 }

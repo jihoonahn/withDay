@@ -3,6 +3,9 @@ import Supabase
 import SupabaseCoreInterface
 import AlarmDomainInterface
 
+// AlarmDTO는 같은 모듈의 DTO 폴더에 있음
+// SupabaseCore/Sources/DTO/AlarmDTO.swift
+
 public final class AlarmServiceImpl: AlarmService {
     private let client: SupabaseClient
     

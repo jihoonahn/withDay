@@ -3,6 +3,7 @@ import AlarmExecutionDomainInterface
 import SupabaseCoreInterface
 
 public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
+
     private let alarmExecutionService: AlarmExecutionService
     
     public init(alarmExecutionService: AlarmExecutionService) {
@@ -17,7 +18,11 @@ public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
             calendar.isDate(execution.scheduledTime, inSameDayAs: date)
         }
     }
-    
+
+    public func fetch(id: UUID) async throws -> AlarmExecutionEntity? {
+        try await alarmExecutionService.fetchExecutions(for: id)[0]
+    }
+
     public func create(_ execution: AlarmExecutionEntity) async throws {
         try await alarmExecutionService.createExecution(execution)
     }

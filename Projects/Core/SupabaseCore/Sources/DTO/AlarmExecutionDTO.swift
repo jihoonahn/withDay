@@ -12,7 +12,7 @@ struct AlarmExecutionDTO: Codable {
     let completedTime: Date?
     let motionCompleted: Bool
     let motionAttempts: Int
-    let motionData: AnyJSON
+    let motionData: Data
     let wakeConfidence: Double?
     let postureChanges: Int?
     let snoozeCount: Int

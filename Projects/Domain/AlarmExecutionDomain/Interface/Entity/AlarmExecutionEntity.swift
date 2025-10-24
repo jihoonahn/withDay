@@ -30,7 +30,7 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
         completedTime: Date? = nil,
         motionCompleted: Bool,
         motionAttempts: Int,
-        motionData: AnyJSON,
+        motionData: Data,
         wakeConfidence: Double? = nil,
         postureChanges: Int? = nil,
         snoozeCount: Int,
