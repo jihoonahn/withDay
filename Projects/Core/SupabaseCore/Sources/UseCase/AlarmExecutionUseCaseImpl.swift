@@ -2,6 +2,7 @@ import Foundation
 import AlarmExecutionDomainInterface
 
 public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
+    
     private let alarmExecutionRepository: AlarmExecutionRepository
     
     public init(alarmExecutionRepository: AlarmExecutionRepository) {
@@ -18,19 +19,6 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
         } else {
             try await alarmExecutionRepository.update(execution)
         }
-    }
-    
-    public func markMotionDetected(id: UUID, motionData: Data, wakeConfidence: Double) async throws {
-        guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
-            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [NSLocalizedDescriptionKey: "Execution not found"])
-        }
-
-        execution.motionDetectedTime = Date()
-        execution.motionData = motionData
-        execution.wakeConfidence = wakeConfidence
-
-        execution.status = "motion_detected"
-        try await alarmExecutionRepository.update(execution)
     }
     
     public func completeExecution(id: UUID) async throws {
@@ -51,6 +39,28 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
             let duration = Date.now.timeIntervalSince(execution.createdAt)
             execution.totalWakeDuration = Int(duration)
         }
+
+        try await alarmExecutionRepository.update(execution)
+    }
+
+    public func markMotionDetected(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
+        guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
+            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [
+                NSLocalizedDescriptionKey: "Execution not found"
+            ])
+        }
+
+        execution.motionData = motionData
+        execution.wakeConfidence = wakeConfidence
+        execution.postureChanges = postureChanges
+        execution.isMoving = isMoving
+        execution.motionCompleted = true
+        execution.status = "motionDetected"
+        execution.motionDetectedTime = Date.now
+
+        let startTime = execution.createdAt
+        let motionTime = execution.motionDetectedTime ?? startTime
+        execution.totalWakeDuration = Int(Date.now.timeIntervalSince(motionTime))
 
         try await alarmExecutionRepository.update(execution)
     }

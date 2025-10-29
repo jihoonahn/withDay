@@ -4,9 +4,9 @@ import SwiftDataCoreInterface
 
 @MainActor
 public final class AchievementRepositoryImpl: AchievementRepository {
-    private let achievementService: AchievementService
+    private let achievementService: SwiftDataCoreInterface.AchievementService
     
-    public init(achievementService: AchievementService) {
+    public init(achievementService: SwiftDataCoreInterface.AchievementService) {
         self.achievementService = achievementService
     }
     
@@ -14,12 +14,11 @@ public final class AchievementRepositoryImpl: AchievementRepository {
         guard let model = try await achievementService.fetchAchievement(userId: userId) else {
             return nil
         }
-        return model.toEntity()
+        return AchievementDTO.toEntity(from: model)
     }
     
     public func update(_ achievement: AchievementEntity) async throws {
-        let model = AchievementModel(from: achievement)
+        let model = AchievementDTO.toModel(from: achievement)
         try await achievementService.updateAchievement(model)
     }
 }
-

@@ -1,9 +1,8 @@
-//
-//  SplashInterfacd.swift
-//  SplashFeature
-//
-//  Created by Jihoonahn on 10/28/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
-
 import Foundation
+import Rex
+
+public protocol SplashInterface {
+    var stateStream: AsyncStream<SplashState> { get }
+    func send(_ action: SplashAction)
+    func getCurrentState() -> SplashState
+}

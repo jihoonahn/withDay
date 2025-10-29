@@ -5,7 +5,7 @@ import BaseFeature
 
 public class AlarmStore: AlarmInterface {
     private let store: Store<AlarmReducer>
-    private let alarmUseCase: AlarmUseCase
+    private let remoteRepository: AlarmRepository
     private var continuation: AsyncStream<AlarmState>.Continuation?
 
     public var stateStream: AsyncStream<AlarmState> {
@@ -21,9 +21,9 @@ public class AlarmStore: AlarmInterface {
         }
     }
 
-    public init(store: Store<AlarmReducer>, useCase: AlarmUseCase) {
+    public init(store: Store<AlarmReducer>, remoteRepository: AlarmRepository) {
         self.store = store
-        self.alarmUseCase = useCase
+        self.remoteRepository = remoteRepository
     }
 
     public func send(_ action: AlarmAction) {

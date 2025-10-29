@@ -3,9 +3,9 @@ import MemoDomainInterface
 import SupabaseCoreInterface
 
 public final class MemoRepositoryImpl: MemoRepository {
-    private let memoService: MemoService
+    private let memoService: SupabaseCoreInterface.MemoService
     
-    public init(memoService: MemoService) {
+    public init(memoService: SupabaseCoreInterface.MemoService) {
         self.memoService = memoService
     }
     

@@ -4,7 +4,7 @@ public struct AlarmEntity: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public let userId: UUID
     public var label: String?
-    public var time: String // “HH:mm” 형식
+    public var time: String
     public var repeatDays: [Int]
     public var snoozeEnabled: Bool
     public var snoozeInterval: Int

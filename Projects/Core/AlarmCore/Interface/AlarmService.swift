@@ -5,10 +5,11 @@ public enum AlarmStatus {
     case scheduled, triggered, snoozed, motionDetected, completed, stopped
 }
 
-public protocol AlarmService {
+public protocol AlarmSchedulerService {
     func scheduleAlarm(_ alarm: AlarmEntity)
     func cancelAlarm(_ alarmId: UUID)
     func snoozeAlarm(_ alarmId: UUID)
+    func triggerAlarm(alarmId: UUID)
     func startMonitoringMotion(for executionId: UUID)
     func stopMonitoringMotion(for executionId: UUID)
     func getAlarmStatus(alarmId: UUID) -> AlarmStatus

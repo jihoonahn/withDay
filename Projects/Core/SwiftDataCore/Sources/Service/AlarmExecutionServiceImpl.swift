@@ -4,10 +4,22 @@ import SwiftDataCoreInterface
 
 @MainActor
 public final class AlarmExecutionServiceImpl: AlarmExecutionService {
+
     private let container: ModelContainer
     
     public init(container: ModelContainer) {
         self.container = container
+    }
+    
+    public func fetchExecution(userId: UUID) async throws -> AlarmExecutionModel {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+            predicate: #Predicate { execution in
+                execution.userId == userId
+            },
+            sortBy: [SortDescriptor(\.scheduledTime, order: .reverse)]
+        )
+        return try context.fetch(descriptor).first!
     }
     
     public func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionModel] {
@@ -20,7 +32,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         )
         return try context.fetch(descriptor)
     }
-    
+
     public func fetchExecutionsByAlarm(alarmId: UUID) async throws -> [AlarmExecutionModel] {
         let context = container.mainContext
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
@@ -56,5 +68,33 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
             try context.save()
         }
     }
-}
 
+    public func updateMotion(
+        id: UUID,
+        motionData: Data,
+        wakeConfidence: Double,
+        postureChanges: Int,
+        isMoving: Bool
+    ) async throws {
+        let context = container.mainContext
+
+        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+            predicate: #Predicate { execution in
+                execution.id == id
+            }
+        )
+
+        guard let execution = try context.fetch(descriptor).first else {
+            throw NSError(domain: "AlarmExecutionService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Execution not found"])
+        }
+
+        execution.motionData = motionData
+        execution.wakeConfidence = wakeConfidence
+        execution.isMoving = isMoving
+        execution.postureChanges = postureChanges
+        execution.motionCompleted = true
+
+        execution.status = "motionDetected"
+        try context.save()
+    }
+}

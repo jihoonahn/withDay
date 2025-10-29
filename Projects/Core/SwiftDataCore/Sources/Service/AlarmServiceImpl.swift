@@ -29,8 +29,31 @@ public final class AlarmServiceImpl: AlarmService {
 
     public func updateAlarm(_ alarm: AlarmModel) async throws {
         let context = container.mainContext
-        alarm.updatedAt = Date()
-        try context.save()
+        let alarmId = alarm.id
+        let descriptor = FetchDescriptor<AlarmModel>(
+            predicate: #Predicate { model in
+                model.id == alarmId
+            }
+        )
+        
+        if let existingModel = try context.fetch(descriptor).first {
+            existingModel.userId = alarm.userId
+            existingModel.label = alarm.label
+            existingModel.time = alarm.time
+            existingModel.repeatDays = alarm.repeatDays
+            existingModel.snoozeEnabled = alarm.snoozeEnabled
+            existingModel.snoozeInterval = alarm.snoozeInterval
+            existingModel.snoozeLimit = alarm.snoozeLimit
+            existingModel.soundName = alarm.soundName
+            existingModel.soundURL = alarm.soundURL
+            existingModel.vibrationPattern = alarm.vibrationPattern
+            existingModel.volumeOverride = alarm.volumeOverride
+            existingModel.linkedMemoIds = alarm.linkedMemoIds
+            existingModel.showMemosOnAlarm = alarm.showMemosOnAlarm
+            existingModel.isEnabled = alarm.isEnabled
+            existingModel.updatedAt = Date()
+            try context.save()
+        }
     }
 
     public func deleteAlarm(id: UUID) async throws {

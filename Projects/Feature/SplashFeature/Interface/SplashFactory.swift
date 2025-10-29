@@ -1,9 +1,7 @@
-//
-//  SplashFactory.swift
-//  SplashFeature
-//
-//  Created by Jihoonahn on 10/28/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
+import SwiftUI
+import Rex
 
-import Foundation
+public protocol SplashFactory {
+    func makeInterface() -> SplashInterface
+    func makeView() -> AnyView
+}

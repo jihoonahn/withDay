@@ -14,7 +14,8 @@ struct Utility: Module {
                 name: typeName,
                 destinations: .iOS,
                 dependencies: [
-                    .external(name: "Logging")
+                    .external(name: "Logging"),
+                    .shared(target: "Dependency")
                 ]
             )
         }

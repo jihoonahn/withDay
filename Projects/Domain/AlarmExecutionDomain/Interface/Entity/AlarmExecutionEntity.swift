@@ -1,5 +1,4 @@
 import Foundation
-import Helpers
 
 public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public let id: UUID
@@ -19,6 +18,7 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public var status: String // "scheduled", "triggered", "motion_detected", "completed", "missed"
     public var viewedMemoIds: [UUID]
     public let createdAt: Date
+    public var isMoving: Bool
 
     public init(
         id: UUID,
@@ -37,7 +37,8 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
         totalWakeDuration: Int? = nil,
         status: String,
         viewedMemoIds: [UUID],
-        createdAt: Date
+        createdAt: Date,
+        isMoving: Bool
     ) {
         self.id = id
         self.userId = userId
@@ -56,5 +57,6 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
         self.status = status
         self.viewedMemoIds = viewedMemoIds
         self.createdAt = createdAt
+        self.isMoving = isMoving
     }
 }

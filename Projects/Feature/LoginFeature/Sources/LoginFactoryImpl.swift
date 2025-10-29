@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import LoginFeatureInterface
+import UserDomainInterface
 
 public struct LoginFactoryImpl: LoginFactory {
     private let store: Store<LoginReducer>
@@ -20,18 +21,18 @@ public struct LoginFactoryImpl: LoginFactory {
 }
 
 public extension LoginFactoryImpl {
-    static func create() -> LoginFactoryImpl {
+    static func create(userUseCase: UserUseCase) -> LoginFactoryImpl {
         let store = Store<LoginReducer>(
             initialState: LoginState(),
-            reducer: LoginReducer()
+            reducer: LoginReducer(userUseCase: userUseCase)
         )
         return LoginFactoryImpl(store: store)
     }
     
-    static func create(initialState: LoginState) -> LoginFactoryImpl {
+    static func create(initialState: LoginState, userUseCase: UserUseCase) -> LoginFactoryImpl {
         let store = Store<LoginReducer>(
             initialState: initialState,
-            reducer: LoginReducer()
+            reducer: LoginReducer(userUseCase: userUseCase)
         )
         return LoginFactoryImpl(store: store)
     }

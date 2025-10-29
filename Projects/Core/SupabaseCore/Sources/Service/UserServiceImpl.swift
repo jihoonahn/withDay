@@ -5,6 +5,7 @@ import UserDomainInterface
 import Utility
 
 public final class UserServiceImpl: UserService {
+
     private let client: SupabaseClient
     
     public init(client: SupabaseClient) {
@@ -12,7 +13,10 @@ public final class UserServiceImpl: UserService {
     }
     
     public func signInWithGoogle() async throws -> UserEntity {
-        let response = try await client.auth.signInWithOAuth(provider: .google)
+        let response = try await client.auth.signInWithOAuth(
+            provider: .google,
+            redirectTo: URL(string: "com.googleusercontent.apps.868566453670-5qc711tkdesbaagsdtt0lok38jotlutc:/auth")
+        )
         let authUser = response.user
         
         let users: [UserDTO] = try await client
@@ -54,7 +58,10 @@ public final class UserServiceImpl: UserService {
     }
     
     public func signInWithApple() async throws -> UserEntity {
-        let response = try await client.auth.signInWithOAuth(provider: .apple)
+        let response = try await client.auth.signInWithOAuth(
+            provider: .apple,
+            redirectTo: URL(string: "withday://auth/callback")
+        )
         let authUser = response.user
         
         let users: [UserDTO] = try await client
@@ -72,7 +79,7 @@ public final class UserServiceImpl: UserService {
             id: authUser.id,
             provider: "apple",
             email: authUser.email,
-            displayName: authUser.userMetadata["full_name"] as? String,
+            displayName: authUser.userMetadata["full_name"]?.rawValue,
             wakeUpGoal: nil,
             sleepGoal: nil,
             notificationEnabled: true,
@@ -115,5 +122,17 @@ public final class UserServiceImpl: UserService {
             .update(dto)
             .eq("id", value: user.id.uuidString)
             .execute()
+    }
+
+    public func deleteUser(id: UUID) async throws {
+        try await client
+            .from("users")
+            .delete()
+            .eq("id", value: id.uuidString)
+            .execute()
+    }
+
+    public func signOut() async throws {
+        try await client.auth.signOut(scope: .global)
     }
 }

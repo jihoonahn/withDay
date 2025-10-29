@@ -25,4 +25,3 @@ public final class MemoUseCaseImpl: MemoUseCase {
         try await memoRepository.delete(id: id)
     }
 }
-

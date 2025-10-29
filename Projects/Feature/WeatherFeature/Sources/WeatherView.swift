@@ -20,7 +20,6 @@ public struct WeatherView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // 헤더
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(state.currentWeather?.location ?? "서울")
@@ -48,7 +47,6 @@ public struct WeatherView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         
-                        // 여기에 날씨 컨텐츠 추가
                         Text("Weather Content")
                             .font(.title)
                             .foregroundColor(JColor.textPrimary)

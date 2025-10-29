@@ -33,4 +33,12 @@ public final class UserUseCaseImpl: UserUseCase {
     public func gainExperience(amount: Int) async throws -> UserEntity {
         return try await userRepository.gainExperience(amount)
     }
+
+    public func deleteUser() async throws {
+        try await userRepository.deleteUser()
+    }
+
+    public func logout() async throws {
+        try await userRepository.logout()
+    }
 }

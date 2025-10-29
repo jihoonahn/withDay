@@ -7,4 +7,6 @@ public protocol UserRepository {
     func updateWakeUpGoal(_ time: Date) async throws
     func updateSleepGoal(_ time: Date) async throws
     func gainExperience(_ amount: Int) async throws -> UserEntity
+    func deleteUser() async throws
+    func logout() async throws
 }

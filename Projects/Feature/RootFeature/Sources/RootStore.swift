@@ -35,7 +35,9 @@ public class RootStore: RootInterface {
     private func setupEventBusObserver() {
         Task {
             await GlobalEventBus.shared.subscribe { event in
-                guard let rootEvent = event as? RootEvent else { return }
+                guard let rootEvent = event as? RootEvent else {
+                    return
+                }
                 switch rootEvent {
                 case .loginSuccess:
                     self.send(.switchToMain)

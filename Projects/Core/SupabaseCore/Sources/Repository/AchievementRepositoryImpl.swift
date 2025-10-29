@@ -3,9 +3,9 @@ import AchievementDomainInterface
 import SupabaseCoreInterface
 
 public final class AchievementRepositoryImpl: AchievementRepository {
-    private let achievementService: AchievementService
+    private let achievementService: SupabaseCoreInterface.AchievementService
     
-    public init(achievementService: AchievementService) {
+    public init(achievementService: SupabaseCoreInterface.AchievementService) {
         self.achievementService = achievementService
     }
     

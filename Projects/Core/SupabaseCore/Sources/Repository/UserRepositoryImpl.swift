@@ -4,12 +4,15 @@ import UserDomainInterface
 import SupabaseCoreInterface
 
 public final class UserRepositoryImpl: UserRepository {
-    private let userService: UserService
+
+    private let userService: SupabaseCoreInterface.UserService
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
     
-    public init(userService: UserService, supabaseService: SupabaseService) {
+    public init(userService: SupabaseCoreInterface.UserService, supabaseService: SupabaseService) {
         self.userService = userService
         self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
     
     public func fetchCurrentUser() async throws -> UserEntity? {
@@ -101,6 +104,18 @@ public final class UserRepositoryImpl: UserRepository {
         
         try await userService.updateUser(updatedUser)
         return updatedUser
+    }
+
+    public func deleteUser() async throws {
+        guard let currentUser = try await fetchCurrentUser() else {
+            throw UserRepositoryError.userNotFound
+        }
+        try await userService.deleteUser(id: currentUser.id)
+    }
+    
+    public func logout() async throws {
+        supabaseService.clearSession()        
+        try await userService.signOut()
     }
     
     private func calculateLevel(experience: Int) -> Int {

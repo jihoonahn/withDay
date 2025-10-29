@@ -3,9 +3,9 @@ import AlarmDomainInterface
 import SupabaseCoreInterface
 
 public final class AlarmRepositoryImpl: AlarmRepository {
-    private let alarmService: AlarmService
+    private let alarmService: SupabaseCoreInterface.AlarmService
     
-    public init(alarmService: AlarmService) {
+    public init(alarmService: SupabaseCoreInterface.AlarmService) {
         self.alarmService = alarmService
     }
     

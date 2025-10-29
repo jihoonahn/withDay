@@ -3,6 +3,7 @@ import UserDomainInterface
 
 @MainActor
 public final class UserUseCaseImpl: UserUseCase {
+
     private let userRepository: UserRepository
     
     public init(userRepository: UserRepository) {
@@ -34,5 +35,12 @@ public final class UserUseCaseImpl: UserUseCase {
     public func gainExperience(amount: Int) async throws -> UserEntity {
         return try await userRepository.gainExperience(amount)
     }
-}
 
+    public func deleteUser() async throws {
+        return try await userRepository.deleteUser()
+    }
+
+    public func logout() async throws {
+        return try await userRepository.logout()
+    }
+}

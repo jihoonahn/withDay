@@ -4,24 +4,24 @@ import SwiftDataCoreInterface
 
 @MainActor
 public final class AlarmRepositoryImpl: AlarmRepository {
-    private let alarmService: AlarmService
+    private let alarmService: SwiftDataCoreInterface.AlarmService
     
-    public init(alarmService: AlarmService) {
+    public init(alarmService: SwiftDataCoreInterface.AlarmService) {
         self.alarmService = alarmService
     }
     
     public func fetchAlarms(userId: UUID) async throws -> [AlarmEntity] {
         let models = try await alarmService.fetchAlarms(userId: userId)
-        return models.map { $0.toEntity() }
+        return models.map { AlarmDTO.toEntity(from: $0) }
     }
     
     public func createAlarm(_ alarm: AlarmEntity) async throws {
-        let model = AlarmModel(from: alarm)
+        let model = AlarmDTO.toModel(from: alarm)
         try await alarmService.saveAlarm(model)
     }
     
     public func updateAlarm(_ alarm: AlarmEntity) async throws {
-        let model = AlarmModel(from: alarm)
+        let model = AlarmDTO.toModel(from: alarm)
         try await alarmService.updateAlarm(model)
     }
     

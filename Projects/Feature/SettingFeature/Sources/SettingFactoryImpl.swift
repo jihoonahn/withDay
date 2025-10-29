@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import SettingFeatureInterface
+import UserDomainInterface
 
 public struct SettingFactoryImpl: SettingFactory {
     private let store: Store<SettingReducer>
@@ -20,18 +21,18 @@ public struct SettingFactoryImpl: SettingFactory {
 }
 
 public extension SettingFactoryImpl {
-    static func create() -> SettingFactoryImpl {
+    static func create(userUseCase: UserUseCase) -> SettingFactoryImpl {
         let store = Store<SettingReducer>(
             initialState: SettingState(),
-            reducer: SettingReducer()
+            reducer: SettingReducer(userUseCase: userUseCase)
         )
         return SettingFactoryImpl(store: store)
     }
     
-    static func create(initialState: SettingState) -> SettingFactoryImpl {
+    static func create(initialState: SettingState, userUseCase: UserUseCase) -> SettingFactoryImpl {
         let store = Store<SettingReducer>(
             initialState: initialState,
-            reducer: SettingReducer()
+            reducer: SettingReducer(userUseCase: userUseCase)
         )
         return SettingFactoryImpl(store: store)
     }

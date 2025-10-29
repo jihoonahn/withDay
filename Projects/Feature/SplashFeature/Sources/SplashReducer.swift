@@ -1,9 +1,10 @@
-//
-//  SplashReducer.swift
-//  SplashFeature
-//
-//  Created by Jihoonahn on 10/28/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
+import Rex
+import SplashFeatureInterface
 
-import Foundation
+public struct SplashReducer: Reducer {
+    public init() {}
+
+    public func reduce(state: inout SplashState, action: SplashAction) -> [Effect<SplashAction>] {
+        return []
+    }
+}

@@ -41,13 +41,18 @@ public struct LoginView: View {
                         interface.send(.selectToAppleOauth)
                     }) {
                         HStack(spacing: 12) {
-                            Image(systemName: "applelogo")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(.white)
-                            
-                            Text("Apple로 계속하기")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
+                            if state.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Image(systemName: "applelogo")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.white)
+                                
+                                Text("Apple로 계속하기")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
@@ -58,18 +63,24 @@ public struct LoginView: View {
                                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
                         )
                     }
+                    .disabled(state.isLoading)
 
                     Button(action: {
                         interface.send(.selectToGoogleOauth)
                     }) {
                         HStack(spacing: 12) {
-                            Image(systemName: "globe")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(.black)
-                            
-                            Text("Google로 계속하기")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.black)
+                            if state.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                            } else {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.black)
+                                
+                                Text("Google로 계속하기")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.black)
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
@@ -80,6 +91,7 @@ public struct LoginView: View {
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                     }
+                    .disabled(state.isLoading)
                 }
                 .padding(.horizontal, 32)
                 Spacer()

@@ -17,4 +17,3 @@ public final class MotionRawDataUseCaseImpl: MotionRawDataUseCase {
         try await motionRawDataRepository.create(data)
     }
 }
-

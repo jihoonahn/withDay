@@ -61,4 +61,35 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
             .eq("id", value: id.uuidString)
             .execute()
     }
+
+    public func updateExecutionStatus(id: UUID, status: String) async throws {
+        try await client
+            .from("alarm_executions")
+            .update(["status": status])
+            .eq("id", value: id)
+            .execute()
+    }
+
+    public func updateMotion(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
+  
+        struct MotionUpdate: Encodable {
+            let motionData: Data
+            let wakeConfidence: Double
+            let postureChanges: Int
+            let isMoving: Bool
+        }
+
+        let updatePayload = MotionUpdate(
+            motionData: motionData,
+            wakeConfidence: wakeConfidence,
+            postureChanges: postureChanges,
+            isMoving: isMoving
+        )
+
+        try await client
+            .from("alarm_executions")
+            .update(updatePayload)
+            .eq("id", value: id)
+            .execute()
+    }
 }

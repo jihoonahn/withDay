@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import RootFeatureInterface
+import UserDomainInterface
 
 public struct RootFactoryImpl: RootFactory {
     private let store: Store<RootReducer>
@@ -20,18 +21,18 @@ public struct RootFactoryImpl: RootFactory {
 }
 
 public extension RootFactoryImpl {
-    static func create() -> RootFactoryImpl {
+    static func create(userUseCase: UserUseCase) -> RootFactoryImpl {
         let store = Store<RootReducer>(
             initialState: RootState(),
-            reducer: RootReducer()
+            reducer: RootReducer(userUseCase: userUseCase)
         )
         return RootFactoryImpl(store: store)
     }
     
-    static func create(initialState: RootState) -> RootFactoryImpl {
+    static func create(initialState: RootState, userUseCase: UserUseCase) -> RootFactoryImpl {
         let store = Store<RootReducer>(
             initialState: initialState,
-            reducer: RootReducer()
+            reducer: RootReducer(userUseCase: userUseCase)
         )
         return RootFactoryImpl(store: store)
     }

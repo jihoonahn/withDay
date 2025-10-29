@@ -3,23 +3,23 @@ import Foundation
 public class DIContainer {
     public static let shared = DIContainer()
     
-    private var factories: [String: Any] = [:]
-    private var singletons: [String: Any] = [:]
+    private var factories: [ObjectIdentifier: Any] = [:]
+    private var singletons: [ObjectIdentifier: Any] = [:]
     
     private init() {}
     
     public func register<T>(_ type: T.Type, factory: @escaping () -> T) {
-        let key = String(describing: type)
+        let key = ObjectIdentifier(type)
         factories[key] = factory
     }
     
     public func registerSingleton<T>(_ type: T.Type, instance: T) {
-        let key = String(describing: type)
+        let key = ObjectIdentifier(type)
         singletons[key] = instance
     }
 
     public func resolve<T>(_ type: T.Type) -> T {
-        let key = String(describing: type)
+        let key = ObjectIdentifier(type)
         
         if let singleton = singletons[key] as? T {
             return singleton
@@ -35,7 +35,7 @@ public class DIContainer {
     }
     
     public func isRegistered<T>(_ type: T.Type) -> Bool {
-        let key = String(describing: type)
+        let key = ObjectIdentifier(type)
         return factories[key] != nil || singletons[key] != nil
     }
     

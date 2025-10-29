@@ -2,18 +2,20 @@ import SwiftUI
 import Rex
 import AlarmFeatureInterface
 import AlarmDomainInterface
+import UserDomainInterface
+import SwiftDataCoreInterface
 
 public struct AlarmFactoryImpl: AlarmFactory {
     private let store: Store<AlarmReducer>
-    private let alarmUseCase: AlarmUseCase
+    private let remoteRepository: AlarmRepository
     
-    public init(store: Store<AlarmReducer>, useCase: AlarmUseCase) {
+    public init(store: Store<AlarmReducer>, remoteRepository: AlarmRepository) {
         self.store = store
-        self.alarmUseCase = useCase
+        self.remoteRepository = remoteRepository
     }
 
     public func makeInterface() -> AlarmInterface {
-        return AlarmStore(store: store, useCase: alarmUseCase)
+        return AlarmStore(store: store, remoteRepository: remoteRepository)
     }
     
     public func makeView() -> AnyView {
@@ -23,19 +25,36 @@ public struct AlarmFactoryImpl: AlarmFactory {
 }
 
 public extension AlarmFactoryImpl {
-    static func create(useCase: AlarmUseCase) -> AlarmFactoryImpl {
+    static func create(
+        remoteRepository: AlarmRepository,
+        localService: SwiftDataCoreInterface.AlarmService?,
+        userUseCase: UserUseCase
+    ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: AlarmState(),
-            reducer: AlarmReducer(alarmUseCase: useCase)
+            reducer: AlarmReducer(
+                remoteRepository: remoteRepository,
+                localService: localService,
+                userUseCase: userUseCase
+            )
         )
-        return AlarmFactoryImpl(store: store, useCase: useCase)
+        return AlarmFactoryImpl(store: store, remoteRepository: remoteRepository)
     }
     
-    static func create(initialState: AlarmState, useCase: AlarmUseCase) -> AlarmFactoryImpl {
+    static func create(
+        initialState: AlarmState,
+        remoteRepository: AlarmRepository,
+        localService: SwiftDataCoreInterface.AlarmService?,
+        userUseCase: UserUseCase
+    ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: initialState,
-            reducer: AlarmReducer(alarmUseCase: useCase)
+            reducer: AlarmReducer(
+                remoteRepository: remoteRepository,
+                localService: localService,
+                userUseCase: userUseCase
+            )
         )
-        return AlarmFactoryImpl(store: store, useCase: useCase)
+        return AlarmFactoryImpl(store: store, remoteRepository: remoteRepository)
     }
 }

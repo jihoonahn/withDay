@@ -22,6 +22,7 @@ public class LoginStore: LoginInterface {
     public init(store: Store<LoginReducer>) {
         self.store = store
         setupEventBusPublisher()
+        setupLogoutObserver()
     }
 
     public func send(_ action: LoginAction) {
@@ -38,8 +39,19 @@ extension LoginStore {
     func setupEventBusPublisher() {
         store.subscribe { state in
             Task {
-                if state.loginStatus {
+                if state.isLoggedIn {
                     await GlobalEventBus.shared.publish(RootEvent.loginSuccess)
+                }
+            }
+        }
+    }
+    
+    func setupLogoutObserver() {
+        Task {
+            await GlobalEventBus.shared.subscribe { event in
+                guard let rootEvent = event as? RootEvent else { return }
+                if case .logout = rootEvent {
+                    self.send(.loginFailure)
                 }
             }
         }

@@ -20,6 +20,7 @@ struct AlarmExecutionDTO: Codable {
     let status: String
     let viewedMemoIds: [UUID]
     let createdAt: Date
+    let isMoving: Bool
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -39,6 +40,7 @@ struct AlarmExecutionDTO: Codable {
         case status
         case viewedMemoIds = "viewed_memo_ids"
         case createdAt = "created_at"
+        case isMoving = "is_moving"
     }
     
     init(from entity: AlarmExecutionEntity) {
@@ -59,6 +61,7 @@ struct AlarmExecutionDTO: Codable {
         self.status = entity.status
         self.viewedMemoIds = entity.viewedMemoIds
         self.createdAt = entity.createdAt
+        self.isMoving = entity.isMoving
     }
     
     func toEntity() -> AlarmExecutionEntity {
@@ -79,7 +82,8 @@ struct AlarmExecutionDTO: Codable {
             totalWakeDuration: totalWakeDuration,
             status: status,
             viewedMemoIds: viewedMemoIds,
-            createdAt: createdAt
+            createdAt: createdAt,
+            isMoving: isMoving
         )
     }
 }

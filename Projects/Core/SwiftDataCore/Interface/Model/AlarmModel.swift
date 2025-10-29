@@ -6,7 +6,7 @@ public final class AlarmModel {
     @Attribute(.unique) public var id: UUID
     public var userId: UUID
     public var label: String
-    public var time: String // "HH:mm" 형식
+    public var time: String
     public var repeatDays: [Int]
     public var snoozeEnabled: Bool
     public var snoozeInterval: Int

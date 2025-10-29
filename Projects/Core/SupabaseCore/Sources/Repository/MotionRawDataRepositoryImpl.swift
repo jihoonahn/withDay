@@ -3,9 +3,9 @@ import MotionRawDataDomainInterface
 import SupabaseCoreInterface
 
 public final class MotionRawDataRepositoryImpl: MotionRawDataRepository {
-    private let motionRawDataService: MotionRawDataService
+    private let motionRawDataService: SupabaseCoreInterface.MotionRawDataService
     
-    public init(motionRawDataService: MotionRawDataService) {
+    public init(motionRawDataService: SupabaseCoreInterface.MotionRawDataService) {
         self.motionRawDataService = motionRawDataService
     }
     

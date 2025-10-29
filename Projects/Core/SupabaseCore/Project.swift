@@ -14,6 +14,7 @@ struct SupabaseCore: Module {
                 name: typeName,
                 dependencies: [
                     .core(target: typeName, type: .interface),
+                    .shared(target: "Utility"),
                 ]
             )
             Interface(
@@ -26,6 +27,7 @@ struct SupabaseCore: Module {
                     .domain(target: "UserDomain", type: .interface),
                     .domain(target: "MemoDomain", type: .interface),
                     .domain(target: "MotionRawDataDomain", type: .interface),
+                    .core(target: "AlarmCore", type: .interface),
                     .external(name: "Supabase")
                 ]
             )

@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import SettingFeatureInterface
+import RefineUIIcons
 import Designsystem
 
 public struct SettingView: View {
@@ -97,7 +98,7 @@ public struct SettingView: View {
                                 }
                             )
                             SettingRow(title: "버전", trailing: {
-                                Text("1.0.0")
+                                Text(state.version)
                                     .foregroundStyle(.gray)
                             })
                         }
@@ -115,6 +116,10 @@ public struct SettingView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            // 화면이 나타날 때마다 사용자 정보 새로고침
+            interface.send(.fetchUserInformation)
+        }
         .task {
             for await newState in interface.stateStream {
                 await MainActor.run {

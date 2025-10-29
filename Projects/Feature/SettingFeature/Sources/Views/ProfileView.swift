@@ -39,20 +39,25 @@ struct ProfileView: View {
                                 state.email
                             }, set: { newValue in
                                 interface.send(.emailTextDidChanged(newValue))
-                            }),
+                            })
                         )
                         .disabled(true)
                     }
                 }
                 .padding(.horizontal, 20)
                 VStack(spacing: 12) {
-                    JButton("비밀번호 변경", style: .primary) {
-                        
-                    }
-                    JButton("계정 삭제") {
-                        
+                    Button("계정 삭제") {
+                        interface.send(.deleteUserAccount)
                     }
                     .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(JColor.card)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(JColor.border, lineWidth: 1)
+                    )
+                    .cornerRadius(16)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -66,6 +71,13 @@ struct ProfileView: View {
                     
                 }
                 .foregroundStyle(.white)
+            }
+        }
+        .task {
+            for await newState in interface.stateStream {
+                await MainActor.run {
+                    self.state = newState
+                }
             }
         }
     }

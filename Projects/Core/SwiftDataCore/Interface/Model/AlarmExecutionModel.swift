@@ -20,7 +20,7 @@ public final class AlarmExecutionModel {
     public var status: String
     public var viewedMemoIds: [UUID]
     public var createdAt: Date
-    public var metadata: Data?
+    public var isMoving: Bool
     
     public init(
         id: UUID,
@@ -40,6 +40,7 @@ public final class AlarmExecutionModel {
         status: String = "scheduled",
         viewedMemoIds: [UUID] = [],
         createdAt: Date = Date(),
+        isMoving: Bool
     ) {
         self.id = id
         self.userId = userId
@@ -58,5 +59,6 @@ public final class AlarmExecutionModel {
         self.status = status
         self.viewedMemoIds = viewedMemoIds
         self.createdAt = createdAt
+        self.isMoving = isMoving
     }
 }

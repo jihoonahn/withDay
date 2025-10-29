@@ -2,7 +2,8 @@ import Foundation
 import Rex
 
 public struct SettingState: StateType {
-    public var name: String = "안지훈"
-    public var email: String = "ahnjh1028@naver.com"
+    public var name: String = ""
+    public var email: String = ""
+    public var version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.1"
     public init() {}
 }

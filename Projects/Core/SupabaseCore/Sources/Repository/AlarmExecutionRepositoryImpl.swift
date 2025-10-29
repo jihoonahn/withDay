@@ -4,9 +4,9 @@ import SupabaseCoreInterface
 
 public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
 
-    private let alarmExecutionService: AlarmExecutionService
+    private let alarmExecutionService: SupabaseCoreInterface.AlarmExecutionService
     
-    public init(alarmExecutionService: AlarmExecutionService) {
+    public init(alarmExecutionService: SupabaseCoreInterface.AlarmExecutionService) {
         self.alarmExecutionService = alarmExecutionService
     }
     
@@ -29,5 +29,13 @@ public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
     
     public func update(_ execution: AlarmExecutionEntity) async throws {
         try await alarmExecutionService.updateExecution(execution)
+    }
+
+    public func updateExecutionStatus(id: UUID, status: String) async throws {
+        try await alarmExecutionService.updateExecutionStatus(id: id, status: status)
+    }
+
+    public func updateMotion(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
+        try await alarmExecutionService.updateMotion(id: id, motionData: motionData, wakeConfidence: wakeConfidence, postureChanges: postureChanges, isMoving: isMoving)
     }
 }

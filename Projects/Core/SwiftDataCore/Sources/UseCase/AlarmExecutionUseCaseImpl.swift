@@ -3,6 +3,7 @@ import AlarmExecutionDomainInterface
 
 @MainActor
 public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
+
     private let alarmExecutionRepository: AlarmExecutionRepository
     
     public init(alarmExecutionRepository: AlarmExecutionRepository) {
@@ -21,13 +22,17 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
         }
     }
     
-    public func markMotionDetected(id: UUID, motionData: [String: Any], wakeConfidence: Double) async throws {
-        // SwiftData에서는 부분 업데이트가 제한적
-        // 필요시 전체 execution을 가져와서 업데이트
+    public func markMotionDetected(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
+        try await alarmExecutionRepository.updateMotion(
+            id: id,
+            motionData: motionData,
+            wakeConfidence: wakeConfidence,
+            postureChanges: postureChanges,
+            isMoving: isMoving
+        )
     }
     
     public func completeExecution(id: UUID) async throws {
-        try await alarmExecutionRepository.updateStatus(id: id, status: "completed")
+        try await alarmExecutionRepository.updateExecutionStatus(id: id, status: "completed")
     }
 }
-
