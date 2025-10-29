@@ -5,6 +5,8 @@ import SwiftData
 // Feature
 import RootFeatureInterface
 import RootFeature
+import SplashFeatureInterface
+import SplashFeature
 import LoginFeatureInterface
 import LoginFeature
 import MainFeatureInterface
@@ -34,14 +36,16 @@ import SupabaseCore
 import SwiftDataCoreInterface
 import SwiftDataCore
 
+// Core - Alarm
+import AlarmCoreInterface
+import AlarmCore
+
 @MainActor
 public class AppDependencies {
     
-    public static func setup() async {
+    public static func setup() {
         let container = DIContainer.shared
         
-        // MARK: - Supabase Core (클라우드 데이터베이스)
-        // Supabase Service
         let supabaseService = SupabaseServiceImpl()
         container.registerSingleton(SupabaseService.self, instance: supabaseService)
         
@@ -138,8 +142,6 @@ public class AppDependencies {
             )
         }
         
-        // MARK: - SwiftData Core (로컬 데이터베이스)
-        // SwiftData Service
         let swiftDataService = SwiftDataServiceImpl()
         container.registerSingleton(SwiftDataService.self, instance: swiftDataService)
         
@@ -167,13 +169,24 @@ public class AppDependencies {
             instance: SwiftDataCore.AchievementServiceImpl(container: modelContainer)
         )
         
+        container.registerSingleton(
+            AlarmCoreInterface.AlarmSchedulerService.self,
+            instance: AlarmCore.AlarmServiceImpl()
+        )
+        
         // MARK: - Feature Factories
         container.register(RootFactory.self) {
-            RootFactoryImpl.create()
+            let userUseCase = container.resolve(UserUseCase.self)
+            return RootFactoryImpl.create(userUseCase: userUseCase)
+        }
+
+        container.register(SplashFactory.self) {
+            return SplashFactoryImpl.create()
         }
         
         container.register(LoginFactory.self) {
-            LoginFactoryImpl.create()
+            let userUseCase = container.resolve(UserUseCase.self)
+            return LoginFactoryImpl.create(userUseCase: userUseCase)
         }
         
         container.register(MainFactory.self) {
@@ -185,8 +198,14 @@ public class AppDependencies {
         }
         
         container.register(AlarmFactory.self) {
-            let useCase = container.resolve(AlarmUseCase.self)
-            return AlarmFactoryImpl.create(useCase: useCase)
+            let remoteRepository = container.resolve(AlarmRepository.self)
+            let localService = container.resolve(SwiftDataCoreInterface.AlarmService.self)
+            let userUseCase = container.resolve(UserUseCase.self)
+            return AlarmFactoryImpl.create(
+                remoteRepository: remoteRepository,
+                localService: localService,
+                userUseCase: userUseCase
+            )
         }
         
         container.register(WeatherFactory.self) {
@@ -194,14 +213,13 @@ public class AppDependencies {
         }
         
         container.register(SettingFactory.self) {
-            SettingFactoryImpl.create()
+            let userUseCase = container.resolve(UserUseCase.self)
+            return SettingFactoryImpl.create(userUseCase: userUseCase)
         }
     }
 }
 
 extension DIContainer {
-    
-    // MARK: - Supabase UseCases (클라우드)
     
     public var userUseCase: UserUseCase {
         resolve(UserUseCase.self)
@@ -227,8 +245,6 @@ extension DIContainer {
         resolve(AchievementUseCase.self)
     }
     
-    // MARK: - SwiftData Services (로컬)
-    
     @MainActor
     public var localAlarmService: SwiftDataCoreInterface.AlarmService {
         resolve(SwiftDataCoreInterface.AlarmService.self)
@@ -252,5 +268,9 @@ extension DIContainer {
     @MainActor
     public var localAchievementService: SwiftDataCoreInterface.AchievementService {
         resolve(SwiftDataCoreInterface.AchievementService.self)
+    }
+        
+    public var alarmSchedulerService: AlarmCoreInterface.AlarmSchedulerService {
+        resolve(AlarmCoreInterface.AlarmSchedulerService.self)
     }
 }

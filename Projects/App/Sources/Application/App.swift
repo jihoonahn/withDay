@@ -11,9 +11,7 @@ struct WithDayApp: App {
     private let rootFactory: RootFactory
 
     init() {
-        Task { @MainActor in
-            await AppDependencies.setup()
-        }
+        AppDependencies.setup()
         self.rootFactory = DIContainer.shared.resolve(RootFactory.self)
     }
 
@@ -21,21 +19,13 @@ struct WithDayApp: App {
         WindowGroup {
             rootFactory.makeView()
                 .preferredColorScheme(.dark)
-                .onAppear {
-                    Task { @MainActor in
-                        // SwiftData ModelContainer 가져오기
-                        if let swiftDataService = try? DIContainer.shared.resolve(SwiftDataService.self) {
-                            modelContainer = swiftDataService.container
-                        }
-                    }
-                }
+                .modelContainer(for: [
+                    AlarmModel.self,
+                    MemoModel.self,
+                    AlarmExecutionModel.self,
+                    MotionRawDataModel.self,
+                    AchievementModel.self
+                ])
         }
-        .modelContainer(for: [
-            AlarmModel.self,
-            MemoModel.self,
-            AlarmExecutionModel.self,
-            MotionRawDataModel.self,
-            AchievementModel.self
-        ])
     }
 }
