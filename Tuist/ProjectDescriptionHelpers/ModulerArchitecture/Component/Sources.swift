@@ -7,6 +7,7 @@ public struct Sources: TargetConvertable {
     let destinations: Destinations
     let product: Product
     let infoPlist: InfoPlist
+    let entitlements: Entitlements?
     let sources: SourceFilesList
     let resources: ResourceFileElements
     let target: AppConfiguration.XCConfigTarget
@@ -16,6 +17,7 @@ public struct Sources: TargetConvertable {
         name: String,
         product: Product = .staticLibrary,
         infoPlist: InfoPlist = .default,
+        entitlements: Entitlements? = nil,
         sources: SourceFilesList = .sources,
         resources: ResourceFileElements = [],
         configuration target: AppConfiguration.XCConfigTarget = .Shared,
@@ -25,6 +27,7 @@ public struct Sources: TargetConvertable {
         self.destinations = env.destinations
         self.product = product
         self.infoPlist = infoPlist
+        self.entitlements = entitlements
         self.sources = sources
         self.resources = resources
         self.target = target
@@ -45,6 +48,7 @@ public struct Sources: TargetConvertable {
         self.destinations = destinations
         self.product = product
         self.infoPlist = infoPlist
+        self.entitlements = nil
         self.sources = sources
         self.resources = resources
         self.target = target
@@ -61,6 +65,7 @@ public struct Sources: TargetConvertable {
             infoPlist: infoPlist,
             sources: sources,
             resources: resources,
+            entitlements: entitlements,
             dependencies: dependencies,
             settings: .settings(
                 base: env.baseSettings,
