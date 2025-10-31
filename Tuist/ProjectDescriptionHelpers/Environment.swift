@@ -9,7 +9,7 @@ public struct AppEnvironment: ModuleObject {
     ]
     public let packageplatform: [ProjectDescription.PackagePlatform] = [.iOS]
     public let destinations = Destinations.iOS
-    public let deploymentTargets = DeploymentTargets.iOS("17.0")
+    public let deploymentTargets = DeploymentTargets.iOS("26.0")
     public let configuration = AppConfiguration()
     public init() {}
 }

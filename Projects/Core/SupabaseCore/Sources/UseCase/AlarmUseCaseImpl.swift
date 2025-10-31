@@ -23,32 +23,32 @@ public final class AlarmUseCaseImpl: AlarmUseCase {
         try await alarmRepository.createAlarm(alarm)
         
         if alarm.isEnabled {
-            alarmScheduler?.scheduleAlarm(alarm)
+            try await alarmScheduler?.scheduleAlarm(alarm)
         }
     }
     
     public func update(_ alarm: AlarmEntity) async throws {
         try await alarmRepository.updateAlarm(alarm)
         
-        alarmScheduler?.cancelAlarm(alarm.id)
+        try alarmScheduler?.cancelAlarm(alarm.id)
         if alarm.isEnabled {
-            alarmScheduler?.scheduleAlarm(alarm)
+            try await alarmScheduler?.scheduleAlarm(alarm)
         }
     }
     
     public func delete(id: UUID) async throws {
         try await alarmRepository.deleteAlarm(alarmId: id)
         
-        alarmScheduler?.cancelAlarm(id)
+        try alarmScheduler?.cancelAlarm(id)
     }
     
     public func toggle(id: UUID, isEnabled: Bool) async throws {
         try await alarmRepository.toggleAlarm(alarmId: id, isEnabled: isEnabled)
         
         if isEnabled {
-            // TODO: 알람 스케줄링 필요 시 구현
+            try await alarmScheduler?.toggleAlarm(id, isEnabled: isEnabled)
         } else {
-            alarmScheduler?.cancelAlarm(id)
+            try alarmScheduler?.cancelAlarm(id)
         }
     }
 }

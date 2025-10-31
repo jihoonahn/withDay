@@ -1,308 +1,467 @@
 import Foundation
+import SwiftUI
+import UIKit
+import AlarmKit
 import CoreMotion
-import AVFoundation
-import AudioToolbox
-import UserNotifications
 import AlarmCoreInterface
 import AlarmDomainInterface
 import Utility
+import AppIntents
 
 public final class AlarmServiceImpl: AlarmSchedulerService {
-    
-    private var motionManager = CMMotionManager()
-    private var activeAlarms: [UUID: Timer] = [:]
-    private var alarmPlayers: [UUID: AVAudioPlayer] = [:]
-    private var alarmStatuses: [UUID: AlarmStatus] = [:]
-    
+
+    private let alarmManager = AlarmManager.shared
+    private let motionManager = CMMotionManager()
+
+    private var cachedEntities: [UUID: AlarmEntity] = [:]
+    private var cachedAlarms: [UUID: Alarm] = [:]
+    private var cachedSchedules: [UUID: Alarm.Schedule] = [:]
+
+    private var motionMonitorTask: Task<Void, Never>?
+    private var alarmStateMonitorTask: Task<Void, Never>?
     private var motionDetectionCount: [UUID: Int] = [:]
-    private let motionThreshold: Double = 2.5
+    private let motionThreshold: Double = 2.0
     private let requiredMotionCount: Int = 3
+    private var monitoringAlarmIds: Set<UUID> = []
+
     public init() {
-        setupAudioSession()
+        setupAppStateObserver()
+        startAlarmStateMonitoring()
+        setupAppIntentObserver()
     }
     
-    private func setupAudioSession() {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(
-                .playback,
-                mode: .default,
-                options: [.mixWithOthers, .duckOthers]
-            )
-            try audioSession.setActive(true)
-            print("✅ [AlarmService] Audio Session 설정 완료 (백그라운드 지원)")
-        } catch {
-            print("❌ [AlarmService] Audio Session 설정 실패: \(error)")
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        alarmStateMonitorTask?.cancel()
+        motionMonitorTask?.cancel()
+    }
+    
+    // MARK: - App State Observer
+    private func setupAppStateObserver() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            print("📱 [AppState] 앱이 포그라운드로 진입")
+            self?.refreshAlarmMonitoring()
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            print("📱 [AppState] 앱이 활성화됨")
+            self?.refreshAlarmMonitoring()
         }
     }
     
-    public func scheduleAlarm(_ alarm: AlarmDomainInterface.AlarmEntity) {
-        // 알람 스케줄 등록
-        alarmStatuses[alarm.id] = .scheduled
-    
-        let content = UNMutableNotificationContent()
-        content.title = alarm.label ?? "알람"
-        content.body = "알람이 울렸습니다"
-        
-        // 🔊 백그라운드에서도 큰 소리로 울리도록 Critical Alert 사운드 설정
-        // defaultCritical: 무음모드, 방해금지 모드에서도 최대 볼륨으로 재생
-        content.sound = UNNotificationSound.defaultCritical
-        
-        // Critical Alert 설정 (iOS 15+)
-        if #available(iOS 15.0, *) {
-            content.interruptionLevel = .critical  // 무음모드 무시, 최대 볼륨
-            content.relevanceScore = 1.0           // 최고 우선순위
-        }
-        
-        // 알림 카테고리 설정 (액션 버튼)
-        content.categoryIdentifier = "ALARM_CATEGORY"
-        content.badge = 1
-        
-        // 반복적으로 소리가 나도록 설정
-        content.threadIdentifier = "ALARM_THREAD"
-        
-        print("✅ [AlarmService] Critical Alert 설정 완료")
-        print("   - Sound: defaultCritical (무음모드 무시)")
-        print("   - InterruptionLevel: critical")
-        print("   - 백그라운드에서 자동으로 울림")
-        
-        // 시간 파싱 및 디버깅
-        let (hour, minute) = alarm.time.splitHourMinute()
-        print("🔔 [AlarmService] 알람 등록 중...")
-        print("   - ID: \(alarm.id)")
-        print("   - 시간: \(alarm.time) → \(hour)시 \(minute)분")
-        print("   - 반복: \(alarm.repeatDays)")
-        
-        // 트리거 생성
-        var triggerDate = DateComponents()
-        
-        // 일회성 알람 (날짜 포함)
-        if alarm.repeatDays.isEmpty && alarm.time.contains(" ") {
-            // "2025-10-26 22:12" 형식 → 전체 날짜/시간 파싱
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-            
-            if let date = dateFormatter.date(from: alarm.time) {
-                let calendar = Calendar.current
-                triggerDate = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-                print("   ✅ 일회성 알람: \(date)")
-            } else {
-                // 파싱 실패 시 기본 시간만 사용
-                triggerDate.hour = hour
-                triggerDate.minute = minute
-            }
-        } else {
-            // 반복 알람 또는 시간만 있는 경우
-            triggerDate.hour = hour
-            triggerDate.minute = minute
-            
-            // 반복 알람이 아니라면, 오늘 또는 내일로 설정
-            if alarm.repeatDays.isEmpty {
-                let calendar = Calendar.current
-                let now = Date()
-                var alarmDate = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: now)!
+    private func refreshAlarmMonitoring() {
+        // 알람 상태를 즉시 확인
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let alarms = try await alarmManager.alarms
                 
-                // 만약 시간이 지났다면 내일로 설정
-                if alarmDate <= now {
-                    alarmDate = calendar.date(byAdding: .day, value: 1, to: alarmDate)!
-                    print("   ⏭️ 시간이 지나서 내일로 설정: \(alarmDate)")
-                } else {
-                    print("   ✅ 오늘 설정: \(alarmDate)")
-                }
-            }
-        }
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: !alarm.repeatDays.isEmpty)
-        let request = UNNotificationRequest(identifier: alarm.id.uuidString, content: content, trigger: trigger)
-        
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("❌ [AlarmService] 알람 스케줄링 실패: \(error)")
-            } else {
-                print("✅ [AlarmService] 알람 스케줄링 완료!")
-                
-                // 등록된 알람 확인
-                UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-                    print("📋 현재 등록된 알람 개수: \(requests.count)")
-                    for req in requests {
-                        if let trigger = req.trigger as? UNCalendarNotificationTrigger {
-                            print("   - \(req.identifier): \(trigger.dateComponents)")
+                for alarm in alarms {
+                    if alarm.state == .alerting {
+                        if !monitoringAlarmIds.contains(alarm.id) {
+                            monitoringAlarmIds.insert(alarm.id)
+                            startMonitoringMotion(for: alarm.id)
                         }
                     }
                 }
+            } catch {
+                print("❌ [AppState] 알람 상태 확인 실패: \(error)")
             }
         }
     }
-    
-    // MARK: - Public Methods for Notification Handling
-    
-    /// 알람이 울렸을 때 호출 (AppDelegate에서 호출)
-    public func triggerAlarm(alarmId: UUID) {
-        print("🔊🔊🔊 [AlarmService] 알람 소리 재생 시작: \(alarmId)")
-        alarmStatuses[alarmId] = .triggered
+
+    // MARK: - schedule
+    public func scheduleAlarm(_ alarm: AlarmEntity) async throws {
+        print("🔔 [AlarmKit] ========== 알람 스케줄링 시작 ==========")
+        print("   - 알람 ID: \(alarm.id)")
+        print("   - 시간: \(alarm.time)")
         
-        // 알람 소리 재생 (시스템 사운드 + 커스텀 사운드)
-        playAlarmSound(alarmId: alarmId)
+        // 권한 확인
+        let authStatus = alarmManager.authorizationState
+        print("📋 [AlarmKit] 현재 권한 상태: \(authStatus)")
         
-        // 진동
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-        
-        // 모션 감지 시작
-        startMonitoringMotion(for: alarmId)
-    }
-    
-    private func playAlarmSound(alarmId: UUID) {
-        // Audio Session 활성화 (백그라운드에서도 재생 가능)
-        setupAudioSession()
-        
-        // 1. 시스템 사운드로 즉시 소리 재생
-        AudioServicesPlaySystemSound(1005) // 알람 소리
-        
-        // 2. 커스텀 사운드 파일이 있으면 재생
-        startAlarmPlayer(alarmId: alarmId, soundName: "alarm")
-        
-        // 3. 주기적으로 소리 반복
-        let timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
-            AudioServicesPlaySystemSound(1005)
-            print("🔊 [AlarmService] 알람 소리 반복")
-        }
-        activeAlarms[alarmId] = timer
-    }
-    
-    public func cancelAlarm(_ alarmId: UUID) {
-        print("🔕 [AlarmService] 알람 중지: \(alarmId)")
-        
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [alarmId.uuidString])
-        
-        // 소리 중지
-        stopAlarmPlayer(alarmId)
-        
-        // 타이머 중지
-        activeAlarms[alarmId]?.invalidate()
-        activeAlarms.removeValue(forKey: alarmId)
-        
-        alarmStatuses[alarmId] = .stopped
-    }
-    
-    public func snoozeAlarm(_ alarmId: UUID) {
-        guard alarmStatuses[alarmId] == .triggered else { return }
-        alarmStatuses[alarmId] = .snoozed
-        let timer = Timer.scheduledTimer(withTimeInterval: 5*60, repeats: false) { [weak self] _ in
-            self?.alarmStatuses[alarmId] = .triggered
-            self?.startAlarmPlayer(alarmId: alarmId, soundName: "default")
-        }
-        activeAlarms[alarmId] = timer
-    }
-    
-    public func startMonitoringMotion(for executionId: UUID) {
-        guard motionManager.isAccelerometerAvailable else {
-            print("⚠️ [AlarmService] 가속도계를 사용할 수 없습니다")
-            return
+        guard await checkAutorization() else {
+            print("❌ [AlarmKit] 권한이 거부되었습니다!")
+            throw NSError(domain: "AlarmService", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Authorization denied"])
         }
         
-        // 카운터 초기화
-        motionDetectionCount[executionId] = 0
-        
-        print("📱 [AlarmService] 모션 감지 시작 (임계값: \(motionThreshold), 필요 횟수: \(requiredMotionCount))")
-        
-        // OperationQueue 사용 (백그라운드에서도 작동)
-        let queue = OperationQueue()
-        queue.name = "MotionDetectionQueue"
-        
-        motionManager.accelerometerUpdateInterval = 0.1  // 0.1초마다 체크
-        motionManager.startAccelerometerUpdates(to: queue) { [weak self] data, error in
-            guard let self = self else { return }
+        print("✅ [AlarmKit] 권한 확인 완료")
+
+        // 캐시 엔티티 저장 (toggle/update에서 사용)
+        cachedEntities[alarm.id] = alarm
+
+        // 시간 파싱
+        let comps = alarm.time.split(separator: ":").compactMap { Int($0) }
+        guard comps.count == 2 else {
+            throw NSError(domain: "AlarmService", code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid time format"])
+        }
+        let hour = comps[0], minute = comps[1]
+
+        let schedule: Alarm.Schedule
+         if alarm.repeatDays.isEmpty {
+            // 오늘의 알람 시간 계산
+            var todayComponents = Calendar.current.dateComponents([.year, .month, .day], from: .now)
+            todayComponents.hour = hour
+            todayComponents.minute = minute
+            todayComponents.second = 0
             
-            if let error = error {
-                print("❌ [AlarmService] 가속도계 에러: \(error)")
+            guard let todayAlarmDate = Calendar.current.date(from: todayComponents) else {
+                throw NSError(domain: "AlarmService", code: 401, userInfo: nil)
+            }
+            
+            // 오늘 알람 시간이 이미 지났으면 내일로 설정, 아니면 오늘로 설정
+            let alarmDate = todayAlarmDate > Date.now ? todayAlarmDate : Calendar.current.date(byAdding: .day, value: 1, to: todayAlarmDate) ?? todayAlarmDate
+            
+            schedule = .fixed(alarmDate)
+         } else {
+            print("🔔 [AlarmKit] 반복 알람 설정 시작")
+            print("   - 입력 요일: \(alarm.repeatDays) (0=일, 1=월, ..., 6=토)")
+            
+            let weekdays = alarm.repeatDays.compactMap { day -> Locale.Weekday? in
+                let calendarWeekday = day + 1  // 0->1(일), 1->2(월), ..., 6->7(토)
+                print("   🔄 요일 변환 시도: \(day) -> Calendar weekday \(calendarWeekday)")
+                
+                let localeWeekday: Locale.Weekday?
+                
+                localeWeekday = Weekday(rawValue: calendarWeekday)?.localeWeekday ?? nil
+
+                guard let finalWeekday = localeWeekday else { return nil }
+                
+                print("   ✅ Locale.Weekday 변환 성공: \(finalWeekday)")
+                return finalWeekday
+            }
+            
+            print("   📊 최종 변환 결과: \(weekdays.count)개 요일")
+            
+             guard !weekdays.isEmpty else {
+                print("❌ [AlarmKit] 요일 변환 실패: 빈 배열")
+                throw NSError(domain: "AlarmService", code: 402, 
+                              userInfo: [NSLocalizedDescriptionKey: "Invalid repeat days"])
+            }
+            
+            print("✅ [AlarmKit] 요일 변환 완료: \(weekdays)")
+            
+            let relTime = Alarm.Schedule.Relative.Time(hour: hour, minute: minute)
+            let recurrence = Alarm.Schedule.Relative.Recurrence.weekly(weekdays)
+            schedule = .relative(.init(time: relTime, repeats: recurrence))
+        }
+
+        let alarmLabel = LocalizedStringResource(stringLiteral: alarm.label ?? "Alarm")
+        
+        let alert = AlarmPresentation.Alert(
+            title: alarmLabel,
+            stopButton: .stopButton,
+            secondaryButton: .openAppButton,
+            secondaryButtonBehavior: .custom
+        )
+        let presentation = AlarmPresentation(alert: alert)
+        
+        let metadata = AlarmData(alarmId: alarm.id)
+        let attributes = AlarmAttributes<AlarmData>(
+            presentation: presentation,
+            metadata: metadata,
+            tintColor: Color.accentColor
+        )
+        
+        let stopIntent = StopAlarmIntent(alarmID: alarm.id.uuidString)
+        let secondaryIntent = OpenAlarmAppIntent(alarmID: alarm.id.uuidString)
+        let configuration = AlarmManager.AlarmConfiguration<AlarmData>(
+            schedule: schedule,
+            attributes: attributes,
+            stopIntent: stopIntent,
+            secondaryIntent: secondaryIntent
+        )
+
+        do {
+            try await alarmManager.schedule(id: alarm.id, configuration: configuration)
+        } catch {
+            print("❌ [AlarmKit] alarmManager.schedule() 실패: \(error)")
+            throw error
+        }
+
+        cachedSchedules[alarm.id] = schedule
+        
+        do {
+            let registeredAlarms = try alarmManager.alarms
+            if let registeredAlarm = registeredAlarms.first(where: { $0.id == alarm.id }) {
+                cachedAlarms[alarm.id] = registeredAlarm
+            } else {
+                print("⚠️ [AlarmKit] 경고: 알람이 등록되지 않음!")
+            }
+        } catch {
+            print("⚠️ [AlarmKit] 알람 목록 조회 실패: \(error)")
+        }
+        
+        print("✅ [AlarmKit] 알람 스케줄 완료: \(alarm.id)")
+        print("   - 시간: \(alarm.time)")
+        print("   - 레이블: \(alarm.label ?? "알람")")
+        if alarm.repeatDays.isEmpty {
+            print("   - 반복: 없음 (일회성 알람)")
+        } else {
+            let dayNames = ["일", "월", "화", "수", "목", "금", "토"]
+            let dayString = alarm.repeatDays.sorted().map { dayNames[$0] }.joined(separator: ", ")
+            print("   - 반복: \(dayString)")
+        }
+        print("   - 활성화: \(alarm.isEnabled)")
+    }
+
+    // MARK: - cancel
+    public func cancelAlarm(_ alarmId: UUID) async throws {
+        try await alarmManager.cancel(id: alarmId)
+        cachedEntities.removeValue(forKey: alarmId)
+        cachedSchedules.removeValue(forKey: alarmId)
+        cachedAlarms.removeValue(forKey: alarmId)
+        // AlarmKit이 시스템 알람으로 사운드를 관리하므로 우리는 아무것도 하지 않음
+    }
+
+    // MARK: - update
+    public func updateAlarm(_ alarm: AlarmEntity) async throws {
+        try await cancelAlarm(alarm.id)
+        try await scheduleAlarm(alarm)
+    }
+    
+    // MARK: - toggle
+    public func toggleAlarm(_ alarmId: UUID, isEnabled: Bool) async throws {
+        if isEnabled {
+            // 켜기: 도메인 엔티티 있어야 재스케줄링 가능
+            guard let entity = cachedEntities[alarmId] else {
+                // 없다면 앱 DB(SwiftData/Supabase)에서 불러와야 함
+                throw NSError(domain: "AlarmService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Entity not found; load from DB first"])
+            }
+            try await scheduleAlarm(entity) // scheduleAlarm이 캐시에 저장함
+        } else {
+            try await cancelAlarm(alarmId)
+        }
+    }
+    
+    // MARK: - status
+    public func getAlarmStatus(alarmId: UUID) async throws -> AlarmStatus? {
+        let alarms = try alarmManager.alarms
+        guard let ak = alarms.first(where: { $0.id == alarmId }) else { return nil }
+        switch ak.state {
+        case .scheduled: return .scheduled
+        case .countdown: return .scheduled
+        case .paused: return .paused
+        case .alerting: return .alerting
+        @unknown default: return .unknown
+        }
+    }
+
+    // MARK: - AppIntent Observer
+    private func setupAppIntentObserver() {
+        // 알람이 울릴 때 실행되는 Intent 알림
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("AlarmTriggered"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let userInfo = notification.userInfo,
+                  let alarmId = userInfo["alarmId"] as? UUID else {
                 return
             }
             
-            guard let data = data else { 
-                print("⚠️ [AlarmService] 가속도 데이터 없음")
-                return 
+            print("🔔 [AppIntent] 알람 Intent로부터 알림 수신: \(alarmId)")
+            
+            // 모션 감지 시작
+            if !self.monitoringAlarmIds.contains(alarmId) {
+                self.monitoringAlarmIds.insert(alarmId)
+                self.startMonitoringMotion(for: alarmId)
+            }
+        }
+        
+        // 알람이 멈출 때 실행되는 Intent 알림 (stopIntent)
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("AlarmStopped"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let userInfo = notification.userInfo,
+                  let alarmId = userInfo["alarmId"] as? UUID else {
+                return
             }
             
-            // 총 가속도 계산 (중력 포함)
-            let totalAccel = sqrt(
-                pow(data.acceleration.x, 2) +
-                pow(data.acceleration.y, 2) +
-                pow(data.acceleration.z, 2)
-            )
+            print("🔕 [AppIntent] 알람 멈춤 Intent로부터 알림 수신: \(alarmId)")
             
-            // 실시간 로그 (항상 출력 - 디버깅용)
-            let currentCount = self.motionDetectionCount[executionId] ?? 0
-            print("📊 [AlarmService] 가속도: \(String(format: "%.2f", totalAccel)) | 임계값: \(self.motionThreshold) | 카운트: \(currentCount)/\(self.requiredMotionCount)")
-            
-            // 진행 상황 시각화
-            if totalAccel > self.motionThreshold {
-                print("   🟢 임계값 넘음!")
-            } else if totalAccel > self.motionThreshold * 0.8 {
-                print("   🟡 거의 다 왔어요!")
-            } else {
-                print("   🔴 더 세게 흔드세요!")
+            // 모션 감지 중지
+            if self.monitoringAlarmIds.contains(alarmId) {
+                self.monitoringAlarmIds.remove(alarmId)
+                self.stopMonitoringMotion(for: alarmId)
             }
+        }
+    }
+    
+    // MARK: - alarm state monitoring
+    private func startAlarmStateMonitoring() {
+        // AlarmKit의 alarmUpdates를 사용하여 알람 상태 변경을 실시간으로 감지
+        // 이것은 백그라운드에서도 작동합니다 (시스템 알람이므로)
+        alarmStateMonitorTask = Task { [weak self] in
+            guard let self = self else { return }
             
-            // 임계값 이상이면 카운트 증가
-            if totalAccel > self.motionThreshold {
-                let currentCount = (self.motionDetectionCount[executionId] ?? 0) + 1
-                self.motionDetectionCount[executionId] = currentCount
-                
-                print("🏃 [AlarmService] 움직임 감지! (\(currentCount)/\(self.requiredMotionCount)) - 가속도: \(String(format: "%.2f", totalAccel))")
-                
-                // 필요한 횟수만큼 감지되면 알람 중지
-                if currentCount >= self.requiredMotionCount {
-                    print("✅ [AlarmService] 충분한 움직임 감지됨 - 알람 중지")
+            // alarmUpdates를 통해 알람 상태 변경을 구독 (백그라운드에서도 작동)
+            for await alarms in alarmManager.alarmUpdates {
+                await self.handleAlarmUpdates(alarms)
+            }
+        }
+        
+        // 초기 알람 상태 로드
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let alarms = try await alarmManager.alarms
+                await self.handleAlarmUpdates(alarms)
+            } catch {
+                print("⚠️ [AlarmKit] 초기 알람 상태 로드 실패: \(error)")
+            }
+        }
+    }
+    
+    @MainActor
+    private func handleAlarmUpdates(_ alarms: [Alarm]) {
+        // 알람이 울리는 중인지 확인
+        for alarm in alarms {
+            if alarm.state == .alerting {
+                // 알람이 울리는 중이면 모션 감지 시작
+                if !monitoringAlarmIds.contains(alarm.id) {
+                    print("🔔 [AlarmKit] 알람이 울리고 있습니다! 모션 감지 시작: \(alarm.id)")
+                    print("   - 상태: \(alarm.state)")
+                    print("   - 현재 시간: \(Date())")
                     
-                    DispatchQueue.main.async {
-                        self.alarmStatuses[executionId] = .motionDetected
-                        self.stopMonitoringMotion(for: executionId)
-                        self.cancelAlarm(executionId)
-                        self.motionDetectionCount.removeValue(forKey: executionId)
+                    monitoringAlarmIds.insert(alarm.id)
+                    startMonitoringMotion(for: alarm.id)
+                    
+                    // 백그라운드에서 AppIntent 실행 시도 (iOS 18+)
+                    if #available(iOS 18.0, *) {
+                        Task {
+                            do {
+                                let intent = AlarmAppIntent(alarmId: alarm.id)
+                                _ = try await intent.perform()
+                                print("✅ [AppIntent] 알람 Intent 실행 성공: \(alarm.id)")
+                            } catch {
+                                print("⚠️ [AppIntent] 알람 Intent 실행 실패: \(error)")
+                                // AppIntent 실행 실패해도 모션 감지는 이미 시작되었으므로 문제없음
+                            }
+                        }
                     }
+                    
+                    // AlarmKit이 시스템 알람으로 사운드를 자동 재생하므로 우리는 모션 감지만 함
+                }
+            } else {
+                // 알람이 꺼졌으면 모션 감지 중지
+                if monitoringAlarmIds.contains(alarm.id) {
+                    print("🔕 [AlarmKit] 알람이 꺼졌습니다. 모션 감지 중지: \(alarm.id)")
+                    monitoringAlarmIds.remove(alarm.id)
+                    stopMonitoringMotion(for: alarm.id)
+                    // AlarmKit이 시스템 알람으로 사운드를 관리하므로 우리는 아무것도 하지 않음
+                }
+            }
+        }
+        
+        // 모니터링 중인 알람이 사라졌는지 확인
+        let activeAlarmIds = Set(alarms.map { $0.id })
+        let removedIds = monitoringAlarmIds.subtracting(activeAlarmIds)
+        for id in removedIds {
+            print("🔕 [AlarmKit] 알람이 제거되었습니다. 모션 감지 중지: \(id)")
+            monitoringAlarmIds.remove(id)
+            stopMonitoringMotion(for: id)
+            // AlarmKit이 시스템 알람으로 사운드를 관리하므로 우리는 아무것도 하지 않음
+        }
+    }
+
+    // MARK: - motion detection (use handler approach)
+    public func startMonitoringMotion(for executionId: UUID) {
+        guard motionManager.isAccelerometerAvailable else {
+            print("⚠️ [Motion] 가속도계를 사용할 수 없습니다")
+            return
+        }
+        
+        // 이미 모니터링 중이면 중지 후 재시작
+        if motionManager.isAccelerometerActive {
+            motionManager.stopAccelerometerUpdates()
+        }
+        
+        motionDetectionCount[executionId] = 0
+        motionManager.accelerometerUpdateInterval = 0.2
+
+        print("📱 [Motion] 모션 감지 시작: \(executionId)")
+        
+        // start with handler on main queue
+        motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("❌ [Motion] 가속도계 오류: \(error)")
+                return
+            }
+            
+            guard let d = data else { return }
+            
+            // 중력 제거 및 가속도 계산
+            let accel = sqrt(d.acceleration.x * d.acceleration.x +
+                             d.acceleration.y * d.acceleration.y +
+                             d.acceleration.z * d.acceleration.z)
+            let net = abs(accel - 1.0)
+            
+            if net > self.motionThreshold {
+                let c = (self.motionDetectionCount[executionId] ?? 0) + 1
+                self.motionDetectionCount[executionId] = c
+                
+                print("📱 [Motion] 흔들림 감지: \(c)/\(self.requiredMotionCount) (가속도: \(String(format: "%.2f", net)))")
+                
+                if c >= self.requiredMotionCount {
+                    print("✅ [Motion] 충분한 흔들림 감지! 알람 끄기: \(executionId)")
+                    Task {
+                        do {
+                            try await self.cancelAlarm(executionId)
+                            print("✅ [Motion] 알람 종료 성공")
+                        } catch {
+                            print("❌ [Motion] 알람 종료 실패: \(error)")
+                        }
+                    }
+                    self.stopMonitoringMotion(for: executionId)
                 }
             }
         }
     }
     
     public func stopMonitoringMotion(for executionId: UUID) {
-        print("🛑 [AlarmService] 모션 감지 중지")
-        motionManager.stopAccelerometerUpdates()
-        motionDetectionCount.removeValue(forKey: executionId)
-    }
-    
-    public func getAlarmStatus(alarmId: UUID) -> AlarmStatus {
-        return alarmStatuses[alarmId] ?? .stopped
-    }
-
-    private func startAlarmPlayer(alarmId: UUID, soundName: String) {
-        // 커스텀 사운드 파일 시도 (있으면 재생, 없어도 계속 진행)
-        if let url = Bundle.main.url(forResource: soundName, withExtension: "mp3") {
-            do {
-                let player = try AVAudioPlayer(contentsOf: url)
-                player.numberOfLoops = -1  // 무한 반복
-                player.volume = 1.0
-                player.prepareToPlay()
-                
-                if player.play() {
-                    print("✅ [AlarmService] 커스텀 알람 소리 재생: \(soundName).mp3")
-                    alarmPlayers[alarmId] = player
-                } else {
-                    print("⚠️ [AlarmService] 커스텀 알람 소리 재생 실패")
-                }
-            } catch {
-                print("⚠️ [AlarmService] AVAudioPlayer 에러: \(error)")
+        if motionDetectionCount[executionId] != nil {
+            print("🔕 [Motion] 모션 감지 중지: \(executionId)")
+            motionDetectionCount.removeValue(forKey: executionId)
+            
+            // 다른 알람이 모니터링 중이 아니면 가속도계 중지
+            if motionDetectionCount.isEmpty {
+                motionManager.stopAccelerometerUpdates()
+                print("🔕 [Motion] 가속도계 완전 중지")
             }
-        } else {
-            print("⚠️ [AlarmService] 커스텀 사운드 파일 없음: \(soundName).mp3 (시스템 사운드로 대체)")
         }
     }
 
-    private func stopAlarmPlayer(_ alarmId: UUID) {
-        if let player = alarmPlayers[alarmId] {
-            player.stop()
-            print("🔇 [AlarmService] 알람 플레이어 중지")
+    // AlarmKit이 시스템 알람으로 사운드를 자동 재생하므로
+    // 우리는 오디오 재생 코드가 필요 없습니다
+
+    // MARK: - helpers
+    private func checkAutorization() async -> Bool {
+        switch alarmManager.authorizationState {
+        case .notDetermined:
+            do {
+                let s = try await alarmManager.requestAuthorization()
+                return s == .authorized
+            } catch { return false }
+        case .authorized: return true
+        case .denied: return false
+        @unknown default: return false
         }
-        alarmPlayers.removeValue(forKey: alarmId)
     }
 }

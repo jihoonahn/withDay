@@ -12,9 +12,9 @@ struct WithDay: Module {
             Sources(
                 name: typeName,
                 product: .app,
-                infoPlist: .file(path: "Support/Info.plist"),
-//                entitlements: .file(path: "Support/WithDay.entitlements"),
-                resources: ["Resources/**"],
+                infoPlist: .file(path: "iOS/Support/Info.plist"),
+                sources: "iOS/Sources/**",
+                resources: ["iOS/Resources/**"],
                 configuration: .App,
                 dependencies: [
                     .feature(target: "BaseFeature"),
@@ -32,6 +32,19 @@ struct WithDay: Module {
                     .core(target: "SwiftDataCore"),
                     .core(target: "AlarmCore"),
                     .shared(target: "Dependency"),
+                    .shared(target: "Utility"),
+                    .target(name: "\(typeName)Widget")
+                ]
+            )
+            Sources(
+                name: "\(typeName)Widget",
+                destinations: [.iPhone, .iPad],
+                product: .appExtension,
+                infoPlist: .file(path: "Widget/Support/Info.plist"),
+                sources: "Widget/Sources/**",
+                configuration: .App,
+                dependencies: [
+                    .core(target: "AlarmCore"),
                     .shared(target: "Utility")
                 ]
             )
