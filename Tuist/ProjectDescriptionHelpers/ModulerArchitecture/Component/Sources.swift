@@ -6,6 +6,7 @@ public struct Sources: TargetConvertable {
     let name: String
     let destinations: Destinations
     let product: Product
+    let bundleId: String?
     let infoPlist: InfoPlist
     let entitlements: Entitlements?
     let sources: SourceFilesList
@@ -16,6 +17,7 @@ public struct Sources: TargetConvertable {
     public init(
         name: String,
         product: Product = .staticLibrary,
+        bundleId: String? = nil,
         infoPlist: InfoPlist = .default,
         entitlements: Entitlements? = nil,
         sources: SourceFilesList = .sources,
@@ -26,6 +28,7 @@ public struct Sources: TargetConvertable {
         self.name = name
         self.destinations = env.destinations
         self.product = product
+        self.bundleId = bundleId
         self.infoPlist = infoPlist
         self.entitlements = entitlements
         self.sources = sources
@@ -38,7 +41,9 @@ public struct Sources: TargetConvertable {
         name: String,
         destinations: Destinations,
         product: Product = .staticLibrary,
+        bundleId: String? = nil,
         infoPlist: InfoPlist = .default,
+        entitlements: Entitlements? = nil,
         sources: SourceFilesList = .sources,
         resources: ResourceFileElements = [],
         configuration target: AppConfiguration.XCConfigTarget = .Shared,
@@ -47,8 +52,9 @@ public struct Sources: TargetConvertable {
         self.name = name
         self.destinations = destinations
         self.product = product
+        self.bundleId = bundleId
         self.infoPlist = infoPlist
-        self.entitlements = nil
+        self.entitlements = entitlements
         self.sources = sources
         self.resources = resources
         self.target = target
@@ -60,7 +66,7 @@ public struct Sources: TargetConvertable {
             name: name,
             destinations: destinations,
             product: product,
-            bundleId: "\(env.organizationName).\(name)",
+            bundleId: bundleId ?? "\(env.organizationName).\(name)",
             deploymentTargets: env.deploymentTargets,
             infoPlist: infoPlist,
             sources: sources,

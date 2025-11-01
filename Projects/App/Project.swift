@@ -40,6 +40,7 @@ struct WithDay: Module {
                 name: "\(typeName)Widget",
                 destinations: [.iPhone, .iPad],
                 product: .appExtension,
+                bundleId: "me.jihoon.WithDay.WidgetExtensions",
                 infoPlist: .file(path: "Widget/Support/Info.plist"),
                 sources: "Widget/Sources/**",
                 configuration: .App,

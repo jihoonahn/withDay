@@ -30,7 +30,7 @@ public final class AlarmUseCaseImpl: AlarmUseCase {
     public func update(_ alarm: AlarmEntity) async throws {
         try await alarmRepository.updateAlarm(alarm)
         
-        try alarmScheduler?.cancelAlarm(alarm.id)
+        try await alarmScheduler?.cancelAlarm(alarm.id)
         if alarm.isEnabled {
             try await alarmScheduler?.scheduleAlarm(alarm)
         }
@@ -39,7 +39,7 @@ public final class AlarmUseCaseImpl: AlarmUseCase {
     public func delete(id: UUID) async throws {
         try await alarmRepository.deleteAlarm(alarmId: id)
         
-        try alarmScheduler?.cancelAlarm(id)
+        try await alarmScheduler?.cancelAlarm(id)
     }
     
     public func toggle(id: UUID, isEnabled: Bool) async throws {
@@ -48,7 +48,7 @@ public final class AlarmUseCaseImpl: AlarmUseCase {
         if isEnabled {
             try await alarmScheduler?.toggleAlarm(id, isEnabled: isEnabled)
         } else {
-            try alarmScheduler?.cancelAlarm(id)
+            try await alarmScheduler?.cancelAlarm(id)
         }
     }
 }
