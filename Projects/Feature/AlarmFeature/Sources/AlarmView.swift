@@ -25,7 +25,7 @@ public struct AlarmView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Alarm")
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(JColor.textPrimary)
                             
                             if state.alarms.isEmpty {
@@ -47,8 +47,7 @@ public struct AlarmView: View {
                             Image(refineUIIcon: .add24Regular)
                                 .foregroundColor(JColor.textPrimary)
                                 .frame(width: 40, height: 40)
-                                .background(JColor.card)
-                                .clipShape(Circle())
+                                .glassEffect(.clear.interactive(), in: .circle)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -602,7 +601,6 @@ private struct EditAlarmSheet: View {
         let alarmLabel = label.isEmpty ? nil : label
         let repeatDays = isRepeating ? Array(selectedDays).sorted() : []
         
-        // Reducer로 데이터만 전달 (비즈니스 로직은 Reducer에서 처리)
         onSave(alarm.id, timeString, alarmLabel, repeatDays)
     }
 }
@@ -613,7 +611,6 @@ private struct DayButton: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-    // 요일 인덱스: 0=일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토
     private let dayNames = ["일", "월", "화", "수", "목", "금", "토"]
     
     var body: some View {

@@ -300,6 +300,9 @@ public struct AlarmReducer: Reducer {
                             }
                             emitter.send(.setAlarms(localAlarms))
                         }
+                        
+                        // 편집 시트 닫기
+                        emitter.send(.showingEditAlarmState(nil))
                     } catch {
                         // 실패 시 복구
                         print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
@@ -410,48 +413,108 @@ public struct AlarmReducer: Reducer {
         case .updateAlarmWithData(let id, let time, let label, let repeatDays):
             // 비즈니스 로직: 기존 알람 정보를 가져와서 업데이트
             state.errorMessage = nil
-            return [
-                Effect { [self] emitter in
-                    do {
-                        let userId = try await getCurrentUserId()
-                        
-                        // 기존 알람 정보 가져오기
-                        let alarms = try await remoteRepository.fetchAlarms(userId: userId)
-                        guard let existingAlarm = alarms.first(where: { $0.id == id }) else {
-                            emitter.send(.setError("알람을 찾을 수 없습니다"))
-                            return
+            
+            // 먼저 현재 상태에서 알람 찾기
+            guard let existingAlarm = state.alarms.first(where: { $0.id == id }) else {
+                // 상태에 없으면 로컬 또는 원격에서 찾기
+                return [
+                    Effect { [self] emitter in
+                        do {
+                            let userId = try await getCurrentUserId()
+                            var foundAlarm: AlarmEntity?
+                            
+                            // 1. 로컬 서비스에서 찾기
+                            if let localService = self.localService {
+                                let localModels = try await localService.fetchAlarms(userId: userId)
+                                if let model = localModels.first(where: { $0.id == id }) {
+                                    foundAlarm = AlarmEntity(
+                                        id: model.id,
+                                        userId: model.userId,
+                                        label: model.label.isEmpty ? nil : model.label,
+                                        time: model.time,
+                                        repeatDays: model.repeatDays,
+                                        snoozeEnabled: model.snoozeEnabled,
+                                        snoozeInterval: model.snoozeInterval,
+                                        snoozeLimit: model.snoozeLimit,
+                                        soundName: model.soundName,
+                                        soundURL: model.soundURL,
+                                        vibrationPattern: model.vibrationPattern,
+                                        volumeOverride: model.volumeOverride,
+                                        linkedMemoIds: model.linkedMemoIds,
+                                        showMemosOnAlarm: model.showMemosOnAlarm,
+                                        isEnabled: model.isEnabled,
+                                        createdAt: model.createdAt,
+                                        updatedAt: model.updatedAt
+                                    )
+                                }
+                            }
+                            
+                            // 2. 로컬에 없으면 원격에서 찾기
+                            if foundAlarm == nil {
+                                let alarms = try await remoteRepository.fetchAlarms(userId: userId)
+                                foundAlarm = alarms.first(where: { $0.id == id })
+                            }
+                            
+                            guard let existingAlarm = foundAlarm else {
+                                emitter.send(.setError("알람을 찾을 수 없습니다"))
+                                return
+                            }
+                            
+                            // 업데이트된 알람 엔티티 생성
+                            let updatedAlarm = AlarmEntity(
+                                id: existingAlarm.id,
+                                userId: existingAlarm.userId,
+                                label: label?.isEmpty == false ? label : nil,
+                                time: time,
+                                repeatDays: repeatDays,
+                                snoozeEnabled: existingAlarm.snoozeEnabled,
+                                snoozeInterval: existingAlarm.snoozeInterval,
+                                snoozeLimit: existingAlarm.snoozeLimit,
+                                soundName: existingAlarm.soundName,
+                                soundURL: existingAlarm.soundURL,
+                                vibrationPattern: existingAlarm.vibrationPattern,
+                                volumeOverride: existingAlarm.volumeOverride,
+                                linkedMemoIds: existingAlarm.linkedMemoIds,
+                                showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
+                                isEnabled: existingAlarm.isEnabled,
+                                createdAt: existingAlarm.createdAt,
+                                updatedAt: Date()
+                            )
+                            
+                            // updateAlarm 액션으로 전달하여 처리
+                            emitter.send(.updateAlarm(updatedAlarm))
+                        } catch {
+                            print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
+                            emitter.send(.setError("알람 업데이트에 실패했습니다: \(error.localizedDescription)"))
                         }
-                        
-                        // 업데이트된 알람 엔티티 생성
-                        let updatedAlarm = AlarmEntity(
-                            id: existingAlarm.id,
-                            userId: existingAlarm.userId,
-                            label: label?.isEmpty == false ? label : nil,
-                            time: time,
-                            repeatDays: repeatDays,
-                            snoozeEnabled: existingAlarm.snoozeEnabled,
-                            snoozeInterval: existingAlarm.snoozeInterval,
-                            snoozeLimit: existingAlarm.snoozeLimit,
-                            soundName: existingAlarm.soundName,
-                            soundURL: existingAlarm.soundURL,
-                            vibrationPattern: existingAlarm.vibrationPattern,
-                            volumeOverride: existingAlarm.volumeOverride,
-                            linkedMemoIds: existingAlarm.linkedMemoIds,
-                            showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
-                            isEnabled: existingAlarm.isEnabled,
-                            createdAt: existingAlarm.createdAt,
-                            updatedAt: Date()
-                        )
-                        
-                        // updateAlarm 액션으로 전달하여 처리
-                        emitter.send(.updateAlarm(updatedAlarm))
-                        
-                        // 편집 시트 닫기
-                        emitter.send(.showingEditAlarmState(nil))
-                    } catch {
-                        print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
-                        emitter.send(.setError("알람 업데이트에 실패했습니다: \(error.localizedDescription)"))
                     }
+                ]
+            }
+            
+            // 상태에서 찾은 경우
+            let updatedAlarm = AlarmEntity(
+                id: existingAlarm.id,
+                userId: existingAlarm.userId,
+                label: label?.isEmpty == false ? label : nil,
+                time: time,
+                repeatDays: repeatDays,
+                snoozeEnabled: existingAlarm.snoozeEnabled,
+                snoozeInterval: existingAlarm.snoozeInterval,
+                snoozeLimit: existingAlarm.snoozeLimit,
+                soundName: existingAlarm.soundName,
+                soundURL: existingAlarm.soundURL,
+                vibrationPattern: existingAlarm.vibrationPattern,
+                volumeOverride: existingAlarm.volumeOverride,
+                linkedMemoIds: existingAlarm.linkedMemoIds,
+                showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
+                isEnabled: existingAlarm.isEnabled,
+                createdAt: existingAlarm.createdAt,
+                updatedAt: Date()
+            )
+            
+            return [
+                Effect { emitter in
+                    emitter.send(.updateAlarm(updatedAlarm))
                 }
             ]
             

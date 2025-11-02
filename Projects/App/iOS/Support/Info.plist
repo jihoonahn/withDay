@@ -65,6 +65,7 @@
 		<string>audio</string>
 		<string>fetch</string>
 		<string>remote-notification</string>
+		<string>processing</string>
 	</array>
 	<key>NSMotionUsageDescription</key>
 	<string>알람이 울릴 때 흔들어서 끄기 위해 모션 센서를 사용합니다.</string>
