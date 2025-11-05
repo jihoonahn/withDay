@@ -518,6 +518,61 @@ public struct AlarmReducer: Reducer {
                 }
             ]
             
+        case .testLiveActivity:
+            // 테스트용 Live Activity 시작
+            return [
+                Effect { [self] emitter in
+                    do {
+                        print("🧪 [AlarmReducer] 테스트용 Live Activity 시작")
+                        
+                        // 1분 후에 울릴 테스트 알람 생성
+                        let testTime = Date().addingTimeInterval(60) // 1분 후
+                        let calendar = Calendar.current
+                        let hour = calendar.component(.hour, from: testTime)
+                        let minute = calendar.component(.minute, from: testTime)
+                        let timeString = String(format: "%02d:%02d", hour, minute)
+                        
+                        let userId = try await getCurrentUserId()
+                        
+                        let testAlarm = AlarmEntity(
+                            id: UUID(),
+                            userId: userId,
+                            label: "테스트 알람",
+                            time: timeString,
+                            repeatDays: [],
+                            snoozeEnabled: true,
+                            snoozeInterval: 5,
+                            snoozeLimit: 3,
+                            soundName: "default",
+                            soundURL: nil,
+                            vibrationPattern: nil,
+                            volumeOverride: nil,
+                            linkedMemoIds: [],
+                            showMemosOnAlarm: false,
+                            isEnabled: true,
+                            createdAt: Date(),
+                            updatedAt: Date()
+                        )
+                        
+                        // Live Activity 시작
+                        if let scheduler = self.alarmScheduler {
+                            print("🧪 [AlarmReducer] 테스트 알람 스케줄링: \(testAlarm.id)")
+                            print("   - 시간: \(timeString)")
+                            print("   - 1분 후 울림")
+                            try await scheduler.scheduleAlarm(testAlarm)
+                            print("✅ [AlarmReducer] 테스트 Live Activity 시작 완료")
+                            emitter.send(.setError("✅ 테스트 Live Activity가 시작되었습니다! (1분 후 울림)"))
+                        } else {
+                            print("⚠️ [AlarmReducer] AlarmSchedulerService를 찾을 수 없습니다")
+                            emitter.send(.setError("알람 스케줄러를 사용할 수 없습니다"))
+                        }
+                    } catch {
+                        print("❌ [AlarmReducer] 테스트 Live Activity 시작 실패: \(error)")
+                        emitter.send(.setError("테스트 Live Activity 시작 실패: \(error.localizedDescription)"))
+                    }
+                }
+            ]
+            
         case .setError(let message):
             state.isLoading = false
             state.errorMessage = message

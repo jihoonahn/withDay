@@ -1,29 +1,37 @@
-import AlarmKit
 import Foundation
+import ActivityKit
 
-public struct AlarmData: AlarmMetadata, Codable {
-    public let createdAt: Date
+public struct AlarmAttributes: ActivityAttributes {
+    public struct ContentState: Codable, Hashable {
+        public let isAlerting: Bool
+        public let motionCount: Int
+        public let requiredMotionCount: Int
+        public let lastUpdateTime: Date
+        
+        public init(
+            isAlerting: Bool = false,
+            motionCount: Int = 0,
+            requiredMotionCount: Int = 3,
+            lastUpdateTime: Date = Date()
+        ) {
+            self.isAlerting = isAlerting
+            self.motionCount = motionCount
+            self.requiredMotionCount = requiredMotionCount
+            self.lastUpdateTime = lastUpdateTime
+        }
+    }
+    
     public let alarmId: UUID
-    public let nextAlarmTime: Date?
     public let alarmLabel: String?
-    public let isAlerting: Bool
-    public let motionCount: Int
-    public let requiredMotionCount: Int
-
+    public let scheduledTime: Date
+    
     public init(
-        alarmId: UUID = UUID(),
-        nextAlarmTime: Date? = nil,
-        alarmLabel: String? = nil,
-        isAlerting: Bool = false,
-        motionCount: Int = 0,
-        requiredMotionCount: Int = 3
+        alarmId: UUID,
+        alarmLabel: String?,
+        scheduledTime: Date
     ) {
-        self.createdAt = .now
         self.alarmId = alarmId
-        self.nextAlarmTime = nextAlarmTime
         self.alarmLabel = alarmLabel
-        self.isAlerting = isAlerting
-        self.motionCount = motionCount
-        self.requiredMotionCount = requiredMotionCount
+        self.scheduledTime = scheduledTime
     }
 }

@@ -14,7 +14,6 @@ struct Dependency: Module {
                 name: typeName,
                 destinations: .iOS,
                 dependencies: [
-                    .external(name: "Logging"),
                     .external(name: "Rex")
                 ]
             )

@@ -7,7 +7,7 @@
 	<key>NSAlarmKitUsageDescription</key>
 	<string>We&apos;ll schedule alerts for alarms you create within our app.</string>
 	<key>UIUserInterfaceStyle</key>
-	<string></string>
+	<string>Dark</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -69,5 +69,20 @@
 	</array>
 	<key>NSMotionUsageDescription</key>
 	<string>알람이 울릴 때 흔들어서 끄기 위해 모션 센서를 사용합니다.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -4,7 +4,6 @@ import RootFeatureInterface
 import Dependency
 import SwiftDataCoreInterface
 import ActivityKit
-import AlarmKit
 import AlarmCore
 
 @main
@@ -31,43 +30,29 @@ struct WithDayApp: App {
                 ])
                 .onAppear {
                     Task { @MainActor in
-                        await checkAndStartLiveActivities()
+                        await checkLiveActivities()
                     }
                 }
         }
     }
     
     @MainActor
-    private func checkAndStartLiveActivities() async {
+    private func checkLiveActivities() async {
         let authInfo = ActivityAuthorizationInfo()
         guard authInfo.areActivitiesEnabled else {
             print("⚠️ [App] ActivityKit is not enabled. Please enable Live Activities in Settings.")
             return
         }
         
-        do {
-            let alarmManager = AlarmManager.shared
-            let alarms = try alarmManager.alarms
-            
-            print("📱 [App] Found \(alarms.count) scheduled alarms")
-            
-            for alarm in alarms {
-                let activities = Activity<AlarmAttributes<AlarmData>>.activities
-                let hasActivity = activities.contains { activity in
-                    guard let metadata = activity.attributes.metadata else { return false }
-                    return metadata.alarmId == alarm.id
-                }
-                
-                if !hasActivity {
-                    print("⚠️ [App] Live Activity not found for alarm: \(alarm.id)")
-                    print("   - Alarm state: \(alarm.state)")
-                    print("   - This is expected - AlarmKit starts Live Activity when alarm becomes active")
-                } else {
-                    print("✅ [App] Live Activity exists for alarm: \(alarm.id)")
-                }
-            }
-        } catch {
-            print("❌ [App] Failed to check alarms: \(error)")
+        // 활성 Live Activity 확인
+        let activities = Activity<AlarmAttributes>.activities
+        print("📱 [App] Found \(activities.count) active Live Activities")
+        
+        for activity in activities {
+            print("   - Alarm ID: \(activity.attributes.alarmId)")
+            print("   - Scheduled Time: \(activity.attributes.scheduledTime)")
+            print("   - Is Alerting: \(activity.content.state.isAlerting)")
+            print("   - Motion Count: \(activity.content.state.motionCount)/\(activity.content.state.requiredMotionCount)")
         }
     }
 }

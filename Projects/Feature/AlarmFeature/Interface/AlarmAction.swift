@@ -13,5 +13,6 @@ public enum AlarmAction: ActionType {
     case toggleAlarm(id: UUID)
     case loadAlarms
     case setAlarms([AlarmEntity])
-    case setError(String)
+    case setError(String?)
+    case testLiveActivity
 }

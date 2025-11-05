@@ -13,7 +13,7 @@ struct WithDay: Module {
                 name: typeName,
                 product: .app,
                 infoPlist: .file(path: "iOS/Support/Info.plist"),
-                sources: "iOS/Sources/**",
+                sources: ["iOS/Sources/**"],
                 resources: ["iOS/Resources/**"],
                 configuration: .App,
                 dependencies: [
@@ -33,16 +33,16 @@ struct WithDay: Module {
                     .core(target: "AlarmCore"),
                     .shared(target: "Dependency"),
                     .shared(target: "Utility"),
-                    .target(name: "\(typeName)Widget")
+                    .target(name: "\(typeName)Widget"),
                 ]
             )
             Sources(
                 name: "\(typeName)Widget",
-                destinations: [.iPhone, .iPad],
                 product: .appExtension,
-                bundleId: "me.jihoon.WithDay.WidgetExtensions",
+                bundleId: "me.jihoon.\(typeName).Widget",
                 infoPlist: .file(path: "Widget/Support/Info.plist"),
-                sources: "Widget/Sources/**",
+                sources: ["Widget/Sources/**"],
+                resources: ["Widget/Support/WithDayWidget.intentdefinition"],
                 configuration: .App,
                 dependencies: [
                     .core(target: "AlarmCore"),
@@ -57,17 +57,32 @@ struct WithDay: Module {
             defaultSettings: .recommended
         ))
         .scheme {
-            Scheme.makeScheme(
-                name: typeName,
-                target: .dev
+            Scheme.scheme(
+                name: "\(typeName)-dev",
+                shared: true,
+                buildAction: .buildAction(targets: ["\(typeName)", "\(typeName)Widget"]),
+                runAction: .runAction(configuration: .dev),
+                archiveAction: .archiveAction(configuration: .dev),
+                profileAction: .profileAction(configuration: .dev),
+                analyzeAction: .analyzeAction(configuration: .dev)
             )
-            Scheme.makeScheme(
-                name: typeName,
-                target: .stage
+            Scheme.scheme(
+                name: "\(typeName)-stage",
+                shared: true,
+                buildAction: .buildAction(targets: ["\(typeName)", "\(typeName)Widget"]),
+                runAction: .runAction(configuration: .stage),
+                archiveAction: .archiveAction(configuration: .stage),
+                profileAction: .profileAction(configuration: .stage),
+                analyzeAction: .analyzeAction(configuration: .stage)
             )
-            Scheme.makeScheme(
-                name: typeName,
-                target: .prod
+            Scheme.scheme(
+                name: "\(typeName)-prod",
+                shared: true,
+                buildAction: .buildAction(targets: ["\(typeName)", "\(typeName)Widget"]),
+                runAction: .runAction(configuration: .prod),
+                archiveAction: .archiveAction(configuration: .prod),
+                profileAction: .profileAction(configuration: .prod),
+                analyzeAction: .analyzeAction(configuration: .prod)
             )
         }
     }

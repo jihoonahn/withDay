@@ -1,94 +1,68 @@
 import SwiftUI
-import AlarmKit
 import AlarmCore
+import ActivityKit
 
 struct LockScreenView: View {
-    let attributes: AlarmAttributes<AlarmData>
-    let state: AlarmPresentationState
+    let attributes: AlarmAttributes
+    let state: AlarmAttributes.ContentState
     
     var body: some View {
         VStack(spacing: 16) {
-            if let metadata = attributes.metadata {
-                if metadata.isAlerting {
-                    // Alarm is currently alerting - show shake count
-                    VStack(spacing: 12) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "hand.raised.fill")
-                                .font(.title2)
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [.red, .orange],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                            
-                            Text("Shake to dismiss")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                        }
-                        
-                        let remaining = max(0, metadata.requiredMotionCount - metadata.motionCount)
-                        Text("\(remaining)")
-                            .font(.system(size: 64, weight: .bold, design: .rounded))
+            if state.isAlerting {
+                // Alarm is currently alerting - show shake count
+                VStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "hand.raised.fill")
+                            .font(.title2)
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: remaining > 0 ? [.red, .orange] : [.green, .mint],
+                                    colors: [.red, .orange],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
-                            .contentTransition(.numericText())
                         
-                        if remaining > 0 {
-                            Text("more shake\(remaining == 1 ? "" : "s") needed")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("Complete!")
-                                .font(.subheadline)
-                                .foregroundColor(.green)
-                                .fontWeight(.semibold)
-                        }
-                        
-                        if metadata.motionCount > 0 {
-                            Text("\(metadata.motionCount)/\(metadata.requiredMotionCount) shakes detected")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding()
-                } else if let nextAlarmTime = metadata.nextAlarmTime {
-                    // Alarm is scheduled - show time remaining
-                    VStack(spacing: 12) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "alarm.fill")
-                                .font(.title2)
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [.orange, .red],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                            
-                            if let label = metadata.alarmLabel, !label.isEmpty {
-                                Text(label)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                            } else {
-                                Text("Alarm")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                        
-                        Text(formatTime(nextAlarmTime))
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                        Text("Shake to dismiss")
+                            .font(.headline)
                             .foregroundColor(.primary)
-                        
-                        Text(timeRemainingString(from: nextAlarmTime))
-                            .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    }
+                    
+                    let remaining = max(0, state.requiredMotionCount - state.motionCount)
+                    Text("\(remaining)")
+                        .font(.system(size: 64, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: remaining > 0 ? [.red, .orange] : [.green, .mint],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .contentTransition(.numericText())
+                    
+                    if remaining > 0 {
+                        Text("more shake\(remaining == 1 ? "" : "s") needed")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Complete!")
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    if state.motionCount > 0 {
+                        Text("\(state.motionCount)/\(state.requiredMotionCount) shakes detected")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+            } else {
+                // Alarm is scheduled - show time remaining
+                VStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "alarm.fill")
+                            .font(.title2)
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [.orange, .red],
@@ -96,11 +70,35 @@ struct LockScreenView: View {
                                     endPoint: .trailing
                                 )
                             )
-                            .contentTransition(.numericText())
-                            .padding(.top, 4)
+                        
+                        if let label = attributes.alarmLabel, !label.isEmpty {
+                            Text(label)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        } else {
+                            Text("Alarm")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        }
                     }
-                    .padding()
+                    
+                    Text(formatTime(attributes.scheduledTime))
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                    
+                    Text(timeRemainingString(from: attributes.scheduledTime))
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.orange, .red],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .contentTransition(.numericText())
+                        .padding(.top, 4)
                 }
+                .padding()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -1,99 +1,131 @@
 import ActivityKit
 import AlarmCore
-import AlarmKit
 import AppIntents
 import WidgetKit
 import SwiftUI
 
 struct AlarmWidget: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: AlarmAttributes<AlarmData>.self) { context in
+        return ActivityConfiguration(for: AlarmAttributes.self) { context in
             LockScreenView(attributes: context.attributes, state: context.state)
         } dynamicIsland: { context in
-            let metadata = context.attributes.metadata
+            let contentState = context.state
+            
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    AlarmIconView(isAlerting: metadata?.isAlerting ?? false)
+                    AppLogoView(isAlerting: contentState.isAlerting)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
+                
                 DynamicIslandExpandedRegion(.trailing) {
-                    if let metadata = metadata {
-                        if !metadata.isAlerting,
-                           let nextAlarmTime = metadata.nextAlarmTime {
-                            AlarmTimeView(nextAlarmTime: nextAlarmTime)
-                        } else if metadata.isAlerting {
+                    Group {
+                        if !contentState.isAlerting {
+                            AlarmTimeView(nextAlarmTime: context.attributes.scheduledTime)
+                        } else {
                             MotionProgressView(
-                                motionCount: metadata.motionCount,
-                                requiredCount: metadata.requiredMotionCount
+                                motionCount: contentState.motionCount,
+                                requiredCount: contentState.requiredMotionCount
                             )
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                 }
+                
                 DynamicIslandExpandedRegion(.center) {
-                    if let metadata = metadata {
-                        if metadata.isAlerting {
+                    Group {
+                        if contentState.isAlerting {
                             MotionCountdownView(
-                                motionCount: metadata.motionCount,
-                                requiredCount: metadata.requiredMotionCount
+                                motionCount: contentState.motionCount,
+                                requiredCount: contentState.requiredMotionCount
                             )
-                        } else if let nextAlarmTime = metadata.nextAlarmTime {
-                            TimeCountdownView(nextAlarmTime: nextAlarmTime)
+                        } else {
+                            TimeCountdownView(nextAlarmTime: context.attributes.scheduledTime)
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+                
                 DynamicIslandExpandedRegion(.bottom) {
-                    if let metadata = metadata {
-                        if let label = metadata.alarmLabel, !label.isEmpty {
-                            AlarmLabelView(label: label)
-                        } else if metadata.isAlerting {
+                    Group {
+                        if contentState.isAlerting {
                             ShakeInstructionView()
+                        } else if let label = context.attributes.alarmLabel, !label.isEmpty {
+                            AlarmLabelView(label: label)
+                        } else {
+                            AlarmStatusView(nextAlarmTime: context.attributes.scheduledTime)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             } compactLeading: {
-                Image(systemName: (metadata?.isAlerting ?? false) ? "hand.raised.fill" : "alarm.fill")
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: (metadata?.isAlerting ?? false) ? [.red, .orange] : [.orange, .red],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .font(.title3)
+                CompactLogoView(isAlerting: contentState.isAlerting)
             } compactTrailing: {
-                if let metadata = metadata {
-                    if metadata.isAlerting {
-                        CompactMotionView(
-                            motionCount: metadata.motionCount,
-                            requiredCount: metadata.requiredMotionCount
-                        )
-                    } else if let nextAlarmTime = metadata.nextAlarmTime {
-                        CompactTimeView(nextAlarmTime: nextAlarmTime)
-                    }
+                if contentState.isAlerting {
+                    CompactMotionView(
+                        motionCount: contentState.motionCount,
+                        requiredCount: contentState.requiredMotionCount
+                    )
+                } else {
+                    CompactTimeView(nextAlarmTime: context.attributes.scheduledTime)
                 }
             } minimal: {
-                Image(systemName: (metadata?.isAlerting ?? false) ? "hand.raised.fill" : "alarm.fill")
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: (metadata?.isAlerting ?? false) ? [.red, .orange] : [.orange, .red],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .font(.title3)
+                CompactLogoView(isAlerting: contentState.isAlerting)
             }
+            .keylineTint(.orange)
         }
     }
 }
 
 // MARK: - Expanded Region Views
 
-private struct AlarmIconView: View {
+private struct AppLogoView: View {
     let isAlerting: Bool
     
     var body: some View {
-        VStack(spacing: 6) {
+        HStack(alignment: .center, spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(isAlerting ? Color.red.opacity(0.3) : Color.orange.opacity(0.3))
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: isAlerting ? "hand.raised.fill" : "alarm.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(isAlerting ? .red : .orange)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("WithDay")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Text(isAlerting ? "Alarming" : "Alarm")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 12)
+        .padding(.vertical, 8)
+    }
+}
+
+private struct CompactLogoView: View {
+    let isAlerting: Bool
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: isAlerting ? [.red.opacity(0.3), .orange.opacity(0.3)] : [.orange.opacity(0.3), .red.opacity(0.3)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 32, height: 32)
+            
             Image(systemName: isAlerting ? "hand.raised.fill" : "alarm.fill")
-                .font(.system(size: 28, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(
                     LinearGradient(
                         colors: isAlerting ? [.red, .orange] : [.orange, .red],
@@ -101,11 +133,6 @@ private struct AlarmIconView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-            
-            Text(isAlerting ? "Shake" : "Alarm")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .fontWeight(.medium)
         }
     }
 }
@@ -116,13 +143,16 @@ private struct AlarmTimeView: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 4) {
             Text(formatTime(nextAlarmTime))
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
             
             Text("Scheduled")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
         }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.trailing, 12)
+        .padding(.vertical, 8)
     }
 }
 
@@ -133,19 +163,16 @@ private struct MotionProgressView: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 4) {
             Text("\(motionCount)/\(requiredCount)")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.red, .orange],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
             
             Text("Shakes")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
         }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.trailing, 12)
+        .padding(.vertical, 8)
     }
 }
 
@@ -153,24 +180,44 @@ private struct TimeCountdownView: View {
     let nextAlarmTime: Date
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             Text("Time Remaining")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
                 .textCase(.uppercase)
-                .tracking(0.5)
             
             Text(timeRemainingString(from: nextAlarmTime))
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.orange, .red],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
                 .contentTransition(.numericText())
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+    }
+}
+
+private struct AlarmStatusView: View {
+    let nextAlarmTime: Date
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "clock.fill")
+                .font(.system(size: 11))
+                .foregroundColor(.orange)
+            
+            Text("Alarm set for \(formatTime(nextAlarmTime))")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(Color.orange.opacity(0.3))
+        )
     }
 }
 
@@ -179,36 +226,31 @@ private struct MotionCountdownView: View {
     let requiredCount: Int
     
     var body: some View {
-        VStack(spacing: 8) {
+        let remaining = max(0, requiredCount - motionCount)
+        
+        return VStack(spacing: 4) {
             Text("Shakes Remaining")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
                 .textCase(.uppercase)
-                .tracking(0.5)
             
-            let remaining = max(0, requiredCount - motionCount)
             Text("\(remaining)")
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: remaining > 0 ? [.red, .orange] : [.green, .mint],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
                 .contentTransition(.numericText())
             
             if remaining > 0 {
                 Text("more shake\(remaining == 1 ? "" : "s")")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.8))
             } else {
                 Text("Complete!")
-                    .font(.caption2)
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.green)
-                    .fontWeight(.semibold)
             }
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
     }
 }
 
@@ -218,19 +260,19 @@ private struct AlarmLabelView: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "tag.fill")
-                .font(.caption2)
+                .font(.system(size: 11))
                 .foregroundColor(.orange)
             
             Text(label)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white)
+                .lineLimit(1)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(
             Capsule()
-                .fill(.orange.opacity(0.15))
+                .fill(Color.orange.opacity(0.3))
         )
     }
 }
@@ -239,19 +281,19 @@ private struct ShakeInstructionView: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "hand.raised.fill")
-                .font(.caption2)
+                .font(.system(size: 11))
                 .foregroundColor(.red)
             
             Text("Shake to dismiss")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white)
+                .lineLimit(1)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(
             Capsule()
-                .fill(.red.opacity(0.15))
+                .fill(Color.red.opacity(0.3))
         )
     }
 }
@@ -263,7 +305,7 @@ private struct CompactTimeView: View {
     
     var body: some View {
         Text(compactTimeRemaining(from: nextAlarmTime))
-            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .font(.system(size: 16, weight: .bold, design: .rounded))
             .foregroundStyle(
                 LinearGradient(
                     colors: [.orange, .red],
@@ -272,6 +314,7 @@ private struct CompactTimeView: View {
                 )
             )
             .contentTransition(.numericText())
+            .shadow(color: .orange.opacity(0.3), radius: 1, x: 0, y: 1)
     }
 }
 

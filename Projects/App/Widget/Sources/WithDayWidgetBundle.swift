@@ -1,5 +1,8 @@
 import WidgetKit
 import SwiftUI
+import ActivityKit
+import AlarmCore
+import AppIntents
 
 @main
 struct WithDayWidget: WidgetBundle {

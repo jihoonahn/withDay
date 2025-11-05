@@ -1,21 +1,20 @@
 import Foundation
 import AppIntents
-import AlarmKit
 
-struct StopAlarmIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource = "알람 멈추기"
+public struct StopAlarmIntent: LiveActivityIntent {
+    public static var title: LocalizedStringResource = "알람 멈추기"
     
     var alarmID: String
     
-    init() {
+    public init() {
         self.alarmID = ""
     }
     
-    init(alarmID: String) {
+    public init(alarmID: String) {
         self.alarmID = alarmID
     }
     
-    func perform() async throws -> some IntentResult {
+    public func perform() async throws -> some IntentResult {
         print("🔕 [StopAlarmIntent] 알람 멈춤 Intent 실행: \(alarmID)")
         
         guard let alarmId = UUID(uuidString: alarmID) else {
@@ -33,20 +32,51 @@ struct StopAlarmIntent: LiveActivityIntent {
     }
 }
 
-struct OpenAlarmAppIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource = "앱 열기"
+public struct SnoozeAlarmIntent: LiveActivityIntent {
+    public static var title: LocalizedStringResource = "스누즈"
     
     var alarmID: String
     
-    init() {
+    public init() {
         self.alarmID = ""
     }
     
-    init(alarmID: String) {
+    public init(alarmID: String) {
         self.alarmID = alarmID
     }
     
-    func perform() async throws -> some IntentResult {
+    public func perform() async throws -> some IntentResult {
+        print("⏰ [SnoozeAlarmIntent] 알람 스누즈 Intent 실행: \(alarmID)")
+        
+        guard let alarmId = UUID(uuidString: alarmID) else {
+            return .result()
+        }
+        
+        // NotificationCenter를 통해 AlarmServiceImpl에 알림 전송
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AlarmSnoozed"),
+            object: nil,
+            userInfo: ["alarmId": alarmId]
+        )
+        
+        return .result()
+    }
+}
+
+public struct OpenAlarmAppIntent: LiveActivityIntent {
+    public static var title: LocalizedStringResource = "앱 열기"
+    
+    var alarmID: String
+    
+    public init() {
+        self.alarmID = ""
+    }
+    
+    public init(alarmID: String) {
+        self.alarmID = alarmID
+    }
+    
+    public func perform() async throws -> some IntentResult {
         print("📱 [OpenAlarmAppIntent] 앱 열기 Intent 실행: \(alarmID)")
         return .result()
     }
