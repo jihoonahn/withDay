@@ -1,5 +1,16 @@
 import Foundation
 
+public enum AlarmExecutionServiceError: Error, LocalizedError {
+    case executionNotFound
+    
+    public var errorDescription: String? {
+        switch self {
+        case .executionNotFound:
+            return "Execution not found"
+        }
+    }
+}
+
 public protocol AlarmExecutionService: Sendable {
     func fetchExecution(userId: UUID) async throws -> AlarmExecutionModel
     func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionModel]

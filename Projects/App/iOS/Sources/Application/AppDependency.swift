@@ -27,6 +27,7 @@ import MemoDomainInterface
 import AlarmExecutionDomainInterface
 import MotionRawDataDomainInterface
 import AchievementDomainInterface
+import SettingDomainInterface
 
 // Core - Supabase
 import SupabaseCoreInterface
@@ -39,6 +40,10 @@ import SwiftDataCore
 // Core - Alarm
 import AlarmCoreInterface
 import AlarmCore
+
+// Core - Setting
+import SettingCoreInterface
+import SettingCore
 
 @MainActor
 public class AppDependencies {
@@ -142,6 +147,19 @@ public class AppDependencies {
             )
         }
         
+        // Setting Repository & UseCase
+        container.register(SettingRepository.self) {
+            SettingCore.SettingRepositoryImpl(
+                settingService: container.resolve(SettingCoreInterface.SettingService.self)
+            )
+        }
+        
+        container.register(SettingUseCase.self) {
+            SettingCore.SettingUseCaseImpl(
+                settingRepository: container.resolve(SettingRepository.self)
+            )
+        }
+        
         let swiftDataService = SwiftDataServiceImpl()
         container.registerSingleton(SwiftDataService.self, instance: swiftDataService)
         
@@ -172,6 +190,11 @@ public class AppDependencies {
         container.registerSingleton(
             AlarmCoreInterface.AlarmSchedulerService.self,
             instance: AlarmCore.AlarmServiceImpl()
+        )
+        
+        container.registerSingleton(
+            SettingCoreInterface.SettingService.self,
+            instance: SettingCore.SettingServiceImpl()
         )
         
         // MARK: - Feature Factories
@@ -272,5 +295,9 @@ extension DIContainer {
         
     public var alarmSchedulerService: AlarmCoreInterface.AlarmSchedulerService {
         resolve(AlarmCoreInterface.AlarmSchedulerService.self)
+    }
+    
+    public var settingService: SettingCoreInterface.SettingService {
+        resolve(SettingCoreInterface.SettingService.self)
     }
 }

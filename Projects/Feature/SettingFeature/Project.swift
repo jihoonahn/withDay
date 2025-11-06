@@ -15,6 +15,8 @@ struct SettingFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
+                    .domain(target: "SettingDomain", type: .interface),
+                    .shared(target: "Dependency"),
                 ]
             )
             Interface(

@@ -33,6 +33,8 @@ public struct MainView: View {
             switch state.flow {
             case .alarm:
                 alarmFactory.makeView()
+            case .weather:
+                weatherFactory.makeView()
             case .setting:
                 settingFactory.makeView()
             }

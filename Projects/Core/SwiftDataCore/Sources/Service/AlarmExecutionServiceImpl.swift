@@ -85,7 +85,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         )
 
         guard let execution = try context.fetch(descriptor).first else {
-            throw NSError(domain: "AlarmExecutionService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Execution not found"])
+            throw AlarmExecutionServiceError.executionNotFound
         }
 
         execution.motionData = motionData

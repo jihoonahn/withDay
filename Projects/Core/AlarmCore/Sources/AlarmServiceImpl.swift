@@ -59,7 +59,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     private func setupNotificationDelegate() {
         NotificationDelegate.shared.alarmService = self
         notificationCenter.delegate = NotificationDelegate.shared
-        print("📱 [AlarmService] Notification delegate setup complete")
     }
     
     // MARK: - App State Observer
@@ -69,7 +68,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            print("📱 [AppState] App entered foreground")
             self?.refreshAlarmMonitoring()
         }
         
@@ -78,7 +76,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            print("📱 [AppState] App became active")
             self?.refreshAlarmMonitoring()
         }
     }
@@ -92,34 +89,27 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
 
     // MARK: - schedule
     public func scheduleAlarm(_ alarm: AlarmEntity) async throws {
-        print("🔔 [AlarmService] ========== Starting alarm scheduling ==========")
-        print("   - Alarm ID: \(alarm.id)")
-        print("   - Time: \(alarm.time)")
         
         // Notification 권한 확인
         let authStatus = await notificationCenter.notificationSettings()
         if authStatus.authorizationStatus != .authorized {
             let granted = try await notificationCenter.requestAuthorization(options: [.alert, .sound, .badge])
             guard granted else {
-                throw NSError(domain: "AlarmService", code: 1,
-                             userInfo: [NSLocalizedDescriptionKey: "Notification authorization denied"])
+                throw AlarmServiceError.notificationAuthorizationDenied
             }
         }
         
         // Live Activity 권한 확인
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            throw NSError(domain: "AlarmService", code: 2,
-                         userInfo: [NSLocalizedDescriptionKey: "Live Activities not enabled"])
+            throw AlarmServiceError.liveActivitiesNotEnabled
         }
         
-        print("✅ [AlarmService] Authorizations confirmed")
 
         cachedEntities[alarm.id] = alarm
 
         let comps = alarm.time.split(separator: ":").compactMap { Int($0) }
         guard comps.count == 2 else {
-            throw NSError(domain: "AlarmService", code: 400,
-                          userInfo: [NSLocalizedDescriptionKey: "Invalid time format"])
+            throw AlarmServiceError.invalidTimeFormat
         }
         let hour = comps[0], minute = comps[1]
 
@@ -137,14 +127,14 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             todayComponents.nanosecond = 0
             
             guard let todayAlarmDate = calendar.date(from: todayComponents) else {
-                throw NSError(domain: "AlarmService", code: 401, userInfo: nil)
+                throw AlarmServiceError.dateCreationFailed
             }
             
             if todayAlarmDate > now {
                 nextAlarmTime = todayAlarmDate
             } else {
                 guard let tomorrowAlarmDate = calendar.date(byAdding: .day, value: 1, to: todayAlarmDate) else {
-                    throw NSError(domain: "AlarmService", code: 402, userInfo: nil)
+                    throw AlarmServiceError.dateCalculationFailed
                 }
                 nextAlarmTime = tomorrowAlarmDate
             }
@@ -153,18 +143,11 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             nextAlarmTime = calculateNextAlarmTime(hour: hour, minute: minute, repeatDays: alarm.repeatDays)
         }
 
-        print("📅 [AlarmService] Alarm scheduled:")
-        print("   - Input time: \(hour):\(String(format: "%02d", minute))")
-        print("   - Next alarm time: \(nextAlarmTime)")
-        print("   - Time until alarm: \(String(format: "%.1f", nextAlarmTime.timeIntervalSince(now) / 60)) minutes")
         
-        // 1. UNNotification 스케줄링 (백그라운드에서 알람 트리거)
         try await scheduleNotification(alarmId: alarm.id, time: nextAlarmTime, label: alarm.label)
         
-        // 2. Live Activity 시작 (알람 설정 시점부터 Dynamic Island 표시)
         try await startLiveActivity(alarm: alarm, scheduledTime: nextAlarmTime)
         
-        print("✅ [AlarmService] Alarm scheduled successfully: \(alarm.id)")
     }
     
     // MARK: - UNNotification 스케줄링
@@ -179,7 +162,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         content.body = "Alarm time"
         
         // 알람 사운드 설정 - 백그라운드에서도 사운드 재생되도록
-        content.sound = .default
+        content.sound = .defaultRingtone
         
         // InterruptionLevel을 timeSensitive로 설정하여 백그라운드에서도 사운드 재생
         // critical은 특별한 권한이 필요하므로 timeSensitive 사용
@@ -209,25 +192,16 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         try await notificationCenter.add(request)
         scheduledNotifications[alarmId] = alarmId.uuidString
         
-        print("📬 [AlarmService] Notification scheduled: \(alarmId.uuidString)")
     }
     
     // MARK: - Live Activity 시작
     private func startLiveActivity(alarm: AlarmEntity, scheduledTime: Date) async throws {
-        print("📱 [AlarmService] ========== Starting Live Activity ==========")
-        print("   - Alarm ID: \(alarm.id)")
-        print("   - Scheduled Time: \(scheduledTime)")
         
         // ActivityKit 권한 확인
         let authInfo = ActivityAuthorizationInfo()
-        print("   - Activities Enabled: \(authInfo.areActivitiesEnabled)")
-        print("   - Frequent Pushes Enabled: \(authInfo.frequentPushesEnabled)")
         
         guard authInfo.areActivitiesEnabled else {
-            let error = NSError(domain: "AlarmService", code: 401,
-                              userInfo: [NSLocalizedDescriptionKey: "Live Activities not enabled. Please enable in Settings."])
-            print("❌ [AlarmService] Live Activities not enabled")
-            throw error
+            throw AlarmServiceError.liveActivitiesNotEnabled
         }
         
         // 기존 Live Activity 제거
@@ -248,13 +222,8 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         
         let activityContent = ActivityContent(state: initialContentState, staleDate: nil)
         
-        print("📱 [AlarmService] Requesting Live Activity...")
-        print("   - Attributes: alarmId=\(attributes.alarmId), scheduledTime=\(attributes.scheduledTime)")
-        print("   - ContentState: isAlerting=\(initialContentState.isAlerting), motionCount=\(initialContentState.motionCount)")
         
         do {
-            print("📱 [AlarmService] Attempting to request Activity...")
-            print("   - Checking for existing ActivityConfiguration...")
             
             // Activity 요청 전에 Widget Extension이 등록되었는지 확인
             // Activity.request 호출 시 시스템이 자동으로 Widget Extension을 찾습니다
@@ -265,54 +234,18 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             
             activeActivities[alarm.id] = activity
             
-            print("✅ [AlarmService] Activity requested successfully: \(alarm.id)")
-            print("   - Activity ID: \(activity.id)")
-            print("   - Activity attributes: alarmId=\(activity.attributes.alarmId), scheduledTime=\(activity.attributes.scheduledTime)")
-            print("   - Activity state: isAlerting=\(activity.content.state.isAlerting), motionCount=\(activity.content.state.motionCount)")
             
             // 활성 Live Activity 확인 (약간의 지연 후)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 let allActivities = Activity<AlarmAttributes>.activities
-                print("📱 [AlarmService] Checking active activities after request...")
-                print("   - Total active activities: \(allActivities.count)")
-                print("   - Activity IDs: \(allActivities.map { $0.attributes.alarmId })")
                 
                 // Dynamic Island 확인
-                print("📱 [AlarmService] Dynamic Island configuration check:")
-                print("   - Widget Extension should be registered for AlarmAttributes")
-                print("   - Dynamic Island requires iPhone 14 Pro or later")
-                print("   - ActivityConfiguration should be in AlarmWidget")
                 
                 if allActivities.isEmpty {
-                    print("⚠️ [AlarmService] Warning: No activities found after request.")
-                    print("   - Widget Extension may not be properly configured")
-                    print("   - Check that NSSupportsLiveActivities is set to true in Widget Extension Info.plist")
-                    print("   - Check that ActivityConfiguration is properly registered in AlarmWidget")
-                    print("   - Make sure Widget Extension is included in app target")
                 } else {
-                    print("✅ [AlarmService] Activity is active - Dynamic Island should appear if device supports it")
-                    print("   - If Dynamic Island doesn't appear, check device model (iPhone 14 Pro or later)")
-                    print("   - Also check that Widget Extension is properly installed")
-                    print("   - Widget Extension logs are in separate process - check system logs")
-                    print("   - Use: log stream --predicate 'subsystem == \"me.jihoon.WithDay\"' --level debug")
-                    print("")
-                    print("📱 [AlarmService] ========== Widget Extension Loading Check ==========")
-                    print("   - Live Activity started successfully")
-                    print("   - Widget Extension should now be loading...")
-                    print("   - Widget Extension logs should appear in system logs")
-                    print("   - If Widget Extension logs don't appear, check:")
-                    print("     1. Widget Extension is built and included in app bundle")
-                    print("     2. Widget Extension is in PlugIns folder")
-                    print("     3. Widget Extension Info.plist is correct")
-                    print("     4. ActivityConfiguration is properly registered")
                 }
             }
         } catch {
-            print("❌ [AlarmService] Failed to start Live Activity: \(error)")
-            print("   - Error domain: \((error as NSError).domain)")
-            print("   - Error code: \((error as NSError).code)")
-            print("   - Error description: \(error.localizedDescription)")
-            print("   - Error userInfo: \((error as NSError).userInfo)")
 
             throw error
         }
@@ -320,34 +253,21 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     
     // MARK: - Live Activity 업데이트
     private func updateLiveActivity(for alarmId: UUID, contentState: AlarmAttributes.ContentState) async {
-        print("📱 [AlarmService] updateLiveActivity called:")
-        print("   - alarmId: \(alarmId)")
-        print("   - contentState.isAlerting: \(contentState.isAlerting)")
-        print("   - contentState.motionCount: \(contentState.motionCount)")
         
         // 활성 Live Activity 확인
         if let activity = activeActivities[alarmId] {
-            print("✅ [AlarmService] Found activity in activeActivities")
             let activityContent = ActivityContent(state: contentState, staleDate: nil)
             await activity.update(activityContent)
-            print("✅ [AlarmService] Activity updated successfully")
         } else {
             // Live Activity가 없으면 현재 활성 Activity 확인
             let activities = Activity<AlarmAttributes>.activities
-            print("📱 [AlarmService] Checking system activities...")
-            print("   - Total activities: \(activities.count)")
             
             if let activity = activities.first(where: { $0.attributes.alarmId == alarmId }) {
-                print("✅ [AlarmService] Found Live Activity in system, updating: \(alarmId)")
                 activeActivities[alarmId] = activity
                 
                 let activityContent = ActivityContent(state: contentState, staleDate: nil)
                 await activity.update(activityContent)
-                print("✅ [AlarmService] Activity updated successfully from system")
             } else {
-                print("⚠️ [AlarmService] Live Activity not found: \(alarmId)")
-                print("   - Active activities: \(activities.map { $0.attributes.alarmId })")
-                print("   - This may cause Dynamic Island to not update")
             }
         }
     }
@@ -362,14 +282,14 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         await activity.end(finalContent, dismissalPolicy: .immediate)
         
         activeActivities.removeValue(forKey: alarmId)
-        print("🔕 [AlarmService] Live Activity ended: \(alarmId)")
     }
 
     // MARK: - cancel
     public func cancelAlarm(_ alarmId: UUID) async throws {
-        // 알림 제거
+        // 알림 제거 (pending과 delivered 모두)
         if let notificationId = scheduledNotifications[alarmId] {
             notificationCenter.removePendingNotificationRequests(withIdentifiers: [notificationId])
+            notificationCenter.removeDeliveredNotifications(withIdentifiers: [notificationId])
             scheduledNotifications.removeValue(forKey: alarmId)
         }
         
@@ -382,8 +302,14 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             stopMonitoringMotion(for: alarmId)
         }
         
+        // cachedEntities에서 제거 (가장 마지막에 제거하여 동시성 문제 방지)
         cachedEntities.removeValue(forKey: alarmId)
-        print("✅ [AlarmService] Alarm cancelled: \(alarmId)")
+        
+        // 모든 알람이 중지되었으면 사운드 루프도 중지
+        if monitoringAlarmIds.isEmpty {
+            stopSoundLoop()
+            endBackgroundTask()
+        }
     }
 
     // MARK: - update
@@ -396,8 +322,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     public func toggleAlarm(_ alarmId: UUID, isEnabled: Bool) async throws {
         if isEnabled {
             guard let entity = cachedEntities[alarmId] else {
-                throw NSError(domain: "AlarmService", code: 404,
-                             userInfo: [NSLocalizedDescriptionKey: "Entity not found; load from DB first"])
+                throw AlarmServiceError.entityNotFound
             }
             try await scheduleAlarm(entity)
         } else {
@@ -442,15 +367,67 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     private func checkActiveAlarms() async {
         let now = Date()
         
-        for (alarmId, _) in cachedEntities {
+        // cachedEntities의 복사본을 사용하여 동시성 문제 방지
+        let cachedAlarmIds = Array(cachedEntities.keys)
+        
+        for alarmId in cachedAlarmIds {
+            // 삭제된 알람인지 다시 확인 (동시성 문제 방지)
+            guard cachedEntities[alarmId] != nil else { continue }
+            
             guard let activity = activeActivities[alarmId] else { continue }
             
             let scheduledTime = activity.attributes.scheduledTime
+            let timeRemaining = scheduledTime.timeIntervalSince(now)
             
-            // 알람 시간이 되었는지 확인
             if now >= scheduledTime && !activity.content.state.isAlerting {
-                print("🔔 [AlarmService] Alarm time reached: \(alarmId)")
+                // 트리거 전에 다시 확인 (삭제된 알람이 아닌지)
+                guard cachedEntities[alarmId] != nil else { continue }
                 await triggerAlarm(alarmId: alarmId)
+            } else if !activity.content.state.isAlerting {
+                let lastUpdate = activity.content.state.lastUpdateTime
+                let timeSinceLastUpdate = now.timeIntervalSince(lastUpdate)
+                
+                // 5분 이내: 매번 업데이트 (1초마다 정확히 줄어들도록)
+                if timeRemaining <= 300 {
+                    let newState = AlarmAttributes.ContentState(
+                        isAlerting: false,
+                        motionCount: activity.content.state.motionCount,
+                        requiredMotionCount: activity.content.state.requiredMotionCount,
+                        lastUpdateTime: now
+                    )
+                    await updateLiveActivity(for: alarmId, contentState: newState)
+                } else if timeRemaining <= 600 {
+                    if timeSinceLastUpdate >= 5.0 {
+                        let newState = AlarmAttributes.ContentState(
+                            isAlerting: false,
+                            motionCount: activity.content.state.motionCount,
+                            requiredMotionCount: activity.content.state.requiredMotionCount,
+                            lastUpdateTime: now
+                        )
+                        await updateLiveActivity(for: alarmId, contentState: newState)
+                    }
+                } else if timeRemaining <= 3600 {
+                    if timeSinceLastUpdate >= 10.0 {
+                        let newState = AlarmAttributes.ContentState(
+                            isAlerting: false,
+                            motionCount: activity.content.state.motionCount,
+                            requiredMotionCount: activity.content.state.requiredMotionCount,
+                            lastUpdateTime: now
+                        )
+                        await updateLiveActivity(for: alarmId, contentState: newState)
+                    }
+                } else {
+                    // 1시간 이상: 1분마다 업데이트
+                    if timeSinceLastUpdate >= 60.0 {
+                        let newState = AlarmAttributes.ContentState(
+                            isAlerting: false,
+                            motionCount: activity.content.state.motionCount,
+                            requiredMotionCount: activity.content.state.requiredMotionCount,
+                            lastUpdateTime: now
+                        )
+                        await updateLiveActivity(for: alarmId, contentState: newState)
+                    }
+                }
             }
         }
     }
@@ -458,19 +435,15 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     // MARK: - 알람 트리거
     func triggerAlarm(alarmId: UUID) async {
         guard let entity = cachedEntities[alarmId] else {
-            print("⚠️ [AlarmService] Entity not found for alarm: \(alarmId)")
             return
         }
         
-        print("🔔 [AlarmService] Triggering alarm: \(alarmId)")
         
         // Live Activity가 없으면 생성
         if activeActivities[alarmId] == nil {
-            print("⚠️ [AlarmService] Live Activity not found, creating new one: \(alarmId)")
             do {
                 try await startLiveActivity(alarm: entity, scheduledTime: Date())
             } catch {
-                print("❌ [AlarmService] Failed to create Live Activity: \(error)")
             }
         }
         
@@ -497,7 +470,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         // 백그라운드에서도 재생되도록 AVAudioSession 사용
         playAlarmSound()
         
-        print("✅ [AlarmService] Alarm triggered successfully: \(alarmId)")
     }
     
     // MARK: - 사운드 재생
@@ -524,7 +496,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         // 지속적인 반복 재생 시작 (백그라운드에서도 작동)
         startSoundLoop()
         
-        print("🔊 [AlarmService] Alarm sound played")
     }
     
     // MARK: - 사운드 반복 재생
@@ -598,20 +569,16 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                     
                     // 만료된 태스크 종료
                     UIApplication.shared.endBackgroundTask(expiredTaskId)
-                    print("⚠️ [AlarmService] Background task expired: \(expiredTaskId.rawValue)")
                     
                     // 알람이 계속 울리면 새로운 태스크 시작 (최대 30초)
                     if !self.monitoringAlarmIds.isEmpty {
-                        print("🔊 [AlarmService] Restarting background task for ongoing alarm")
                         self.startBackgroundTask()
                     }
                 }
             )
             
             if self.backgroundTaskId != .invalid {
-                print("🔊 [AlarmService] Background task started: \(self.backgroundTaskId.rawValue)")
             } else {
-                print("⚠️ [AlarmService] Failed to start background task")
             }
         }
     }
@@ -625,14 +592,12 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         // 메인 스레드에서 백그라운드 태스크 종료
         DispatchQueue.main.async {
             UIApplication.shared.endBackgroundTask(taskId)
-            print("🔊 [AlarmService] Background task ended: \(taskId.rawValue)")
         }
     }
     
     // MARK: - 모션 감지
     public func startMonitoringMotion(for executionId: UUID) {
         guard motionManager.isAccelerometerAvailable else {
-            print("⚠️ [Motion] Accelerometer not available")
             return
         }
         
@@ -652,7 +617,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 
                 // 모션 업데이트가 중단되었는지 확인하고 재시작
                 if !self.motionManager.isAccelerometerActive {
-                    print("⚠️ [Motion] Accelerometer stopped, restarting: \(executionId)")
                     await Task { @MainActor in
                         self.startMotionUpdates(for: executionId)
                     }.value
@@ -690,7 +654,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         lastLogTime[executionId] = nil
         motionManager.accelerometerUpdateInterval = 0.05  // 더 빠른 업데이트 (0.1초 -> 0.05초)
 
-        print("📱 [Motion] Starting motion detection: \(executionId)")
         
         let queue = OperationQueue()
         queue.name = "com.withday.motion"
@@ -701,7 +664,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             guard let self = self else { return }
             
             if let error = error {
-                print("❌ [Motion] Accelerometer error: \(error)")
                 // 에러 발생 시 재시작 시도
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     if self.monitoringAlarmIds.contains(executionId) {
@@ -738,7 +700,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 let changeValue = change
                 DispatchQueue.main.async {
                     let appState = UIApplication.shared.applicationState
-                    print("📱 [Motion] Accel: \(String(format: "%.2f", accelValue)), Delta: \(String(format: "%.2f", deltaValue)), Change: \(String(format: "%.2f", changeValue)), State: \(appState.rawValue)")
                 }
                 self.lastLogTime[executionId] = currentTime
             }
@@ -752,18 +713,15 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 let c = (self.motionDetectionCount[executionId] ?? 0) + 1
                 self.motionDetectionCount[executionId] = c
                 
-                print("📱 [Motion] Shake detected: \(c)/\(self.requiredMotionCount) (delta: \(String(format: "%.2f", delta)), change: \(String(format: "%.2f", change)))")
                 
                 // Live Activity 업데이트 (모션 횟수 표시)
                 Task { @MainActor in
                     await self.updateLiveActivityMotionCount(executionId, count: c)
-                    print("📱 [Motion] Live Activity updated with motion count: \(c)")
                 }
                 
                 // 감지 후 잠시 대기 (연속 감지 방지)
                 DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
                     if c >= self.requiredMotionCount {
-                        print("✅ [Motion] Sufficient shake detected! Stopping alarm: \(executionId)")
                         Task {
                             await self.stopAlarm(executionId)
                         }
@@ -785,9 +743,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             if let foundActivity = activities.first(where: { $0.attributes.alarmId == alarmId }) {
                 activity = foundActivity
                 activeActivities[alarmId] = foundActivity
-                print("📱 [Motion] Found Live Activity in system: \(alarmId)")
             } else {
-                print("⚠️ [Motion] Live Activity not found for motion update: \(alarmId)")
                 return
             }
         }
@@ -802,7 +758,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         )
         
         await updateLiveActivity(for: alarmId, contentState: newState)
-        print("✅ [Motion] Live Activity motion count updated: \(count)/\(requiredMotionCount)")
     }
     
     private func stopAlarm(_ alarmId: UUID) async {
@@ -826,7 +781,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             endBackgroundTask()
         }
         
-        print("✅ [AlarmService] Alarm stopped: \(alarmId)")
     }
     
     public func stopMonitoringMotion(for executionId: UUID) {
@@ -843,7 +797,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             
             if motionDetectionCount.isEmpty {
                 motionManager.stopAccelerometerUpdates()
-                print("📱 [Motion] Stopped all motion monitoring")
             }
         }
     }
@@ -862,7 +815,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 return
             }
                 
-            print("🔕 [AppIntent] Notification received from alarm stop Intent: \(alarmId)")
             
             Task {
                 await self.stopAlarm(alarmId)
@@ -882,7 +834,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 return
             }
                 
-            print("⏰ [AppIntent] Notification received from alarm snooze Intent: \(alarmId)")
             
             Task {
                 // 현재 알람 중지
@@ -892,9 +843,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 let snoozeTime = Date().addingTimeInterval(10 * 60) // 10분
                 do {
                     try await self.scheduleAlarm(entity)
-                    print("✅ [AppIntent] Alarm snoozed for 10 minutes: \(alarmId)")
                 } catch {
-                    print("❌ [AppIntent] Failed to snooze alarm: \(error)")
                 }
             }
         }
@@ -955,27 +904,14 @@ private class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                willPresent notification: UNNotification,
                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        // 백그라운드에서도 알림 표시
         completionHandler([.banner, .sound, .badge])
         
         // 알람 트리거
         if let alarmIdString = notification.request.content.userInfo["alarmId"] as? String,
            let alarmId = UUID(uuidString: alarmIdString) {
-            print("🔔 [NotificationDelegate] Alarm notification received: \(alarmId)")
             Task { @MainActor in
                 await self.alarmService?.triggerAlarm(alarmId: alarmId)
             }
         }
     }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                               didReceive response: UNNotificationResponse,
-                               withCompletionHandler completionHandler: @escaping () -> Void) {
-        if let alarmIdString = response.notification.request.content.userInfo["alarmId"] as? String,
-           let alarmId = UUID(uuidString: alarmIdString) {
-            print("📱 [NotificationDelegate] Alarm notification tapped: \(alarmId)")
-        }
-        completionHandler()
-    }
 }
-

@@ -23,9 +23,7 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
     
     public func completeExecution(id: UUID) async throws {
         guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
-            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [
-                    NSLocalizedDescriptionKey: "Execution not found"
-            ])
+            throw AlarmExecutionError.executionNotFound
         }
         
         execution.completedTime = Date.now
@@ -45,9 +43,7 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
 
     public func markMotionDetected(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
         guard var execution = try await alarmExecutionRepository.fetch(id: id) else {
-            throw NSError(domain: "AlarmExecutionUseCaseImpl", code: 404, userInfo: [
-                NSLocalizedDescriptionKey: "Execution not found"
-            ])
+            throw AlarmExecutionError.executionNotFound
         }
 
         execution.motionData = motionData

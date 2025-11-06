@@ -1,6 +1,7 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
+import Playgrounds
 
 let project = WithDay().module()
 
@@ -42,7 +43,9 @@ struct WithDay: Module {
                 bundleId: "me.jihoon.\(typeName).Widget",
                 infoPlist: .file(path: "Widget/Support/Info.plist"),
                 sources: ["Widget/Sources/**"],
-                resources: ["Widget/Support/WithDayWidget.intentdefinition"],
+                resources: [
+                    "Widget/Resources/**"
+                ],
                 configuration: .App,
                 dependencies: [
                     .core(target: "AlarmCore"),

@@ -1,9 +1,7 @@
-//
-//  SettingRepository.swift
-//  SettingDomainInterface
-//
-//  Created by Jihoonahn on 10/20/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
-
 import Foundation
+
+public protocol SettingRepository {
+    func fetch(userId: UUID) async throws -> SettingEntity?
+    func save(_ setting: SettingEntity) async throws
+    func update(_ setting: SettingEntity) async throws
+}

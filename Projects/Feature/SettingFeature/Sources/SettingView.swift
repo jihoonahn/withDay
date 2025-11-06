@@ -60,10 +60,10 @@ public struct SettingView: View {
                             SettingRow(
                                 title: "언어설정",
                                 navigationView: {
-                                    LanguageView()
+                                    LanguageView(interface: interface)
                                 },
                                 trailing: {
-                                    Text("한국어")
+                                    Text(state.language)
                                         .foregroundStyle(.gray)
                                 }
                             )
@@ -71,7 +71,7 @@ public struct SettingView: View {
                             SettingRow(
                                 title: "알림",
                                 navigationView: {
-                                    AlarmSetting()
+                                    AlarmSetting(interface: interface)
                                 }
                             )
 
@@ -117,8 +117,10 @@ public struct SettingView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            // 화면이 나타날 때마다 사용자 정보 새로고침
+            // 화면이 나타날 때마다 사용자 정보 및 설정 새로고침
             interface.send(.fetchUserInformation)
+            interface.send(.loadLanguage)
+            interface.send(.loadNotificationSetting)
         }
         .task {
             for await newState in interface.stateStream {

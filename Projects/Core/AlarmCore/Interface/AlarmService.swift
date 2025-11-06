@@ -32,6 +32,32 @@ public enum AlarmStatus {
     case unknown
 }
 
+public enum AlarmServiceError: Error, LocalizedError {
+    case notificationAuthorizationDenied
+    case liveActivitiesNotEnabled
+    case invalidTimeFormat
+    case dateCreationFailed
+    case dateCalculationFailed
+    case entityNotFound
+    
+    public var errorDescription: String? {
+        switch self {
+        case .notificationAuthorizationDenied:
+            return "Notification authorization denied"
+        case .liveActivitiesNotEnabled:
+            return "Live Activities not enabled. Please enable in Settings."
+        case .invalidTimeFormat:
+            return "Invalid time format"
+        case .dateCreationFailed:
+            return "Failed to create date"
+        case .dateCalculationFailed:
+            return "Failed to calculate date"
+        case .entityNotFound:
+            return "Entity not found; load from DB first"
+        }
+    }
+}
+
 public protocol AlarmSchedulerService {
     func scheduleAlarm(_ alarm: AlarmEntity) async throws
     func cancelAlarm(_ alarmId: UUID) async throws

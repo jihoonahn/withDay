@@ -9,4 +9,14 @@ public enum SettingAction: ActionType {
     case emailTextDidChanged(String)
     case deleteUserAccount
     case logout
+    
+    // Language Settings
+    case loadLanguage
+    case setLanguage(String)
+    case saveLanguage(String)
+    
+    // Notification Settings
+    case loadNotificationSetting
+    case setNotificationSetting(Bool)
+    case saveNotificationSetting(Bool)
 }

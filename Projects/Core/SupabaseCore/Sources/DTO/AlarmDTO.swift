@@ -61,11 +61,14 @@ struct AlarmDTO: Codable {
     }
     
     func toEntity() -> AlarmEntity {
-        AlarmEntity(
+        // Supabase에서 가져온 시간 형식 정규화 (HH:mm:ss -> HH:mm)
+        let normalizedTime = normalizeTime(time)
+        
+        return AlarmEntity(
             id: id,
             userId: userId,
             label: label,
-            time: time,
+            time: normalizedTime,
             repeatDays: repeatDays,
             snoozeEnabled: snoozeEnabled,
             snoozeInterval: snoozeInterval,
@@ -80,6 +83,33 @@ struct AlarmDTO: Codable {
             createdAt: createdAt,
             updatedAt: updatedAt
         )
+    }
+    
+    /// 시간 문자열을 HH:mm 형식으로 정규화
+    /// "00:00:00" -> "00:00", "00:00" -> "00:00"
+    private func normalizeTime(_ timeString: String) -> String {
+        let components = timeString.split(separator: ":")
+        
+        // HH:mm:ss 형식인 경우
+        if components.count >= 3 {
+            guard let hour = Int(components[0]),
+                  let minute = Int(components[1]) else {
+                return timeString
+            }
+            return String(format: "%02d:%02d", hour, minute)
+        }
+        
+        // HH:mm 형식인 경우 그대로 반환
+        if components.count == 2 {
+            guard let hour = Int(components[0]),
+                  let minute = Int(components[1]) else {
+                return timeString
+            }
+            return String(format: "%02d:%02d", hour, minute)
+        }
+        
+        // 형식이 맞지 않으면 원본 반환
+        return timeString
     }
 }
 

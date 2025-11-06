@@ -33,6 +33,30 @@ public struct AlarmReducer: Reducer {
         return user.id
     }
     
+    // MARK: - Error Handling
+    private func handleError(_ error: Error) -> String {
+        if let alarmServiceError = error as? AlarmServiceError {
+            switch alarmServiceError {
+            case .notificationAuthorizationDenied:
+                return "알림 권한이 거부되었습니다. 설정에서 알림 권한을 허용해주세요."
+            case .liveActivitiesNotEnabled:
+                return "Live Activities가 비활성화되어 있습니다. 설정에서 활성화해주세요."
+            case .invalidTimeFormat:
+                return "잘못된 시간 형식입니다."
+            case .dateCreationFailed:
+                return "날짜 생성에 실패했습니다."
+            case .dateCalculationFailed:
+                return "날짜 계산에 실패했습니다."
+            case .entityNotFound:
+                return "알람을 찾을 수 없습니다. 다시 시도해주세요."
+            }
+        } else if let alarmError = error as? AlarmError {
+            return alarmError.localizedDescription
+        } else {
+            return error.localizedDescription
+        }
+    }
+    
     public func reduce(state: inout AlarmState, action: AlarmAction) -> [Effect<AlarmAction>] {
         switch action {
         case .loadAlarms:
@@ -43,7 +67,6 @@ public struct AlarmReducer: Reducer {
                     do {
                         let userId = try await getCurrentUserId()
                         
-                        // 전략: 로컬 먼저 조회 (빠른 응답)
                         if let localService = self.localService {
                             let localModels = try await localService.fetchAlarms(userId: userId)
                             let localAlarms = localModels.map { model in
@@ -82,15 +105,41 @@ public struct AlarmReducer: Reducer {
                             emitter.send(.setAlarms(alarms))
                         }
                     } catch {
-                        emitter.send(.setError("알람을 불러오는데 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람을 불러오는데 실패했습니다: \(handleError(error))"))
                     }
                 }
             ]
             
         case .setAlarms(let alarms):
             state.isLoading = false
-            state.alarms = alarms.sorted { $0.time < $1.time }
-            return []
+            state.alarms = alarms.sorted { $0.time < $1.time }            
+            return [
+                Effect { [self] emitter in
+                    guard let scheduler = self.alarmScheduler else { return }                    
+                    let currentAlarmIds = Set(alarms.map { $0.id })
+
+                    for alarm in alarms where alarm.isEnabled {
+                        do {
+                            // 기존 알람 취소 후 재스케줄링 (중복 방지)
+                            try await scheduler.cancelAlarm(alarm.id)
+                            print("🔔 [AlarmReducer] 알람 스케줄링: \(alarm.id)")
+                            try await scheduler.scheduleAlarm(alarm)
+                        } catch {
+                            print("❌ [AlarmReducer] 알람 스케줄링 실패: \(alarm.id), \(error)")
+                        }
+                    }
+                    
+                    // 비활성화된 알람들 취소
+                    for alarm in alarms where !alarm.isEnabled {
+                        do {
+                            try await scheduler.cancelAlarm(alarm.id)
+                            print("🔕 [AlarmReducer] 비활성화된 알람 취소: \(alarm.id)")
+                        } catch {
+                            print("❌ [AlarmReducer] 알람 취소 실패: \(alarm.id), \(error)")
+                        }
+                    }
+                }
+            ]
             
         case .createAlarm(let time, let label, let repeatDays):
             // 비즈니스 로직: AlarmEntity 생성 및 추가
@@ -124,7 +173,7 @@ public struct AlarmReducer: Reducer {
                         emitter.send(.addAlarm(newAlarm))
                     } catch {
                         print("❌ [AlarmReducer] 알람 생성 실패: \(error)")
-                        emitter.send(.setError("알람 생성에 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람 생성에 실패했습니다: \(handleError(error))"))
                     }
                 }
             ]
@@ -212,7 +261,7 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 복구
                         print("❌ [AlarmReducer] 알람 추가 실패: \(error)")
-                        emitter.send(.setError("알람 추가에 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람 추가에 실패했습니다: \(handleError(error))"))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -306,7 +355,7 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 복구
                         print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
-                        emitter.send(.setError("알람 수정에 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람 수정에 실패했습니다: \(handleError(error))"))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -343,7 +392,7 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 에러 메시지만 표시 (이미 UI에서는 제거됨)
                         print("❌ [AlarmReducer] 알람 삭제 실패: \(error)")
-                        emitter.send(.setError("알람 삭제에 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람 삭제에 실패했습니다: \(handleError(error))"))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -396,7 +445,7 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 원래 상태로 복구
                         print("❌ [AlarmReducer] 알람 토글 실패: \(error)")
-                        emitter.send(.setError("알람 토글에 실패했습니다: \(error.localizedDescription)"))
+                        emitter.send(.setError("알람 토글에 실패했습니다: \(handleError(error))"))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -485,7 +534,7 @@ public struct AlarmReducer: Reducer {
                             emitter.send(.updateAlarm(updatedAlarm))
                         } catch {
                             print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
-                            emitter.send(.setError("알람 업데이트에 실패했습니다: \(error.localizedDescription)"))
+                            emitter.send(.setError("알람 업데이트에 실패했습니다: \(handleError(error))"))
                         }
                     }
                 ]
@@ -517,62 +566,6 @@ public struct AlarmReducer: Reducer {
                     emitter.send(.updateAlarm(updatedAlarm))
                 }
             ]
-            
-        case .testLiveActivity:
-            // 테스트용 Live Activity 시작
-            return [
-                Effect { [self] emitter in
-                    do {
-                        print("🧪 [AlarmReducer] 테스트용 Live Activity 시작")
-                        
-                        // 1분 후에 울릴 테스트 알람 생성
-                        let testTime = Date().addingTimeInterval(60) // 1분 후
-                        let calendar = Calendar.current
-                        let hour = calendar.component(.hour, from: testTime)
-                        let minute = calendar.component(.minute, from: testTime)
-                        let timeString = String(format: "%02d:%02d", hour, minute)
-                        
-                        let userId = try await getCurrentUserId()
-                        
-                        let testAlarm = AlarmEntity(
-                            id: UUID(),
-                            userId: userId,
-                            label: "테스트 알람",
-                            time: timeString,
-                            repeatDays: [],
-                            snoozeEnabled: true,
-                            snoozeInterval: 5,
-                            snoozeLimit: 3,
-                            soundName: "default",
-                            soundURL: nil,
-                            vibrationPattern: nil,
-                            volumeOverride: nil,
-                            linkedMemoIds: [],
-                            showMemosOnAlarm: false,
-                            isEnabled: true,
-                            createdAt: Date(),
-                            updatedAt: Date()
-                        )
-                        
-                        // Live Activity 시작
-                        if let scheduler = self.alarmScheduler {
-                            print("🧪 [AlarmReducer] 테스트 알람 스케줄링: \(testAlarm.id)")
-                            print("   - 시간: \(timeString)")
-                            print("   - 1분 후 울림")
-                            try await scheduler.scheduleAlarm(testAlarm)
-                            print("✅ [AlarmReducer] 테스트 Live Activity 시작 완료")
-                            emitter.send(.setError("✅ 테스트 Live Activity가 시작되었습니다! (1분 후 울림)"))
-                        } else {
-                            print("⚠️ [AlarmReducer] AlarmSchedulerService를 찾을 수 없습니다")
-                            emitter.send(.setError("알람 스케줄러를 사용할 수 없습니다"))
-                        }
-                    } catch {
-                        print("❌ [AlarmReducer] 테스트 Live Activity 시작 실패: \(error)")
-                        emitter.send(.setError("테스트 Live Activity 시작 실패: \(error.localizedDescription)"))
-                    }
-                }
-            ]
-            
         case .setError(let message):
             state.isLoading = false
             state.errorMessage = message

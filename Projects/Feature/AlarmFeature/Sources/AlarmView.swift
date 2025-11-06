@@ -41,17 +41,6 @@ public struct AlarmView: View {
                         
                         Spacer()
                         
-                        // 테스트용 Live Activity 버튼
-                        Button(action: {
-                            interface.send(.testLiveActivity)
-                        }) {
-                            Image(systemName: "wand.and.stars")
-                                .foregroundColor(JColor.primary)
-                                .frame(width: 40, height: 40)
-                                .glassEffect(.clear.interactive(), in: .circle)
-                        }
-                        .padding(.trailing, 8)
-                        
                         Button(action: {
                             interface.send(.showingAddAlarmState(true))
                         }) {

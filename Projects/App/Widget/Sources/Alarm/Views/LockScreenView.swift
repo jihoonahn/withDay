@@ -9,30 +9,13 @@ struct LockScreenView: View {
     var body: some View {
         VStack(spacing: 16) {
             if state.isAlerting {
-                // Alarm is currently alerting - show shake count
                 VStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "hand.raised.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.red, .orange],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        
-                        Text("Shake to dismiss")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                    }
-                    
                     let remaining = max(0, state.requiredMotionCount - state.motionCount)
                     Text("\(remaining)")
                         .font(.system(size: 64, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: remaining > 0 ? [.red, .orange] : [.green, .mint],
+                                colors: remaining > 0 ? [.white, .gray] : [.green, .mint],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -40,7 +23,7 @@ struct LockScreenView: View {
                         .contentTransition(.numericText())
                     
                     if remaining > 0 {
-                        Text("more shake\(remaining == 1 ? "" : "s") needed")
+                        Text("Shake\(remaining == 1 ? "" : "s") needed to dismiss")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     } else {
@@ -60,28 +43,6 @@ struct LockScreenView: View {
             } else {
                 // Alarm is scheduled - show time remaining
                 VStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "alarm.fill")
-                            .font(.title2)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.orange, .red],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        
-                        if let label = attributes.alarmLabel, !label.isEmpty {
-                            Text(label)
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                        } else {
-                            Text("Alarm")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                    
                     Text(formatTime(attributes.scheduledTime))
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
@@ -90,7 +51,7 @@ struct LockScreenView: View {
                         .font(.system(size: 24, weight: .semibold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.orange, .red],
+                                colors: [.white, .gray],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

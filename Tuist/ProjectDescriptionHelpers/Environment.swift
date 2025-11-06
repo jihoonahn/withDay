@@ -3,6 +3,7 @@ import TuistUI
 
 public struct AppEnvironment: ModuleObject {
     public let organizationName = "me.jihoon"
+    public let devTeam = ""
     public let baseSettings: SettingsDictionary = [
         "SUPABASE_URL": SettingValue.string(Environment.supabaseURL ?? ""),
         "SUPABASE_ANON_KEY": SettingValue.string(Environment.supabaseAnonKey ?? "")

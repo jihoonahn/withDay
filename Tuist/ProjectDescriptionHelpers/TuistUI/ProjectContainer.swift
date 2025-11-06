@@ -26,7 +26,16 @@ public struct ProjectContainer<Content>: Module where Content: TargetConvertable
         projectModifier.fileHeaderTemplate = fileHeaderTemplate
         projectModifier.additionalFiles = additionalFiles
         projectModifier.resourceSynthesizers = resourceSynthesizers
-        projectModifier.settings = .settings(configurations: env.configuration.configure(into: xcconfig))
+        projectModifier.settings = .settings(
+            base: env.baseSettings
+                .merging(
+                    SettingsDictionary()
+                        .codeSignIdentityAppleDevelopment()
+                        .automaticCodeSigning(devTeam: env.devTeam)
+                ),
+            configurations: env.configuration.configure(into: xcconfig),
+            defaultSettings: .recommended
+        )
 
         let targetNames = projectModifier.targets.map { $0.name }
 
