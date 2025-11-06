@@ -31,8 +31,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.6.1"),
         .package(url: "https://github.com/apple/swift-log", from: "1.6.3"),
-        .package(url: "https://github.com/pelagornis/swift-command", from: "1.3.1"),
-        .package(url: "https://github.com/pelagornis/swift-file", from: "1.2.3"),
+        .package(url: "https://github.com/pelagornis/swift-command", from: "1.3.2"),
+        .package(url: "https://github.com/pelagornis/swift-file", from: "1.4.0"),
         .package(url: "https://github.com/pelagornis/swift-cli", from: "0.1.2"),
     ],
     targets: [

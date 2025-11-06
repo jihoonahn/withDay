@@ -1,5 +1,5 @@
 {
-  "originHash" : "e89acee817e23f6dadf1ef10ac5542f194300b0b7aa16b93c1bebe01f6486457",
+  "originHash" : "0e04f70feb2a33e397b6f2411f84116a6a09fbd9e7579787d571c0e6cba7926a",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pelagornis/swift-command",
       "state" : {
-        "revision" : "a447aab3a90512fa8c791a910eb53d116487e4e1",
-        "version" : "1.3.1"
+        "revision" : "448ec4c74441ccf184f481c8c2c9355e3b8210f5",
+        "version" : "1.3.2"
       }
     },
     {
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pelagornis/swift-file",
       "state" : {
-        "revision" : "c193707fff23617c82c0f04ea2f1ec570a93fe34",
-        "version" : "1.2.3"
+        "revision" : "579ad2e67fbd77526a8c26b2cf40c78486434c55",
+        "version" : "1.4.0"
       }
     },
     {
