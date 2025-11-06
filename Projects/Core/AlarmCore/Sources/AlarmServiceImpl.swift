@@ -204,7 +204,87 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             throw AlarmServiceError.liveActivitiesNotEnabled
         }
         
-        // 기존 Live Activity 제거
+        // 현재 활성화된 모든 Live Activity 확인
+        let allActivities = Activity<AlarmAttributes>.activities
+        let now = Date()
+        
+        // 모든 활성화된 알람의 다음 시간을 계산하여 가장 가까운 알람 찾기
+        var alarmTimes: [(alarmId: UUID, time: Date)] = []
+        
+        // 현재 스케줄링하려는 알람 추가
+        if scheduledTime > now {
+            alarmTimes.append((alarm.id, scheduledTime))
+        }
+        
+        // 기존 활성화된 Live Activity들의 시간 추가
+        for activity in allActivities {
+            let activityScheduledTime = activity.attributes.scheduledTime
+            if activityScheduledTime > now {
+                alarmTimes.append((activity.attributes.alarmId, activityScheduledTime))
+            }
+        }
+        
+        // cachedEntities에서도 확인 (스케줄링되었지만 Live Activity가 아직 시작되지 않은 알람들)
+        for (alarmId, cachedAlarm) in cachedEntities {
+            // 이미 Live Activity가 있는 알람은 제외
+            if activeActivities[alarmId] != nil { continue }
+            
+            // 활성화된 알람만 확인
+            guard cachedAlarm.isEnabled else { continue }
+            
+            // 다음 알람 시간 계산
+            let comps = cachedAlarm.time.split(separator: ":").compactMap { Int($0) }
+            guard comps.count == 2 else { continue }
+            let hour = comps[0], minute = comps[1]
+            
+            let calendar = Calendar.current
+            let nextAlarmTime: Date
+            if cachedAlarm.repeatDays.isEmpty {
+                var todayComponents = calendar.dateComponents([.year, .month, .day], from: now)
+                todayComponents.hour = hour
+                todayComponents.minute = minute
+                todayComponents.second = 0
+                todayComponents.nanosecond = 0
+                
+                guard let todayAlarmDate = calendar.date(from: todayComponents) else { continue }
+                
+                if todayAlarmDate > now {
+                    nextAlarmTime = todayAlarmDate
+                } else {
+                    guard let tomorrowAlarmDate = calendar.date(byAdding: .day, value: 1, to: todayAlarmDate) else { continue }
+                    nextAlarmTime = tomorrowAlarmDate
+                }
+            } else {
+                nextAlarmTime = calculateNextAlarmTime(hour: hour, minute: minute, repeatDays: cachedAlarm.repeatDays)
+            }
+            
+            if nextAlarmTime > now {
+                alarmTimes.append((alarmId, nextAlarmTime))
+            }
+        }
+        
+        // 가장 가까운 알람 찾기
+        guard let closestAlarm = alarmTimes.min(by: { $0.time < $1.time }) else {
+            // 활성화된 알람이 없으면 Live Activity를 시작하지 않음
+            await endLiveActivity(for: alarm.id)
+            return
+        }
+        
+        // 현재 스케줄링하려는 알람이 가장 가까운 알람이 아니면 Live Activity를 시작하지 않음
+        if closestAlarm.alarmId != alarm.id {
+            // 기존 Live Activity만 제거 (현재 알람의)
+            await endLiveActivity(for: alarm.id)
+            return
+        }
+        
+        // 가장 가까운 알람이므로, 다른 모든 Live Activity 종료
+        for activity in allActivities {
+            if activity.attributes.alarmId != alarm.id {
+                await endLiveActivity(for: activity.attributes.alarmId)
+            }
+        }
+        
+        // 기존 Live Activity 제거 (현재 알람의)
         await endLiveActivity(for: alarm.id)
         
         let attributes = AlarmAttributes(
@@ -310,6 +390,9 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             stopSoundLoop()
             endBackgroundTask()
         }
+        
+        // 다음으로 가까운 알람 찾아서 Live Activity 시작
+        await startNextClosestAlarmLiveActivity()
     }
 
     // MARK: - update
@@ -781,6 +864,8 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             endBackgroundTask()
         }
         
+        // 다음으로 가까운 알람 찾아서 Live Activity 시작
+        await startNextClosestAlarmLiveActivity()
     }
     
     public func stopMonitoringMotion(for executionId: UUID) {
@@ -846,6 +931,66 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 } catch {
                 }
             }
+        }
+    }
+    
+    // MARK: - 다음 가까운 알람 Live Activity 시작
+    private func startNextClosestAlarmLiveActivity() async {
+        let now = Date()
+        
+        // 모든 활성화된 알람의 다음 시간을 계산하여 가장 가까운 알람 찾기
+        var alarmTimes: [(alarm: AlarmEntity, time: Date)] = []
+        
+        // cachedEntities에서 활성화된 알람들 확인
+        for (alarmId, cachedAlarm) in cachedEntities {
+            // 이미 Live Activity가 있는 알람은 제외
+            if activeActivities[alarmId] != nil { continue }
+            
+            // 활성화된 알람만 확인
+            guard cachedAlarm.isEnabled else { continue }
+            
+            // 다음 알람 시간 계산
+            let comps = cachedAlarm.time.split(separator: ":").compactMap { Int($0) }
+            guard comps.count == 2 else { continue }
+            let hour = comps[0], minute = comps[1]
+            
+            let calendar = Calendar.current
+            let nextAlarmTime: Date
+            if cachedAlarm.repeatDays.isEmpty {
+                var todayComponents = calendar.dateComponents([.year, .month, .day], from: now)
+                todayComponents.hour = hour
+                todayComponents.minute = minute
+                todayComponents.second = 0
+                todayComponents.nanosecond = 0
+                
+                guard let todayAlarmDate = calendar.date(from: todayComponents) else { continue }
+                
+                if todayAlarmDate > now {
+                    nextAlarmTime = todayAlarmDate
+                } else {
+                    guard let tomorrowAlarmDate = calendar.date(byAdding: .day, value: 1, to: todayAlarmDate) else { continue }
+                    nextAlarmTime = tomorrowAlarmDate
+                }
+            } else {
+                nextAlarmTime = calculateNextAlarmTime(hour: hour, minute: minute, repeatDays: cachedAlarm.repeatDays)
+            }
+            
+            if nextAlarmTime > now {
+                alarmTimes.append((cachedAlarm, nextAlarmTime))
+            }
+        }
+        
+        // 가장 가까운 알람 찾기
+        guard let closestAlarm = alarmTimes.min(by: { $0.time < $1.time }) else {
+            return
+        }
+        
+        // 가장 가까운 알람의 Live Activity 시작
+        do {
+            try await startLiveActivity(alarm: closestAlarm.alarm, scheduledTime: closestAlarm.time)
+            print("🔔 [AlarmServiceImpl] 다음 가까운 알람 Live Activity 시작: \(closestAlarm.alarm.id)")
+        } catch {
+            print("❌ [AlarmServiceImpl] 다음 가까운 알람 Live Activity 시작 실패: \(error)")
         }
     }
     
