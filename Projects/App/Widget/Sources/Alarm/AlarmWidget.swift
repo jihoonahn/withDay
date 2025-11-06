@@ -13,7 +13,7 @@ struct AlarmWidget: Widget {
             
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    AppLogoView(isAlerting: contentState.isAlerting)
+                    AppLogoView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 }
 
@@ -31,7 +31,7 @@ struct AlarmWidget: Widget {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } compactLeading: {
-                CompactLogoView(isAlerting: contentState.isAlerting)
+                CompactLogoView()
             } compactTrailing: {
                 if contentState.isAlerting {
                     CompactMotionView(
@@ -42,7 +42,7 @@ struct AlarmWidget: Widget {
                     CompactTimeView(nextAlarmTime: context.attributes.scheduledTime)
                 }
             } minimal: {
-                CompactLogoView(isAlerting: contentState.isAlerting)
+                CompactLogoView()
             }
             .keylineTint(.orange)
         }
@@ -52,8 +52,6 @@ struct AlarmWidget: Widget {
 // MARK: - Expanded Region Views
 
 private struct AppLogoView: View {
-    let isAlerting: Bool
-    
     var body: some View {
         HStack(alignment: .center) {
             VStack {
@@ -69,8 +67,6 @@ private struct AppLogoView: View {
 }
 
 private struct CompactLogoView: View {
-    let isAlerting: Bool
-    
     var body: some View {
         HStack(alignment: .center) {
             Image("Logo")
@@ -137,7 +133,7 @@ private struct CompactTimeView: View {
             .font(.system(size: 16, weight: .bold, design: .rounded))
             .foregroundStyle(
                 LinearGradient(
-                    colors: [.orange, .red],
+                    colors: [.white, .gray],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
@@ -157,7 +153,7 @@ struct CompactMotionView: View {
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .foregroundStyle(
                 LinearGradient(
-                    colors: remaining > 0 ? [.red, .orange] : [.green, .mint],
+                    colors: remaining > 0 ? [.white, .gray] : [.green, .mint],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
