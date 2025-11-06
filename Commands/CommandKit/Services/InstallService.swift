@@ -33,8 +33,6 @@ public final class InstallService {
         dependency: String,
         version: String
     ) {
-        let newPackage = #".package(url: "https://github.com/\#(dependency)", from: "\#(version)")"#
-
         let folder = try? Folder(path: path).subfolder(at: "Tuist")
         let file = try? folder?.file(at: "Package.swift")
         let data = try? file?.read()
@@ -58,9 +56,15 @@ public final class InstallService {
             (dependenciesBody as NSString).substring(with: $0.range)
         }
 
-        if !existingPackages.contains(where: { $0.contains("github.com/\(dependency)") }) {
-            existingPackages.append(newPackage)
+        // 기존 패키지에 이미 존재하는지 확인
+        if existingPackages.contains(where: { $0.contains("github.com/\(dependency)") }) {
+            logger.info("ℹ️ Package \(dependency) already exists in Package.swift")
+            return
         }
+
+        // 기본적으로 from 형식으로 새 패키지 추가 (사용자가 필요하면 직접 수정 가능)
+        let newPackage = #".package(url: "https://github.com/\#(dependency)", from: "\#(version)")"#
+        existingPackages.append(newPackage)
 
         let newDependencyBlock = existingPackages.joined(separator: ",\n        ")
         let fullReplacement = "dependencies: [\n        \(newDependencyBlock)\n    ]"
@@ -80,7 +84,6 @@ public final class InstallService {
     }
 
     private func runInstallCommand(path: Path) {
-        let path = path.rawValue
         if tuist.install(at: path).errorOutput.isEmpty {
             logger.info("✅ Tuist Install Command successfully")
         } else {

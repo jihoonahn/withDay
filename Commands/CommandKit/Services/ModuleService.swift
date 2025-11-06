@@ -114,7 +114,7 @@ public final class ModuleStore: ObservableObject {
     }
 
     func selectCreateAction() {
-        let path = Path.current.rawValue
+        let path = Path.current
 
         guard let name = name,
               let selectedLayer = selectedLayer,

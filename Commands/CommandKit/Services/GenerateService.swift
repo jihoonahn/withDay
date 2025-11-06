@@ -32,7 +32,6 @@ public final class GenerateService {
     }
 
     private func runGenerateCommand(type: GenerateType, path: Path) {
-        let path = path.rawValue
         let tuistEnv = type == .default ? "" : "TUIST_ENV=\(type.rawValue)"
 
         if bash.run("\(tuistEnv) tuist generate", directory: path).errorOutput.isEmpty {

@@ -25,7 +25,6 @@ public final class CleanService {
     }
 
     private func runCleanCommand(path: Path) {
-        let path = path.rawValue
         if tuist.clean(at: path).errorOutput.isEmpty {
             logger.info("✅ Tuist Clean Command successfully")
         } else {

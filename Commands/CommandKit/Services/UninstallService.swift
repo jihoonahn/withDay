@@ -94,7 +94,6 @@ public final class UninstallService {
     }
 
     private func runUninstallCommand(path: Path) {
-        let path = path.rawValue
         if tuist.install(at: path).errorOutput.isEmpty {
             logger.info("✅ Tuist Uninstall Command successfully")
         } else {
