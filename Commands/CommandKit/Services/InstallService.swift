@@ -56,13 +56,11 @@ public final class InstallService {
             (dependenciesBody as NSString).substring(with: $0.range)
         }
 
-        // 기존 패키지에 이미 존재하는지 확인
         if existingPackages.contains(where: { $0.contains("github.com/\(dependency)") }) {
             logger.info("ℹ️ Package \(dependency) already exists in Package.swift")
             return
         }
 
-        // 기본적으로 from 형식으로 새 패키지 추가 (사용자가 필요하면 직접 수정 가능)
         let newPackage = #".package(url: "https://github.com/\#(dependency)", from: "\#(version)")"#
         existingPackages.append(newPackage)
 

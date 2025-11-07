@@ -18,7 +18,8 @@ public final class GenerateService {
         path: String?,
     ) throws {
         let path = self.path(to: path)
-        runGenerateCommand(type: type,path: path)
+        runInstallCommand(path: path)
+        runGenerateCommand(type: type, path: path)
     }
 
     // Mark: - Helper
@@ -31,9 +32,17 @@ public final class GenerateService {
         }
     }
 
+    private func runInstallCommand(path: Path) {
+        if bash.run("tuist install", directory: path).errorOutput.isEmpty {
+            logger.info("✅ Tuist Install Command successfully")
+        } else {
+            logger.error("❌ Tuist Install Command failed")
+        }
+    }
+
     private func runGenerateCommand(type: GenerateType, path: Path) {
         let tuistEnv = type == .default ? "" : "TUIST_ENV=\(type.rawValue)"
-
+        
         if bash.run("\(tuistEnv) tuist generate", directory: path).errorOutput.isEmpty {
             logger.info("✅ Tuist Generate Command successfully")
         } else {
