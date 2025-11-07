@@ -13,7 +13,8 @@ struct NetworkCore: Module {
             Sources(
                 name: typeName,
                 dependencies: [
-                    .core(target: typeName, type: .interface)
+                    .core(target: typeName, type: .interface),
+                    .external(name: "Network")
                 ]
             )
             Interface(
