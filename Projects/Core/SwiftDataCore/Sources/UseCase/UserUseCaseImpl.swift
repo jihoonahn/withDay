@@ -22,6 +22,10 @@ public final class UserUseCaseImpl: UserUseCase {
         return try await userRepository.fetchCurrentUser()
     }
     
+    public func updateUser(_ user: UserEntity) async throws {
+        return try await userRepository.saveUser(user)
+    }
+
     public func updateGoals(wakeUp: Date?, sleep: Date?) async throws {
         if let wakeUp = wakeUp {
             try await userRepository.updateWakeUpGoal(wakeUp)

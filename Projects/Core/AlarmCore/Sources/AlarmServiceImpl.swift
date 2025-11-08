@@ -467,50 +467,15 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 guard cachedEntities[alarmId] != nil else { continue }
                 await triggerAlarm(alarmId: alarmId)
             } else if !activity.content.state.isAlerting {
-                let lastUpdate = activity.content.state.lastUpdateTime
-                let timeSinceLastUpdate = now.timeIntervalSince(lastUpdate)
-                
-                // 5분 이내: 매번 업데이트 (1초마다 정확히 줄어들도록)
-                if timeRemaining <= 300 {
-                    let newState = AlarmAttributes.ContentState(
-                        isAlerting: false,
-                        motionCount: activity.content.state.motionCount,
-                        requiredMotionCount: activity.content.state.requiredMotionCount,
-                        lastUpdateTime: now
-                    )
-                    await updateLiveActivity(for: alarmId, contentState: newState)
-                } else if timeRemaining <= 600 {
-                    if timeSinceLastUpdate >= 5.0 {
-                        let newState = AlarmAttributes.ContentState(
-                            isAlerting: false,
-                            motionCount: activity.content.state.motionCount,
-                            requiredMotionCount: activity.content.state.requiredMotionCount,
-                            lastUpdateTime: now
-                        )
-                        await updateLiveActivity(for: alarmId, contentState: newState)
-                    }
-                } else if timeRemaining <= 3600 {
-                    if timeSinceLastUpdate >= 10.0 {
-                        let newState = AlarmAttributes.ContentState(
-                            isAlerting: false,
-                            motionCount: activity.content.state.motionCount,
-                            requiredMotionCount: activity.content.state.requiredMotionCount,
-                            lastUpdateTime: now
-                        )
-                        await updateLiveActivity(for: alarmId, contentState: newState)
-                    }
-                } else {
-                    // 1시간 이상: 1분마다 업데이트
-                    if timeSinceLastUpdate >= 60.0 {
-                        let newState = AlarmAttributes.ContentState(
-                            isAlerting: false,
-                            motionCount: activity.content.state.motionCount,
-                            requiredMotionCount: activity.content.state.requiredMotionCount,
-                            lastUpdateTime: now
-                        )
-                        await updateLiveActivity(for: alarmId, contentState: newState)
-                    }
-                }
+                // 모든 경우에 1초마다 업데이트하여 부드러운 카운트다운 표시
+                // Extension 메서드를 사용하므로 Live Activity 상태를 자주 업데이트해야 함
+                let newState = AlarmAttributes.ContentState(
+                    isAlerting: false,
+                    motionCount: activity.content.state.motionCount,
+                    requiredMotionCount: activity.content.state.requiredMotionCount,
+                    lastUpdateTime: now
+                )
+                await updateLiveActivity(for: alarmId, contentState: newState)
             }
         }
     }

@@ -15,14 +15,17 @@ struct SettingFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
-                    .domain(target: "SettingDomain", type: .interface),
+                    .domain(target: "LocalizationDomain", type: .interface),
+                    .domain(target: "NotificationDomain", type: .interface),
+                    .shared(target: "Localization"),
                     .shared(target: "Dependency"),
                 ]
             )
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "SettingDomain", type: .interface)
+                    .domain(target: "LocalizationDomain", type: .interface),
+                    .domain(target: "NotificationDomain", type: .interface),
                 ]
             )
             Example(

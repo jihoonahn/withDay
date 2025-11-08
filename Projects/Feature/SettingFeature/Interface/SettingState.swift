@@ -1,5 +1,6 @@
 import Foundation
 import Rex
+import RefineUIIcons
 
 public struct SettingState: StateType {
     public var name: String = ""
@@ -7,5 +8,7 @@ public struct SettingState: StateType {
     public var version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.1"
     public var language: String = "한국어"
     public var notificationEnabled: Bool = true
+    public var toastMessage: String = ""
+    public var toastIsPresented: Bool = false
     public init() {}
 }

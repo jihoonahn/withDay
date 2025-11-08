@@ -15,5 +15,6 @@ struct CompactTimeView: View {
             )
             .contentTransition(.numericText())
             .shadow(color: .orange.opacity(0.3), radius: 1, x: 0, y: 1)
+            .monospacedDigit()
     }
 }

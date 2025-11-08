@@ -1,9 +1,11 @@
-//
-//  Toast+View.swift
-//  Designsystem
-//
-//  Created by Jihoonahn on 11/8/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
+import SwiftUI
 
-import Foundation
+public extension View {
+    func toast<Content: View>(
+        isPresented: Binding<Bool>,
+        duration: TimeInterval = 1.25,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        modifier(ToastModifier(isPresented: isPresented, duration: duration, toastContent: content))
+    }
+}

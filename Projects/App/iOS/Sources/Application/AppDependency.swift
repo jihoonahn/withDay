@@ -27,7 +27,8 @@ import MemoDomainInterface
 import AlarmExecutionDomainInterface
 import MotionRawDataDomainInterface
 import AchievementDomainInterface
-import SettingDomainInterface
+import LocalizationDomainInterface
+import NotificationDomainInterface
 
 // Core - Supabase
 import SupabaseCoreInterface
@@ -41,9 +42,13 @@ import SwiftDataCore
 import AlarmCoreInterface
 import AlarmCore
 
-// Core - Setting
-import SettingCoreInterface
-import SettingCore
+// Core - Localization
+import LocalizationCoreInterface
+import LocalizationCore
+
+// Core - Notification
+import NotificationCoreInterface
+import NotificationCore
 
 @MainActor
 public class AppDependencies {
@@ -147,16 +152,29 @@ public class AppDependencies {
             )
         }
         
-        // Setting Repository & UseCase
-        container.register(SettingRepository.self) {
-            SettingCore.SettingRepositoryImpl(
-                settingService: container.resolve(SettingCoreInterface.SettingService.self)
+        // Localization Repository & UseCase
+        container.register(LocalizationRepository.self) {
+            LocalizationCore.LocalizationRepositoryImpl(
+                service: container.resolve(LocalizationCoreInterface.LocalizationService.self)
             )
         }
         
-        container.register(SettingUseCase.self) {
-            SettingCore.SettingUseCaseImpl(
-                settingRepository: container.resolve(SettingRepository.self)
+        container.register(LocalizationUseCase.self) {
+            LocalizationCore.LocalizationUseCaseImpl(
+                repository: container.resolve(LocalizationRepository.self)
+            )
+        }
+        
+        // Notification Repository & UseCase
+        container.register(NotificationPreferenceRepository.self) {
+            NotificationCore.NotificationRepositoryImpl(
+                service: container.resolve(NotificationCoreInterface.NotificationService.self)
+            )
+        }
+        
+        container.register(NotificationUseCase.self) {
+            NotificationCore.NotificationUseCaseImpl(
+                repository: container.resolve(NotificationPreferenceRepository.self)
             )
         }
         
@@ -193,8 +211,13 @@ public class AppDependencies {
         )
         
         container.registerSingleton(
-            SettingCoreInterface.SettingService.self,
-            instance: SettingCore.SettingServiceImpl()
+            LocalizationCoreInterface.LocalizationService.self,
+            instance: LocalizationCore.LocalizationServiceImpl()
+        )
+        
+        container.registerSingleton(
+            NotificationCoreInterface.NotificationService.self,
+            instance: NotificationCore.NotificationServiceImpl()
         )
         
         // MARK: - Feature Factories
@@ -237,7 +260,13 @@ public class AppDependencies {
         
         container.register(SettingFactory.self) {
             let userUseCase = container.resolve(UserUseCase.self)
-            return SettingFactoryImpl.create(userUseCase: userUseCase)
+            let localizationUseCase = container.resolve(LocalizationUseCase.self)
+            let notificationUseCase = container.resolve(NotificationUseCase.self)
+            return SettingFactoryImpl.create(
+                userUseCase: userUseCase,
+                localizationUseCase: localizationUseCase,
+                notificationUseCase: notificationUseCase
+            )
         }
     }
 }
@@ -297,7 +326,11 @@ extension DIContainer {
         resolve(AlarmCoreInterface.AlarmSchedulerService.self)
     }
     
-    public var settingService: SettingCoreInterface.SettingService {
-        resolve(SettingCoreInterface.SettingService.self)
+    public var localizationService: LocalizationCoreInterface.LocalizationService {
+        resolve(LocalizationCoreInterface.LocalizationService.self)
+    }
+    
+    public var notificationService: NotificationCoreInterface.NotificationService {
+        resolve(NotificationCoreInterface.NotificationService.self)
     }
 }

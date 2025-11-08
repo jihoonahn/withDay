@@ -115,11 +115,11 @@ public final class UserServiceImpl: UserService {
     }
     
     public func updateUser(_ user: UserEntity) async throws {
-        let dto = UserDTO(from: user)
+        let userDTO = UserDTO(from: user)
         
         try await client
             .from("users")
-            .update(dto)
+            .update(userDTO)
             .eq("id", value: user.id.uuidString)
             .execute()
     }

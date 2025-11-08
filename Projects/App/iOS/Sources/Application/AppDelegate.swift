@@ -33,26 +33,4 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             return true
         }
     }
-    
-    // MARK: - URL Handling (OAuth Callback)
-    
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        print("✅ [AppDelegate] Received URL: \(url)")
-        
-        if url.scheme == "withday" {
-            Task {
-                do {
-                    let supabaseService = DIContainer.shared.resolve(SupabaseService.self)
-                    
-                    try await supabaseService.client.auth.session(from: url)
-                    print("✅ [AppDelegate] OAuth callback processed successfully")
-                } catch {
-                    print("❌ [AppDelegate] OAuth callback error: \(error)")
-                }
-            }
-            return true
-        }
-        
-        return false
-    }
 }

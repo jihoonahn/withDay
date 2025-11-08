@@ -58,6 +58,7 @@ struct LockScreenView: View {
                         )
                         .contentTransition(.numericText())
                         .padding(.top, 4)
+                        .monospacedDigit()
                 }
                 .padding()
             }

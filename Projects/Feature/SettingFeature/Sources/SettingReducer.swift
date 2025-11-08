@@ -2,19 +2,24 @@ import Foundation
 import Rex
 import SettingFeatureInterface
 import UserDomainInterface
-import SettingDomainInterface
+import LocalizationDomainInterface
+import NotificationDomainInterface
 import Dependency
 import BaseFeature
 
 public struct SettingReducer: Reducer {
     private let userUseCase: UserUseCase
-    private let settingUseCase: SettingUseCase?
+    private let localizationUseCase: LocalizationUseCase
+    private let notificationUseCase: NotificationUseCase
     
-    public init(userUseCase: UserUseCase) {
+    public init(
+        userUseCase: UserUseCase,
+        localizationUseCase: LocalizationUseCase,
+        notificationUseCase: NotificationUseCase
+    ) {
         self.userUseCase = userUseCase
-        self.settingUseCase = DIContainer.shared.isRegistered(SettingUseCase.self)
-            ? DIContainer.shared.resolve(SettingUseCase.self)
-            : nil
+        self.localizationUseCase = localizationUseCase
+        self.notificationUseCase = notificationUseCase
     }
     
     private func getCurrentUserId() async throws -> UUID {
@@ -42,8 +47,8 @@ public struct SettingReducer: Reducer {
 
         case let .setUserInformation(name, email):
             return [
-                .just(.emailTextDidChanged(email)),
-                .just(.nameTextDidChanged(name))
+                .just(.nameTextDidChanged(name)),
+                .just(.emailTextDidChanged(email))
             ]
         case let .nameTextDidChanged(text):
             state.name = text
@@ -52,6 +57,28 @@ public struct SettingReducer: Reducer {
         case let .emailTextDidChanged(text):
             state.email = text
             return []
+        
+        case let .saveProfile(name):
+            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return [
+                Effect { emitter in
+                    do {
+                        guard var currentUser = try await userUseCase.getCurrentUser() else {
+                            logger.error("Save User failed: Current user not found")
+                            emitter.send(.showToast("사용자 정보를 찾을 수 없습니다."))
+                            return
+                        }
+                        print(currentUser)
+                        currentUser.displayName = trimmedName.isEmpty ? nil : trimmedName
+                        try await userUseCase.updateUser(currentUser)
+                        emitter.send(.setUserInformation(name: currentUser.displayName ?? "", email: currentUser.email ?? ""))
+                        emitter.send(.showToast("프로필이 저장되었습니다."))
+                    } catch {
+                        logger.error("Save User failed: \(error)")
+                        emitter.send(.showToast("프로필 저장에 실패했습니다."))
+                    }
+                }
+            ]
             
         case .deleteUserAccount:
             print("Delete User")
@@ -73,11 +100,11 @@ public struct SettingReducer: Reducer {
         // Language Settings
         case .loadLanguage:
             return [
-                Effect { [self] emitter in
+                Effect { emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        if let language = try await self.settingUseCase?.getLanguage(userId: userId) {
-                            emitter.send(.setLanguage(language))
+                        let userId = try await self.getCurrentUserId()
+                        if let localization = try await self.localizationUseCase.loadPreferredLanguage(userId: userId) {
+                            emitter.send(.setLanguage(localization.languageCode))
                         }
                     } catch {
                         logger.error("Language load failed: \(error)")
@@ -91,10 +118,10 @@ public struct SettingReducer: Reducer {
             
         case let .saveLanguage(language):
             return [
-                Effect { [self] emitter in
+                Effect { emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        try await self.settingUseCase?.saveLanguage(userId: userId, language: language)
+                        let userId = try await self.getCurrentUserId()
+                        try await self.localizationUseCase.savePreferredLanguage(userId: userId, languageCode: language)
                         emitter.send(.setLanguage(language))
                     } catch {
                         logger.error("Language save failed: \(error)")
@@ -105,11 +132,11 @@ public struct SettingReducer: Reducer {
         // Notification Settings
         case .loadNotificationSetting:
             return [
-                Effect { [self] emitter in
+                Effect { emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        if let enabled = try await self.settingUseCase?.getNotificationSetting(userId: userId) {
-                            emitter.send(.setNotificationSetting(enabled))
+                        let userId = try await self.getCurrentUserId()
+                        if let preference = try await self.notificationUseCase.loadPreference(userId: userId) {
+                            emitter.send(.setNotificationSetting(preference.isEnabled))
                         }
                     } catch {
                         logger.error("Notification setting load failed: \(error)")
@@ -123,16 +150,26 @@ public struct SettingReducer: Reducer {
             
         case let .saveNotificationSetting(enabled):
             return [
-                Effect { [self] emitter in
+                Effect { emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        try await self.settingUseCase?.saveNotificationSetting(userId: userId, enabled: enabled)
+                        let userId = try await self.getCurrentUserId()
+                        try await self.notificationUseCase.updatePreference(userId: userId, isEnabled: enabled)
                         emitter.send(.setNotificationSetting(enabled))
                     } catch {
                         logger.error("Notification setting save failed: \(error)")
                     }
                 }
             ]
+        case let .showToast(message):
+            state.toastMessage = message
+            return [
+                .just(.toastStatus(false)),
+                .just(.toastStatus(true))
+            ]
+
+        case let .toastStatus(status):
+            state.toastIsPresented = status
+            return []
         }
     }
 }

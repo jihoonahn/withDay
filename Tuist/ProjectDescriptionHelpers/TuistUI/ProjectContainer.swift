@@ -9,7 +9,7 @@ public struct ProjectContainer<Content>: Module where Content: TargetConvertable
     public init(
         name: String,
         target xcconfig: AppConfiguration.XCConfigTarget,
-        options: ProjectDescription.Project.Options = .options(),
+        options: ProjectDescription.Project.Options? = nil,
         package: [Package] = [],
         fileHeaderTemplate: FileHeaderTemplate? = nil,
         additionalFiles: [FileElement] = [],
@@ -21,7 +21,7 @@ public struct ProjectContainer<Content>: Module where Content: TargetConvertable
     ) {
         projectModifier.targets = content().map { $0.build() }
         projectModifier.organizationName = env.organizationName
-        projectModifier.options = options
+        projectModifier.options = options ?? env.options
         projectModifier.packages = package
         projectModifier.fileHeaderTemplate = fileHeaderTemplate
         projectModifier.additionalFiles = additionalFiles

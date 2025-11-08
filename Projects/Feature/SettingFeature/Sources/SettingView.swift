@@ -3,6 +3,7 @@ import Rex
 import SettingFeatureInterface
 import RefineUIIcons
 import Designsystem
+import Localization
 
 public struct SettingView: View {
     let interface: SettingInterface
@@ -23,7 +24,7 @@ public struct SettingView: View {
                         VStack(spacing: 20) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Settings")
+                                    Text("SettingTitle".localized())
                                         .font(.system(size: 34, weight: .bold))
                                         .foregroundColor(.white)
                                 }
@@ -40,7 +41,7 @@ public struct SettingView: View {
                             ) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 10) {
-                                        Text("\(state.name)님")
+                                        Text(String(format: "SettingProfileGreeting".localized(), locale: Locale.current, state.name))
                                             .font(JTypography.subtitle)
                                             .foregroundStyle(.white)
                                         Text(state.email)
@@ -56,9 +57,9 @@ public struct SettingView: View {
                             }
                             .buttonStyle(.plain)
                         }
-                        SettingSection(title: "일반") {
+                        SettingSection(title: "SettingSectionGeneral".localized()) {
                             SettingRow(
-                                title: "언어설정",
+                                title: "SettingRowLanguage".localized(),
                                 navigationView: {
                                     LanguageView(interface: interface)
                                 },
@@ -69,7 +70,7 @@ public struct SettingView: View {
                             )
  
                             SettingRow(
-                                title: "알림",
+                                title: "SettingRowNotification".localized(),
                                 navigationView: {
                                     AlarmSetting(interface: interface)
                                 }
@@ -77,33 +78,33 @@ public struct SettingView: View {
 
                         }
                         SettingSection(
-                            title: "도움말"
+                            title: "SettingSectionHelp".localized()
                         ) {
-                            SettingRow(title: "공지사항", trailing: {
+                            SettingRow(title: "SettingRowNotice".localized(), trailing: {
                                 Image(refineUIIcon: .chevronRight16Regular)
                                     .foregroundStyle(.gray)
                             })
                             SettingRow(
-                                title: "개인정보 처리방침",
+                                title: "SettingRowPrivacyPolicy".localized(),
                                 trailing: {
                                     Image(refineUIIcon: .chevronRight16Regular)
                                         .foregroundStyle(.gray)
                                 }
                             )
                             SettingRow(
-                                title: "서비스 이용약관",
+                                title: "SettingRowTerms".localized(),
                                 trailing: {
                                     Image(refineUIIcon: .chevronRight16Regular)
                                         .foregroundStyle(.gray)
                                 }
                             )
-                            SettingRow(title: "버전", trailing: {
+                            SettingRow(title: "SettingRowVersion".localized(), trailing: {
                                 Text(state.version)
                                     .foregroundStyle(.gray)
                             })
                         }
                         SettingSection {
-                            Button("로그아웃") {
+                            Button("SettingButtonLogout".localized()) {
                                 interface.send(.logout)
                             }
                             .foregroundStyle(JColor.error)
@@ -117,7 +118,6 @@ public struct SettingView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            // 화면이 나타날 때마다 사용자 정보 및 설정 새로고침
             interface.send(.fetchUserInformation)
             interface.send(.loadLanguage)
             interface.send(.loadNotificationSetting)

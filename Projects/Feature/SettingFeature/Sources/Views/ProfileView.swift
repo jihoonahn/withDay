@@ -5,6 +5,7 @@ import SettingFeatureInterface
 struct ProfileView: View {
     let interface: SettingInterface
     @State private var state: SettingState
+    @Environment(\.dismiss) private var dismiss
     
     init(interface: SettingInterface, state: SettingState) {
         self.interface = interface
@@ -63,16 +64,26 @@ struct ProfileView: View {
                 .padding(.top, 20)
                 Spacer()
             }
+            .toast(isPresented: Binding(
+                get: {
+                    state.toastIsPresented
+                }, set: { status in
+                    interface.send(.toastStatus(status))
+                })
+            ) {
+                Toast(title: state.toastMessage)
+            }
         }
         .navigationTitle("프로필")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    
+                    interface.send(.saveProfile(state.name))
                 }
                 .foregroundStyle(.white)
             }
         }
+
         .task {
             for await newState in interface.stateStream {
                 await MainActor.run {

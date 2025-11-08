@@ -28,9 +28,6 @@ public struct SplashView: View {
                     .frame(width: 82, height: 76)
                 
                 Spacer()
-                    .frame(height: 45)
-
-                Spacer()
                 
                 VStack(spacing: 10) {
                     Text("from")

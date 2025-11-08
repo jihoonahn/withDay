@@ -1,13 +1,15 @@
 import Rex
 import UserDomainInterface
-import SettingDomainInterface
 
 public enum SettingAction: ActionType {
     case fetchUserInformation
-    case setUserInformation(name: String, email: String)  // 통합 액션
+    case setUserInformation(name: String, email: String)
     case nameTextDidChanged(String)
     case emailTextDidChanged(String)
+    case saveProfile(String)
     case deleteUserAccount
+    case showToast(String)
+    case toastStatus(Bool)
     case logout
     
     // Language Settings

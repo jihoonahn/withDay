@@ -1,13 +1,13 @@
 {
-  "originHash" : "c0ef88a7422bd454256c9094924274e1c7cb7eb07d30ab45a0ac44c1234e44f2",
+  "originHash" : "0f1e3bc233f6bb1725d70ee2cc70ca389cc06821726909e0d6ac326ab6492370",
   "pins" : [
     {
       "identity" : "refineui-system-icons",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pelagornis/refineui-system-icons",
       "state" : {
-        "revision" : "1c3cae83533201b7738438d0fbd12e305554e49b",
-        "version" : "0.3.16"
+        "revision" : "d95c664123c03b218bae1f8585df6691b71d0d55",
+        "version" : "0.3.17"
       }
     },
     {

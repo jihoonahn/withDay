@@ -14,6 +14,7 @@ struct AlarmWidget: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     LogoView(style: .basic)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding(.leading, 12)
                 }
 

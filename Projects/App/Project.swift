@@ -27,10 +27,11 @@ struct WithDay: Module {
                     .feature(target: "AlarmFeature"),
                     .feature(target: "WeatherFeature"),
                     .feature(target: "SettingFeature"),
-                    .core(target: "SettingCore"),
                     .core(target: "NetworkCore"),
+                    .core(target: "NotificationCore"),
                     .core(target: "SupabaseCore"),
                     .core(target: "SwiftDataCore"),
+                    .core(target: "LocalizationCore"),
                     .core(target: "AlarmCore"),
                     .shared(target: "Dependency"),
                     .shared(target: "Utility"),
@@ -59,6 +60,7 @@ struct WithDay: Module {
             configurations: env.configuration.configure(into: .App),
             defaultSettings: .recommended
         ))
+        .option(options: env.options)
         .scheme {
             Scheme.scheme(
                 name: "\(typeName)-dev",

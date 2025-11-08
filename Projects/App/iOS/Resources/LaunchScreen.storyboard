@@ -25,21 +25,20 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="copyright" translatesAutoresizingMaskIntoConstraints="NO" id="LY9-Hg-Fqz">
                                 <rect key="frame" x="134" y="739" width="125" height="20"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launch" translatesAutoresizingMaskIntoConstraints="NO" id="UYB-UP-1oI">
-                                <rect key="frame" x="155" y="398" width="82" height="76"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="launch" translatesAutoresizingMaskIntoConstraints="NO" id="UYB-UP-1oI">
+                                <rect key="frame" x="155" y="413" width="82" height="76"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="LY9-Hg-Fqz" secondAttribute="bottom" constant="25" id="3NV-lK-jkY"/>
-                            <constraint firstItem="UYB-UP-1oI" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="155" id="4Wp-kQ-Xzm"/>
                             <constraint firstItem="LY9-Hg-Fqz" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="134" id="8eW-Wt-CQD"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UYB-UP-1oI" secondAttribute="trailing" constant="156" id="Guk-YR-EJd"/>
+                            <constraint firstItem="UYB-UP-1oI" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="BSr-he-H3W"/>
+                            <constraint firstItem="UYB-UP-1oI" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Igz-6x-bWM"/>
                             <constraint firstItem="ALf-Rn-P5Y" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="LY8-LU-OST"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="LY9-Hg-Fqz" secondAttribute="trailing" constant="134" id="UHe-fr-5Kx"/>
                             <constraint firstItem="LY9-Hg-Fqz" firstAttribute="top" secondItem="ALf-Rn-P5Y" secondAttribute="bottom" constant="10" id="klW-2Q-IYG"/>
-                            <constraint firstItem="UYB-UP-1oI" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="280" id="qe1-8h-obW"/>
                         </constraints>
                     </view>
                 </viewController>

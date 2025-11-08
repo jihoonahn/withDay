@@ -2,6 +2,7 @@ import Foundation
 import UserDomainInterface
 
 public final class UserUseCaseImpl: UserUseCase {
+
     private let userRepository: UserRepository
     
     public init(userRepository: UserRepository) {
@@ -15,11 +16,15 @@ public final class UserUseCaseImpl: UserUseCase {
             displayName: displayName
         )
     }
-    
+
     public func getCurrentUser() async throws -> UserEntity? {
         return try await userRepository.fetchCurrentUser()
     }
-    
+
+    public func updateUser(_ user: UserEntity) async throws {
+        return try await userRepository.saveUser(user)
+    }
+
     public func updateGoals(wakeUp: Date?, sleep: Date?) async throws {
         if let wakeUp = wakeUp {
             try await userRepository.updateWakeUpGoal(wakeUp)
