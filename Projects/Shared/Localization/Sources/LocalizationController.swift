@@ -12,7 +12,7 @@ public final class LocalizationController {
         queue.sync { _languageCode }
     }
     
-    private init(defaultLanguage: String = Locale.current.languageCode ?? "ko") {
+    private init(defaultLanguage: String = Locale.current.language.languageCode?.identifier ?? "ko") {
         self._languageCode = defaultLanguage
     }
     
