@@ -66,17 +66,17 @@ public struct SettingReducer: Reducer {
                     do {
                         guard var currentUser = try await userUseCase.getCurrentUser() else {
                             logger.error("Save User failed: Current user not found")
-                            emitter.send(.showToast("사용자 정보를 찾을 수 없습니다."))
+                            emitter.send(.showToast("SettingToastUserNotFound".localized()))
                             return
                         }
                         print(currentUser)
                         currentUser.displayName = trimmedName.isEmpty ? nil : trimmedName
                         try await userUseCase.updateUser(currentUser)
                         emitter.send(.setUserInformation(name: currentUser.displayName ?? "", email: currentUser.email ?? ""))
-                        emitter.send(.showToast("프로필이 저장되었습니다."))
+                        emitter.send(.showToast("SettingToastProfileSaved".localized()))
                     } catch {
                         logger.error("Save User failed: \(error)")
-                        emitter.send(.showToast("프로필 저장에 실패했습니다."))
+                        emitter.send(.showToast("SettingToastProfileSaveFailed".localized()))
                     }
                 }
             ]

@@ -1,6 +1,7 @@
 import SwiftUI
 import Designsystem
 import SettingFeatureInterface
+import Localization
 
 struct ProfileView: View {
     let interface: SettingInterface
@@ -18,11 +19,11 @@ struct ProfileView: View {
             VStack(spacing: 24) {
                 VStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("이름")
+                        Text("SettingProfileNameTitle".localized())
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.gray)
                         JTextField(
-                            "이름을 입력하세요",
+                            "SettingProfileNamePlaceholder".localized(),
                             text: Binding(get: {
                                 state.name
                             }, set: { newValue in
@@ -31,11 +32,11 @@ struct ProfileView: View {
                         )
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("이메일")
+                        Text("SettingProfileEmailTitle".localized())
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.gray)
                         JTextField(
-                            "이메일을 입력하세요",
+                            "SettingProfileEmailPlaceholder".localized(),
                             text: Binding(get: {
                                 state.email
                             }, set: { newValue in
@@ -47,8 +48,10 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, 20)
                 VStack(spacing: 12) {
-                    Button("계정 삭제") {
+                    Button(action: {
                         interface.send(.deleteUserAccount)
+                    }) {
+                        Text("SettingProfileDeleteAccount".localized())
                     }
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity)
@@ -74,11 +77,13 @@ struct ProfileView: View {
                 Toast(title: state.toastMessage)
             }
         }
-        .navigationTitle("프로필")
+        .navigationTitle("SettingProfileNavigationTitle".localized())
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
+                Button(action: {
                     interface.send(.saveProfile(state.name))
+                }) {
+                    Text("SettingProfileSaveButton".localized())
                 }
                 .foregroundStyle(.white)
             }

@@ -2,6 +2,7 @@ import SwiftUI
 import Rex
 import Designsystem
 import SettingFeatureInterface
+import Localization
 
 struct NotificationView: View {
     let interface: SettingInterface
@@ -12,12 +13,14 @@ struct NotificationView: View {
             JColor.background.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
-                    Toggle("알림 활성화", isOn: Binding(
+                    Toggle(isOn: Binding(
                         get: { state.notificationEnabled },
                         set: { enabled in
                             interface.send(.saveNotificationSetting(enabled))
                         }
-                    ))
+                    )) {
+                        Text("SettingNotificationToggleEnabled".localized())
+                    }
                     .padding()
                     .background(JColor.card)
                     .cornerRadius(12)
