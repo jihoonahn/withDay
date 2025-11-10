@@ -14,11 +14,15 @@ struct NotificationCore: Module {
                 name: typeName,
                 dependencies: [
                     .core(target: typeName, type: .interface),
-                    .domain(target: "NotificationDomain", type: .interface)
+                    .domain(target: "NotificationDomain", type: .interface),
+                    .domain(target: "AlarmDomain", type: .interface)
                 ]
             )
             Interface(
-                name: typeName
+                name: typeName,
+                dependencies: [
+                    .domain(target: "AlarmDomain", type: .interface)
+                ]
             )
             Testing(
                 name: typeName,

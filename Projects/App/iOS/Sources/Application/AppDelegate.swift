@@ -4,7 +4,9 @@ import UserNotifications
 import Dependency
 import SupabaseCoreInterface
 import AlarmCoreInterface
-import AlarmCore
+import AlarmDomainInterface
+import UserDomainInterface
+import NotificationDomainInterface
 import WidgetKit
 
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -13,6 +15,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        Task {
+            let container = DIContainer.shared
+            let notificationUseCase = container.resolve(NotificationUseCase.self)
+            await notificationUseCase.clearFallbackNotifications()
+        }
         return true
     }
  
@@ -31,6 +38,25 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             return false
         default:
             return true
+        }
+    }
+    
+    func applicationWillTerminate(_ application: UIApplication) {
+        Task {
+            let container = DIContainer.shared
+            let userUseCase = container.resolve(UserUseCase.self)
+            guard let user = try? await userUseCase.getCurrentUser() else { return }
+            
+            let notificationUseCase = container.resolve(NotificationUseCase.self)
+            guard let preference = try? await notificationUseCase.loadPreference(userId: user.id),
+                  preference.isEnabled else {
+                await notificationUseCase.clearFallbackNotifications()
+                return
+            }
+            
+            let alarmUseCase = container.resolve(AlarmUseCase.self)
+            guard let alarms = try? await alarmUseCase.fetchAll(userId: user.id) else { return }
+            await notificationUseCase.scheduleFallbackNotifications(for: alarms)
         }
     }
 }

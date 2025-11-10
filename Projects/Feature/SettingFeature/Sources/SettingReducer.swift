@@ -6,6 +6,7 @@ import LocalizationDomainInterface
 import NotificationDomainInterface
 import Dependency
 import BaseFeature
+import Localization
 
 public struct SettingReducer: Reducer {
     private let userUseCase: UserUseCase
@@ -103,17 +104,37 @@ public struct SettingReducer: Reducer {
                 Effect { emitter in
                     do {
                         let userId = try await self.getCurrentUserId()
-                        if let localization = try await self.localizationUseCase.loadPreferredLanguage(userId: userId) {
-                            emitter.send(.setLanguage(localization.languageCode))
+                        let availableLanguages = try await self.localizationUseCase.fetchAvailableLocalizations()
+                        emitter.send(.setAvailableLanguages(availableLanguages))
+                        
+                        let savedLocalization = try await self.localizationUseCase.loadPreferredLanguage(userId: userId)
+                        let selectedCode = resolveLanguageCode(
+                            savedLocalization?.languageCode,
+                            availableLanguages: availableLanguages
+                        )
+
+                        if !selectedCode.isEmpty {
+                            await MainActor.run {
+                                LocalizationController.shared.apply(languageCode: selectedCode)
+                            }
                         }
+                        emitter.send(.setLanguage(selectedCode))
                     } catch {
                         logger.error("Language load failed: \(error)")
                     }
                 }
             ]
             
+        case let .setAvailableLanguages(languages):
+            state.languages = languages
+            if state.languageCode.isEmpty,
+               let first = languages.first {
+                state.languageCode = first.languageCode
+            }
+            return []
+            
         case let .setLanguage(language):
-            state.language = language
+            state.languageCode = language
             return []
             
         case let .saveLanguage(language):
@@ -122,6 +143,9 @@ public struct SettingReducer: Reducer {
                     do {
                         let userId = try await self.getCurrentUserId()
                         try await self.localizationUseCase.savePreferredLanguage(userId: userId, languageCode: language)
+                        await MainActor.run {
+                            LocalizationController.shared.apply(languageCode: language)
+                        }
                         emitter.send(.setLanguage(language))
                     } catch {
                         logger.error("Language save failed: \(error)")
@@ -136,6 +160,7 @@ public struct SettingReducer: Reducer {
                     do {
                         let userId = try await self.getCurrentUserId()
                         if let preference = try await self.notificationUseCase.loadPreference(userId: userId) {
+                            await self.notificationUseCase.updatePermissions(enabled: preference.isEnabled)
                             emitter.send(.setNotificationSetting(preference.isEnabled))
                         }
                     } catch {
@@ -154,6 +179,7 @@ public struct SettingReducer: Reducer {
                     do {
                         let userId = try await self.getCurrentUserId()
                         try await self.notificationUseCase.updatePreference(userId: userId, isEnabled: enabled)
+                        await self.notificationUseCase.updatePermissions(enabled: enabled)
                         emitter.send(.setNotificationSetting(enabled))
                     } catch {
                         logger.error("Notification setting save failed: \(error)")
@@ -171,5 +197,19 @@ public struct SettingReducer: Reducer {
             state.toastIsPresented = status
             return []
         }
+    }
+
+    // MARK: - Helper
+    private func resolveLanguageCode(
+        _ savedCode: String?,
+        availableLanguages: [LocalizationEntity]
+    ) -> String {
+        if let saved = savedCode {
+            if availableLanguages.contains(where: { $0.languageCode == saved }) {
+                return saved
+            }
+            return saved
+        }
+        return availableLanguages.first?.languageCode ?? ""
     }
 }

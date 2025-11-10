@@ -3,7 +3,7 @@ import Rex
 import Designsystem
 import SettingFeatureInterface
 
-struct AlarmSetting: View {
+struct NotificationView: View {
     let interface: SettingInterface
     @State private var state = SettingState()
     
@@ -26,7 +26,7 @@ struct AlarmSetting: View {
                 .padding(.top, 20)
             }
         }
-        .navigationTitle("알림")
+        .navigationTitle("SettingRowNotification".localized())
         .onAppear {
             interface.send(.loadNotificationSetting)
         }

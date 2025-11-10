@@ -13,7 +13,17 @@ public final class LocalizationUseCaseImpl: LocalizationUseCase {
     }
     
     public func savePreferredLanguage(userId: UUID, languageCode: String) async throws {
-        let entity = LocalizationEntity(languageCode: languageCode)
+        let available = try await repository.fetchAvailableLocalizations()
+        let label = available.first(where: { $0.languageCode == languageCode })?.languageLabel ?? languageCode
+        let entity = LocalizationEntity(languageCode: languageCode, languageLabel: label)
         try await repository.savePreferredLanguage(entity, for: userId)
+    }
+
+    public func fetchLocalizationBundle() -> Bundle {
+        repository.fetchLocalizationBundle()
+    }
+    
+    public func fetchAvailableLocalizations() async throws -> [LocalizationEntity] {
+        try await repository.fetchAvailableLocalizations()
     }
 }

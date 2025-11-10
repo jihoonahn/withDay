@@ -2,29 +2,28 @@ import SwiftUI
 import Rex
 import Designsystem
 import SettingFeatureInterface
+import LocalizationDomainInterface
 
 struct LanguageView: View {
     let interface: SettingInterface
     @State private var state = SettingState()
-    
-    private let languages = ["한국어", "English", "日本語", "中文"]
-    
+
     var body: some View {
         ZStack {
             JColor.background.ignoresSafeArea()
             ScrollView {
                 VStack(spacing: 16) {
-                    ForEach(languages, id: \.self) { language in
+                    ForEach(state.languages) { language in
                         Button(action: {
-                            interface.send(.saveLanguage(language))
+                            interface.send(.saveLanguage(language.languageCode))
                         }) {
                             HStack {
-                                Text(language)
+                                Text(language.languageLabel)
                                     .foregroundStyle(.white)
                                 Spacer()
-                                if state.language == language {
+                                if state.languageCode == language.languageCode {
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(JColor.primary)
+                                        .foregroundStyle(JColor.success)
                                 }
                             }
                             .padding()
@@ -38,7 +37,7 @@ struct LanguageView: View {
                 .padding(.top, 20)
             }
         }
-        .navigationTitle("언어 설정")
+        .navigationTitle("SettingRowLanguage".localized())
         .onAppear {
             interface.send(.loadLanguage)
         }

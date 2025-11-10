@@ -26,6 +26,7 @@ struct SettingFeature: Module {
                 dependencies: [
                     .domain(target: "LocalizationDomain", type: .interface),
                     .domain(target: "NotificationDomain", type: .interface),
+                    .shared(target: "Localization"),
                 ]
             )
             Example(

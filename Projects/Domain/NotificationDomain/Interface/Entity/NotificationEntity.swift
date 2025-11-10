@@ -1,6 +1,6 @@
 import Foundation
 
-public struct NotificationPreferenceEntity: Codable, Equatable {
+public struct NotificationEntity: Codable, Equatable {
     public var isEnabled: Bool
     public var updatedAt: Date
     

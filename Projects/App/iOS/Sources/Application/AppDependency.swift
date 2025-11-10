@@ -49,6 +49,7 @@ import LocalizationCore
 // Core - Notification
 import NotificationCoreInterface
 import NotificationCore
+import Localization
 
 @MainActor
 public class AppDependencies {
@@ -166,7 +167,7 @@ public class AppDependencies {
         }
         
         // Notification Repository & UseCase
-        container.register(NotificationPreferenceRepository.self) {
+        container.register(NotificationRepository.self) {
             NotificationCore.NotificationRepositoryImpl(
                 service: container.resolve(NotificationCoreInterface.NotificationService.self)
             )
@@ -174,7 +175,7 @@ public class AppDependencies {
         
         container.register(NotificationUseCase.self) {
             NotificationCore.NotificationUseCaseImpl(
-                repository: container.resolve(NotificationPreferenceRepository.self)
+                repository: container.resolve(NotificationRepository.self)
             )
         }
         
@@ -265,8 +266,12 @@ public class AppDependencies {
             return SettingFactoryImpl.create(
                 userUseCase: userUseCase,
                 localizationUseCase: localizationUseCase,
-                notificationUseCase: notificationUseCase
+                notificationUseCase: notificationUseCase,
             )
+        }
+        
+        Task {
+            await bootstrapPreferences(container: container)
         }
     }
 }
@@ -332,5 +337,28 @@ extension DIContainer {
     
     public var notificationService: NotificationCoreInterface.NotificationService {
         resolve(NotificationCoreInterface.NotificationService.self)
+    }
+}
+
+private extension AppDependencies {
+    static func bootstrapPreferences(container: DIContainer) async {
+        do {
+            let userUseCase = container.resolve(UserUseCase.self)
+            guard let user = try await userUseCase.getCurrentUser() else { return }
+            
+            let localizationUseCase = container.resolve(LocalizationUseCase.self)
+            if let localization = try await localizationUseCase.loadPreferredLanguage(userId: user.id) {
+                await MainActor.run {
+                    LocalizationController.shared.apply(languageCode: localization.languageCode)
+                }
+            }
+            
+            let notificationUseCase = container.resolve(NotificationUseCase.self)
+            if let preference = try await notificationUseCase.loadPreference(userId: user.id) {
+                await notificationUseCase.updatePermissions(enabled: preference.isEnabled)
+            }
+        } catch {
+            print("Preference bootstrap failed: \(error)")
+        }
     }
 }

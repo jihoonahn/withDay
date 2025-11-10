@@ -33,7 +33,9 @@ struct WithDay: Module {
                     .core(target: "SwiftDataCore"),
                     .core(target: "LocalizationCore"),
                     .core(target: "AlarmCore"),
+                    .domain(target: "AlarmDomain", type: .interface),
                     .shared(target: "Dependency"),
+                    .shared(target: "Localization"),
                     .shared(target: "Utility"),
                     .target(name: "\(typeName)Widget"),
                 ]

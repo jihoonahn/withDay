@@ -64,7 +64,7 @@ public struct SettingView: View {
                                     LanguageView(interface: interface)
                                 },
                                 trailing: {
-                                    Text(state.language)
+                                    Text(state.languageDisplayName)
                                         .foregroundStyle(.gray)
                                 }
                             )
@@ -72,7 +72,7 @@ public struct SettingView: View {
                             SettingRow(
                                 title: "SettingRowNotification".localized(),
                                 navigationView: {
-                                    AlarmSetting(interface: interface)
+                                    NotificationView(interface: interface)
                                 }
                             )
 

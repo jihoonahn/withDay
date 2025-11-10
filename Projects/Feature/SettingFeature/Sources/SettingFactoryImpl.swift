@@ -50,7 +50,7 @@ public extension SettingFactoryImpl {
             reducer: SettingReducer(
                 userUseCase: userUseCase,
                 localizationUseCase: localizationUseCase,
-                notificationUseCase: notificationUseCase
+                notificationUseCase: notificationUseCase,
             )
         )
         return SettingFactoryImpl(store: store)

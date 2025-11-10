@@ -1,5 +1,6 @@
 import Rex
 import UserDomainInterface
+import LocalizationDomainInterface
 
 public enum SettingAction: ActionType {
     case fetchUserInformation
@@ -14,6 +15,7 @@ public enum SettingAction: ActionType {
     
     // Language Settings
     case loadLanguage
+    case setAvailableLanguages([LocalizationEntity])
     case setLanguage(String)
     case saveLanguage(String)
     
