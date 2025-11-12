@@ -14,10 +14,20 @@ struct HomeFeature: Module {
                 name: typeName,
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
-                    .feature(target: typeName, type: .interface)
+                    .feature(target: typeName, type: .interface),
+                    .shared(target: "Localization"),
+                    .shared(target: "Dependency")
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .domain(target: "MemoDomain", type: .interface),
+                    .domain(target: "UserDomain", type: .interface),
+                    .domain(target: "AlarmExecutionDomain", type: .interface),
+                    .domain(target: "MemoDomain", type: .interface)
+                ]
+            )
             Example(
                 name: typeName,
                 dependencies: [

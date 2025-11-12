@@ -6,6 +6,7 @@ import UserDomainInterface
 import SwiftDataCoreInterface
 import AlarmCoreInterface
 import Dependency
+import Localization
 
 public struct AlarmReducer: Reducer {
     private let remoteRepository: AlarmRepository  // Supabase (원격)
@@ -38,23 +39,31 @@ public struct AlarmReducer: Reducer {
         if let alarmServiceError = error as? AlarmServiceError {
             switch alarmServiceError {
             case .notificationAuthorizationDenied:
-                return "알림 권한이 거부되었습니다. 설정에서 알림 권한을 허용해주세요."
+                return "AlarmErrorNotificationPermissionDenied".localized()
             case .liveActivitiesNotEnabled:
-                return "Live Activities가 비활성화되어 있습니다. 설정에서 활성화해주세요."
+                return "AlarmErrorLiveActivitiesDisabled".localized()
             case .invalidTimeFormat:
-                return "잘못된 시간 형식입니다."
+                return "AlarmErrorInvalidTimeFormat".localized()
             case .dateCreationFailed:
-                return "날짜 생성에 실패했습니다."
+                return "AlarmErrorDateCreationFailed".localized()
             case .dateCalculationFailed:
-                return "날짜 계산에 실패했습니다."
+                return "AlarmErrorDateCalculationFailed".localized()
             case .entityNotFound:
-                return "알람을 찾을 수 없습니다. 다시 시도해주세요."
+                return "AlarmErrorEntityNotFound".localized()
             }
         } else if let alarmError = error as? AlarmError {
             return alarmError.localizedDescription
         } else {
             return error.localizedDescription
         }
+    }
+    
+    private func formatErrorMessage(_ key: String, detail: String) -> String {
+        String(
+            format: key.localized(),
+            locale: Locale.appLocale,
+            detail
+        )
     }
     
     public func reduce(state: inout AlarmState, action: AlarmAction) -> [Effect<AlarmAction>] {
@@ -105,7 +114,12 @@ public struct AlarmReducer: Reducer {
                             emitter.send(.setAlarms(alarms))
                         }
                     } catch {
-                        emitter.send(.setError("알람을 불러오는데 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorLoadFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                     }
                 }
             ]
@@ -173,7 +187,12 @@ public struct AlarmReducer: Reducer {
                         emitter.send(.addAlarm(newAlarm))
                     } catch {
                         print("❌ [AlarmReducer] 알람 생성 실패: \(error)")
-                        emitter.send(.setError("알람 생성에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorCreateFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                     }
                 }
             ]
@@ -261,7 +280,12 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 복구
                         print("❌ [AlarmReducer] 알람 추가 실패: \(error)")
-                        emitter.send(.setError("알람 추가에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorAddFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -355,7 +379,12 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 복구
                         print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
-                        emitter.send(.setError("알람 수정에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorUpdateFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -392,7 +421,12 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 에러 메시지만 표시 (이미 UI에서는 제거됨)
                         print("❌ [AlarmReducer] 알람 삭제 실패: \(error)")
-                        emitter.send(.setError("알람 삭제에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorDeleteFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -445,7 +479,12 @@ public struct AlarmReducer: Reducer {
                     } catch {
                         // 실패 시 원래 상태로 복구
                         print("❌ [AlarmReducer] 알람 토글 실패: \(error)")
-                        emitter.send(.setError("알람 토글에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorToggleFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                         
                         // 실패 시 목록 다시 로드하여 복구
                         do {
@@ -505,7 +544,7 @@ public struct AlarmReducer: Reducer {
                             }
                             
                             guard let existingAlarm = foundAlarm else {
-                                emitter.send(.setError("알람을 찾을 수 없습니다"))
+                                emitter.send(.setError("AlarmErrorEntityNotFound".localized()))
                                 return
                             }
                             
@@ -534,7 +573,12 @@ public struct AlarmReducer: Reducer {
                             emitter.send(.updateAlarm(updatedAlarm))
                         } catch {
                             print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
-                            emitter.send(.setError("알람 업데이트에 실패했습니다: \(handleError(error))"))
+                        emitter.send(.setError(
+                            formatErrorMessage(
+                                "AlarmErrorUpdateFailed",
+                                detail: handleError(error)
+                            )
+                        ))
                         }
                     }
                 ]
@@ -587,7 +631,13 @@ enum AlarmError: Error {
     var localizedDescription: String {
         switch self {
         case .userNotFound:
-            return "로그인된 사용자를 찾을 수 없습니다"
+            return "AlarmErrorUserNotFound".localized()
         }
+    }
+}
+
+private extension Locale {
+    static var appLocale: Locale {
+        Locale(identifier: LocalizationController.shared.languageCode)
     }
 }

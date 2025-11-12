@@ -4,7 +4,6 @@ import UIKit
 import CoreMotion
 import UserNotifications
 import AudioToolbox
-import AVFoundation
 import AlarmCoreInterface
 import AlarmDomainInterface
 import Utility
@@ -23,14 +22,16 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     private var motionMonitorTask: Task<Void, Never>?
     private var alarmCheckTask: Task<Void, Never>?
     private var motionDetectionCount: [UUID: Int] = [:]
-    private let motionThreshold: Double = 0.8
-    private let motionChangeThreshold: Double = 0.3
+    private let motionThreshold: Double = 1.5  // 더 엄격한 임계값 (기존 0.8 -> 1.5)
+    private let motionChangeThreshold: Double = 0.8  // 더 엄격한 변화 임계값 (기존 0.3 -> 0.8)
     private let requiredMotionCount: Int = 3
     private var monitoringAlarmIds: Set<UUID> = []
     private var lastAccel: [UUID: Double] = [:]
     private var lastLogTime: [UUID: TimeInterval] = [:]
+    private var lastMotionDetectedAt: [UUID: Date] = [:]  // 모션 감지 쿨다운
     private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
     private var soundLoopTask: Task<Void, Never>?
+    private var soundLoopTimer: Timer?
 
     public init() {
         setupAppStateObserver()
@@ -90,15 +91,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     // MARK: - schedule
     public func scheduleAlarm(_ alarm: AlarmEntity) async throws {
         
-        // Notification 권한 확인
-        let authStatus = await notificationCenter.notificationSettings()
-        if authStatus.authorizationStatus != .authorized {
-            let granted = try await notificationCenter.requestAuthorization(options: [.alert, .sound, .badge])
-            guard granted else {
-                throw AlarmServiceError.notificationAuthorizationDenied
-            }
-        }
-        
         // Live Activity 권한 확인
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             throw AlarmServiceError.liveActivitiesNotEnabled
@@ -144,53 +136,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         }
 
         
-        try await scheduleNotification(alarmId: alarm.id, time: nextAlarmTime, label: alarm.label)
-        
         try await startLiveActivity(alarm: alarm, scheduledTime: nextAlarmTime)
-        
-    }
-    
-    // MARK: - UNNotification 스케줄링
-    private func scheduleNotification(alarmId: UUID, time: Date, label: String?) async throws {
-        // 기존 알림 제거
-        if let existingId = scheduledNotifications[alarmId] {
-            notificationCenter.removePendingNotificationRequests(withIdentifiers: [existingId])
-        }
-        
-        let content = UNMutableNotificationContent()
-        content.title = label ?? "Alarm"
-        content.body = "Alarm time"
-        
-        // 알람 사운드 설정 - 백그라운드에서도 사운드 재생되도록
-        content.sound = .defaultRingtone
-        
-        // InterruptionLevel을 timeSensitive로 설정하여 백그라운드에서도 사운드 재생
-        // critical은 특별한 권한이 필요하므로 timeSensitive 사용
-        if #available(iOS 15.0, *) {
-            content.interruptionLevel = .timeSensitive
-        }
-        
-        // Badge 설정
-        content.badge = 1
-        
-        content.categoryIdentifier = "ALARM"
-        content.userInfo = [
-            "alarmId": alarmId.uuidString,
-            "type": "alarm"
-        ]
-        
-        // 정확한 시간으로 트리거
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: time)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        
-        let request = UNNotificationRequest(
-            identifier: alarmId.uuidString,
-            content: content,
-            trigger: trigger
-        )
-        
-        try await notificationCenter.add(request)
-        scheduledNotifications[alarmId] = alarmId.uuidString
         
     }
     
@@ -359,6 +305,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         // Provide final content per iOS 16.2+ API
         let finalState = activity.content.state
         let finalContent = ActivityContent(state: finalState, staleDate: nil)
+
         await activity.end(finalContent, dismissalPolicy: .immediate)
         
         activeActivities.removeValue(forKey: alarmId)
@@ -366,13 +313,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
 
     // MARK: - cancel
     public func cancelAlarm(_ alarmId: UUID) async throws {
-        // 알림 제거 (pending과 delivered 모두)
-        if let notificationId = scheduledNotifications[alarmId] {
-            notificationCenter.removePendingNotificationRequests(withIdentifiers: [notificationId])
-            notificationCenter.removeDeliveredNotifications(withIdentifiers: [notificationId])
-            scheduledNotifications.removeValue(forKey: alarmId)
-        }
-        
         // Live Activity 종료
         await endLiveActivity(for: alarmId)
         
@@ -547,8 +487,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
     }
     
     // MARK: - 사운드 반복 재생
-    private var soundLoopTimer: Timer?
-    
     private func startSoundLoop() {
         soundLoopTimer?.invalidate()
         soundLoopTask?.cancel()
@@ -752,12 +690,26 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                 self.lastLogTime[executionId] = currentTime
             }
             
-            // 모션 감지: 두 조건 중 하나만 만족해도 감지 (더 민감하게)
-            // 방법 1: 가속도 변화가 임계값 이상
-            // 방법 2: 연속적인 변화가 임계값 이상
-            let isMotionDetected = delta > self.motionThreshold || change > self.motionChangeThreshold
+            // 모션 감지: 더 엄격한 조건
+            // 1. 가속도 변화가 임계값 이상이어야 함
+            // 2. 변화량도 임계값 이상이어야 함 (AND 조건으로 변경)
+            // 3. 쿨다운 시간 확인 (1.5초 이내 재감지 방지)
+            let now = Date()
+            let lastDetected = self.lastMotionDetectedAt[executionId]
+            let timeSinceLastDetection = lastDetected != nil ? now.timeIntervalSince(lastDetected!) : Double.greatestFiniteMagnitude
+            
+            // 쿨다운 시간 체크 (1.5초 이내에는 감지하지 않음)
+            guard timeSinceLastDetection >= 1.5 else {
+                return  // 쿨다운 중이면 무시
+            }
+            
+            // 두 조건 모두 만족해야 감지 (AND 조건)
+            let isMotionDetected = delta > self.motionThreshold && change > self.motionChangeThreshold
             
             if isMotionDetected {
+                // 쿨다운 업데이트
+                self.lastMotionDetectedAt[executionId] = now
+                
                 let c = (self.motionDetectionCount[executionId] ?? 0) + 1
                 self.motionDetectionCount[executionId] = c
                 
@@ -767,15 +719,13 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
                     await self.updateLiveActivityMotionCount(executionId, count: c)
                 }
                 
-                // 감지 후 잠시 대기 (연속 감지 방지)
-                DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                    if c >= self.requiredMotionCount {
-                        Task {
-                            await self.stopAlarm(executionId)
-                        }
-                        self.stopMonitoringMotion(for: executionId)
-                        return
+                // 3번 이상 감지되면 알람 중지
+                if c >= self.requiredMotionCount {
+                    Task { @MainActor in
+                        await self.stopAlarm(executionId)
                     }
+                    self.stopMonitoringMotion(for: executionId)
+                    return
                 }
             }
         }
@@ -812,11 +762,6 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
         // Live Activity 종료
         await endLiveActivity(for: alarmId)
         
-        // 알림 제거
-        if let notificationId = scheduledNotifications[alarmId] {
-            notificationCenter.removeDeliveredNotifications(withIdentifiers: [notificationId])
-        }
-        
         // 모니터링 중지
         if monitoringAlarmIds.contains(alarmId) {
             monitoringAlarmIds.remove(alarmId)
@@ -844,6 +789,7 @@ public final class AlarmServiceImpl: AlarmSchedulerService {
             motionDetectionCount.removeValue(forKey: executionId)
             lastAccel.removeValue(forKey: executionId)
             lastLogTime.removeValue(forKey: executionId)
+            lastMotionDetectedAt.removeValue(forKey: executionId)
             
             if motionDetectionCount.isEmpty {
                 motionManager.stopAccelerometerUpdates()

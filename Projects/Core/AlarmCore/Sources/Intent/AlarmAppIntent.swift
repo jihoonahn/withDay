@@ -108,4 +108,3 @@ struct AlarmAppIntent: AppIntent {
         return .result()
     }
 }
-

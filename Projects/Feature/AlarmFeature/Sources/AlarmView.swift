@@ -5,6 +5,7 @@ import AlarmDomainInterface
 import UserDomainInterface
 import Designsystem
 import Dependency
+import Localization
 
 public struct AlarmView: View {
     let interface: AlarmInterface
@@ -24,16 +25,20 @@ public struct AlarmView: View {
                 VStack(spacing: 0) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Alarm")
+                            Text("AlarmTitle".localized())
                                 .font(.system(size: 34, weight: .bold))
                                 .foregroundColor(JColor.textPrimary)
                             
                             if state.alarms.isEmpty {
-                                Text("알람이 없습니다")
+                                Text("AlarmEmptyStateTitle".localized())
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(JColor.textSecondary)
                             } else {
-                                Text("\(state.alarms.count)개의 알람")
+                                Text(String(
+                                    format: "AlarmDescription".localized(),
+                                    locale: Locale.appLocale,
+                                    state.alarms.count
+                                ))
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(JColor.textSecondary)
                             }
@@ -67,7 +72,7 @@ public struct AlarmView: View {
                                 .foregroundColor(JColor.textSecondary)
                                 .font(.system(size: 48))
                             
-                            Text("알람이 없습니다")
+                            Text("AlarmEmptyStateTitle".localized())
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundColor(JColor.textSecondary)
                         }
@@ -91,7 +96,7 @@ public struct AlarmView: View {
                                     Button(role: .destructive) {
                                         interface.send(.deleteAlarm(id: alarm.id))
                                     } label: {
-                                        Label("삭제", systemImage: "trash")
+                                        Label("AlarmActionDelete".localized(), systemImage: "trash")
                                     }
                                 }
                             }
@@ -224,21 +229,22 @@ private struct AlarmRow: View {
     
     private func formatRepeatDays(_ days: [Int]) -> String {
         if days.count == 7 {
-            return "매일"
+            return "AlarmRepeatEveryday".localized()
         }
         
-        let dayNames = ["일", "월", "화", "수", "목", "금", "토"]
         let sortedDays = days.sorted()
         
         if sortedDays == [1, 2, 3, 4, 5] {
-            return "평일"
+            return "AlarmRepeatWeekdays".localized()
         }
         
         if sortedDays == [0, 6] {
-            return "주말"
+            return "AlarmRepeatWeekend".localized()
         }
         
-        return sortedDays.map { dayNames[$0] }.joined(separator: ", ")
+        return sortedDays
+            .map { localizedDayName(for: $0) }
+            .joined(separator: ", ")
     }
 }
 
@@ -261,13 +267,13 @@ private struct AddAlarmSheet: View {
                     VStack(spacing: 24) {
                         // 알람 타입 선택
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("알람 타입")
+                            Text("AlarmTypeSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
                             Picker("", selection: $isRepeating) {
-                                Text("한 번").tag(false)
-                                Text("반복").tag(true)
+                                Text("AlarmTypeOnce".localized()).tag(false)
+                                Text("AlarmTypeRepeat".localized()).tag(true)
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: isRepeating) { _, newValue in
@@ -280,7 +286,7 @@ private struct AddAlarmSheet: View {
                         
                         // 시간 선택
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("시간")
+                            Text("AlarmTimeSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
@@ -301,11 +307,11 @@ private struct AddAlarmSheet: View {
                         
                         // 라벨
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("라벨")
+                            Text("AlarmLabelSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
-                            TextField("알람 이름 (선택)", text: $label)
+                            TextField("AlarmLabelPlaceholder".localized(), text: $label)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -318,7 +324,7 @@ private struct AddAlarmSheet: View {
                         // 반복 요일 (반복 알람일 때만)
                         if isRepeating {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("반복 요일")
+                                Text("AlarmRepeatDaysSectionTitle".localized())
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(JColor.textPrimary)
                                 
@@ -342,7 +348,7 @@ private struct AddAlarmSheet: View {
                                 // 빠른 선택 버튼
                                 HStack(spacing: 8) {
                                     QuickSelectButton(
-                                        title: "평일",
+                                        title: "AlarmQuickSelectWeekdays".localized(),
                                         icon: "briefcase.fill",
                                         isActive: selectedDays == [1, 2, 3, 4, 5]
                                     ) {
@@ -350,7 +356,7 @@ private struct AddAlarmSheet: View {
                                     }
                                     
                                     QuickSelectButton(
-                                        title: "주말",
+                                        title: "AlarmQuickSelectWeekends".localized(),
                                         icon: "sun.max.fill",
                                         isActive: selectedDays == [0, 6]
                                     ) {
@@ -358,7 +364,7 @@ private struct AddAlarmSheet: View {
                                     }
                                     
                                     QuickSelectButton(
-                                        title: "매일",
+                                        title: "AlarmQuickSelectEveryday".localized(),
                                         icon: "calendar",
                                         isActive: selectedDays.count == 7
                                     ) {
@@ -378,18 +384,18 @@ private struct AddAlarmSheet: View {
                     .padding(.bottom, 100)
                 }
             }
-            .navigationTitle("알람 추가")
+            .navigationTitle("AlarmAddNavigationTitle".localized())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("취소") {
+                    Button("CommonCancel".localized()) {
                         isPresented = false
                     }
                     .foregroundColor(Color.white)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("저장") {
+                    Button("CommonSave".localized()) {
                         saveAlarm()
                     }
                     .foregroundColor(Color.white)
@@ -454,13 +460,13 @@ private struct EditAlarmSheet: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("알람 타입")
+                            Text("AlarmTypeSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
                             Picker("", selection: $isRepeating) {
-                                Text("한 번").tag(false)
-                                Text("반복").tag(true)
+                                Text("AlarmTypeOnce".localized()).tag(false)
+                                Text("AlarmTypeRepeat".localized()).tag(true)
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: isRepeating) { _, newValue in
@@ -473,7 +479,7 @@ private struct EditAlarmSheet: View {
                         
                         // 시간 선택
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("시간")
+                            Text("AlarmTimeSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
@@ -494,11 +500,11 @@ private struct EditAlarmSheet: View {
                         
                         // 라벨
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("라벨")
+                            Text("AlarmLabelSectionTitle".localized())
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(JColor.textPrimary)
                             
-                            TextField("알람 이름 (선택)", text: $label)
+                            TextField("AlarmLabelPlaceholder".localized(), text: $label)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -511,7 +517,7 @@ private struct EditAlarmSheet: View {
                         // 반복 요일 (반복 알람일 때만)
                         if isRepeating {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("반복 요일")
+                                Text("AlarmRepeatDaysSectionTitle".localized())
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(JColor.textPrimary)
                                 
@@ -534,7 +540,7 @@ private struct EditAlarmSheet: View {
                                 // 빠른 선택 버튼
                                 HStack(spacing: 8) {
                                     QuickSelectButton(
-                                        title: "평일",
+                                        title: "AlarmQuickSelectWeekdays".localized(),
                                         icon: "briefcase.fill",
                                         isActive: selectedDays == [1, 2, 3, 4, 5]
                                     ) {
@@ -542,7 +548,7 @@ private struct EditAlarmSheet: View {
                                     }
                                     
                                     QuickSelectButton(
-                                        title: "주말",
+                                        title: "AlarmQuickSelectWeekends".localized(),
                                         icon: "sun.max.fill",
                                         isActive: selectedDays == [0, 6]
                                     ) {
@@ -550,7 +556,7 @@ private struct EditAlarmSheet: View {
                                     }
                                     
                                     QuickSelectButton(
-                                        title: "매일",
+                                        title: "AlarmQuickSelectEveryday".localized(),
                                         icon: "calendar",
                                         isActive: selectedDays.count == 7
                                     ) {
@@ -570,18 +576,18 @@ private struct EditAlarmSheet: View {
                     .padding(.bottom, 100)
                 }
             }
-            .navigationTitle("알람 편집")
+            .navigationTitle("AlarmEditNavigationTitle".localized())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("취소") {
+                    Button("CommonCancel".localized()) {
                         isPresented = false
                     }
                     .foregroundColor(Color.white)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("저장") {
+                    Button("CommonSave".localized()) {
                         saveAlarm()
                     }
                     .foregroundColor(Color.white)
@@ -611,12 +617,10 @@ private struct DayButton: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-    private let dayNames = ["일", "월", "화", "수", "목", "금", "토"]
-    
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 4) {
-                Text(dayNames[day])
+                Text(localizedDayName(for: day))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(isSelected ? .white : JColor.textSecondary)
             }
@@ -666,5 +670,32 @@ private struct QuickSelectButton: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private func localizedDayName(for day: Int) -> String {
+    switch day {
+    case 0:
+        return "AlarmDaySunday".localized()
+    case 1:
+        return "AlarmDayMonday".localized()
+    case 2:
+        return "AlarmDayTuesday".localized()
+    case 3:
+        return "AlarmDayWednesday".localized()
+    case 4:
+        return "AlarmDayThursday".localized()
+    case 5:
+        return "AlarmDayFriday".localized()
+    case 6:
+        return "AlarmDaySaturday".localized()
+    default:
+        return ""
+    }
+}
+
+private extension Locale {
+    static var appLocale: Locale {
+        Locale(identifier: LocalizationController.shared.languageCode)
     }
 }

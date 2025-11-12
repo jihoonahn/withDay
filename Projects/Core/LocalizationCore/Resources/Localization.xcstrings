@@ -37,6 +37,1554 @@
         }
       }
     },
+    "AlarmActionDelete" : {
+      "comment" : "Delete action label in alarm list",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제"
+          }
+        }
+      }
+    },
+    "AlarmAddNavigationTitle" : {
+      "comment" : "Navigation title for add alarm sheet",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Alarm"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 추가"
+          }
+        }
+      }
+    },
+    "AlarmDayFriday" : {
+      "comment" : "Short label for Friday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fri"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "금"
+          }
+        }
+      }
+    },
+    "AlarmDayMonday" : {
+      "comment" : "Short label for Monday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mon"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "월"
+          }
+        }
+      }
+    },
+    "AlarmDaySaturday" : {
+      "comment" : "Short label for Saturday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sat"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "토"
+          }
+        }
+      }
+    },
+    "AlarmDaySunday" : {
+      "comment" : "Short label for Sunday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sun"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일"
+          }
+        }
+      }
+    },
+    "AlarmDayThursday" : {
+      "comment" : "Short label for Thursday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thu"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목"
+          }
+        }
+      }
+    },
+    "AlarmDayTuesday" : {
+      "comment" : "Short label for Tuesday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tue"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화"
+          }
+        }
+      }
+    },
+    "AlarmDayWednesday" : {
+      "comment" : "Short label for Wednesday",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수"
+          }
+        }
+      }
+    },
+    "AlarmEditNavigationTitle" : {
+      "comment" : "Navigation title for edit alarm sheet",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Alarm"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 편집"
+          }
+        }
+      }
+    },
+    "AlarmEmptyStateTitle" : {
+      "comment" : "Empty state title when there are no alarms",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No alarms"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람이 없습니다"
+          }
+        }
+      }
+    },
+    "AlarmErrorCreateFailed" : {
+      "comment" : "Error message when alarm creation fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to create alarm: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 생성에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorAddFailed" : {
+      "comment" : "Error message when adding alarm fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to add alarm: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 추가에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorDateCalculationFailed" : {
+      "comment" : "Error detail when date calculation fails",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to calculate date."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 계산에 실패했습니다."
+          }
+        }
+      }
+    },
+    "AlarmErrorDateCreationFailed" : {
+      "comment" : "Error detail when date creation fails",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to create date."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 생성에 실패했습니다."
+          }
+        }
+      }
+    },
+    "AlarmErrorDeleteFailed" : {
+      "comment" : "Error message when alarm deletion fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to delete alarm: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 삭제에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorEntityNotFound" : {
+      "comment" : "Error detail when alarm entity cannot be found",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to find the alarm. Please try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람을 찾을 수 없습니다. 다시 시도해주세요."
+          }
+        }
+      }
+    },
+    "AlarmErrorInvalidTimeFormat" : {
+      "comment" : "Error detail when time format is invalid",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid time format."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잘못된 시간 형식입니다."
+          }
+        }
+      }
+    },
+    "AlarmErrorLiveActivitiesDisabled" : {
+      "comment" : "Error detail when Live Activities is disabled",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activities is disabled. Please enable it in settings."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activities가 비활성화되어 있습니다. 설정에서 활성화해주세요."
+          }
+        }
+      }
+    },
+    "AlarmErrorLoadFailed" : {
+      "comment" : "Error message when alarm loading fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to load alarms: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람을 불러오는데 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorNotificationPermissionDenied" : {
+      "comment" : "Error detail when notification permission is denied",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification permission denied. Please enable notifications in settings."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알림 권한이 거부되었습니다. 설정에서 알림 권한을 허용해주세요."
+          }
+        }
+      }
+    },
+    "AlarmErrorToggleFailed" : {
+      "comment" : "Error message when alarm toggle fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to toggle alarm: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 토글에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorUpdateFailed" : {
+      "comment" : "Error message when alarm update fails with detail",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to update alarm: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 수정에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "AlarmErrorUserNotFound" : {
+      "comment" : "Error detail when user is not found",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to find the logged-in user."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그인된 사용자를 찾을 수 없습니다."
+          }
+        }
+      }
+    },
+    "AlarmLabelPlaceholder" : {
+      "comment" : "Placeholder text for alarm label field",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm name (optional)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 이름 (선택)"
+          }
+        }
+      }
+    },
+    "AlarmLabelSectionTitle" : {
+      "comment" : "Section title for alarm label input",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Label"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라벨"
+          }
+        }
+      }
+    },
+    "AlarmQuickSelectEveryday" : {
+      "comment" : "Quick select button title for every day",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every day"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매일"
+          }
+        }
+      }
+    },
+    "AlarmQuickSelectWeekdays" : {
+      "comment" : "Quick select button title for weekdays",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일"
+          }
+        }
+      }
+    },
+    "AlarmQuickSelectWeekends" : {
+      "comment" : "Quick select button title for weekends",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말"
+          }
+        }
+      }
+    },
+    "AlarmRepeatDaysSectionTitle" : {
+      "comment" : "Section title for repeat days selection",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat days"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "반복 요일"
+          }
+        }
+      }
+    },
+    "AlarmRepeatEveryday" : {
+      "comment" : "Description for repeat every day",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every day"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매일"
+          }
+        }
+      }
+    },
+    "AlarmRepeatWeekdays" : {
+      "comment" : "Description for repeat on weekdays",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekdays"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평일"
+          }
+        }
+      }
+    },
+    "AlarmRepeatWeekend" : {
+      "comment" : "Description for repeat on weekends",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekends"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주말"
+          }
+        }
+      }
+    },
+    "AlarmTimeSectionTitle" : {
+      "comment" : "Section title for alarm time selection",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간"
+          }
+        }
+      }
+    },
+    "AlarmTypeOnce" : {
+      "comment" : "Option label for one-time alarm",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번"
+          }
+        }
+      }
+    },
+    "AlarmTypeRepeat" : {
+      "comment" : "Option label for repeating alarm",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "반복"
+          }
+        }
+      }
+    },
+    "AlarmTypeSectionTitle" : {
+      "comment" : "Section title for alarm type selection",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm type"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 타입"
+          }
+        }
+      }
+    },
+    "CommonCancel" : {
+      "comment" : "Common cancel button title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "취소"
+          }
+        }
+      }
+    },
+    "CommonSave" : {
+      "comment" : "Common save button title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBenefitBreathing" : {
+      "comment" : "Benefit description for breathing exercise suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helps slow your heart rate and calm your mind before sleep."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "심박수를 안정시키고 잠들기 전 마음을 가라앉히는 데 도움이 됩니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBenefitPlan" : {
+      "comment" : "Benefit description for plan tomorrow suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clears lingering thoughts so you can fall asleep faster."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "머릿속 걱정을 정리해 더 빠르게 잠들 수 있도록 도와줍니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBenefitStretch" : {
+      "comment" : "Benefit description for stretching suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Releases muscle tension built up during the day."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하루 동안 쌓인 근육 긴장을 풀어 줍니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationDescription" : {
+      "comment" : "Description under the memo recommendation header",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a wind down routine to add as a memo for tonight."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 밤 실천할 수 있는 릴렉싱 루틴을 메모로 추가해 보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationDurationFormat" : {
+      "comment" : "Format string for displaying minutes duration",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d min"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d분"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationEmptySelection" : {
+      "comment" : "Toast message when no suggestion is selected",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose at least one routine to save."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장할 루틴을 최소 한 가지 이상 선택해주세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationHeader" : {
+      "comment" : "Header title for memo recommendation section",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wind Down Suggestions"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠들기 전 추천 루틴"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationSaveButton" : {
+      "comment" : "Label for the save suggestions button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save to Memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모로 저장"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationStretchDescription" : {
+      "comment" : "Description for stretching routine suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light lower-body stretches before bed."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠들기 전 가볍게 하체 위주 스트레칭을 해보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationStretchTitle" : {
+      "comment" : "Title for stretching routine suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5-minute stretching"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5분 스트레칭"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationToastError" : {
+      "comment" : "Toast message when saving suggestions fails",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to save memo: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 저장에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationToastSaved" : {
+      "comment" : "Toast message when suggestions saved successfully",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wind down memo saved."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠들기 루틴 메모가 저장되었습니다."
+          }
+        }
+      }
+    },
+    "HomeMemoFormHeader" : {
+      "comment" : "Header title for memo creation sheet",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan tomorrow’s morning"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 아침을 미리 정리해요"
+          }
+        }
+      }
+    },
+    "HomeMemoFormDescription" : {
+      "comment" : "Description under the memo form header",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write down tasks or reminders to keep tomorrow stress-free."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일을 편안하게 맞을 수 있도록 할 일과 메모를 작성해 보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoFormTitleLabel" : {
+      "comment" : "Label for memo title field",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제목"
+          }
+        }
+      }
+    },
+    "HomeMemoFormTitlePlaceholder" : {
+      "comment" : "Placeholder for memo title field",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Morning focus list"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예: 아침 집중 리스트"
+          }
+        }
+      }
+    },
+    "HomeMemoFormContentLabel" : {
+      "comment" : "Label for memo content field",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내용"
+          }
+        }
+      }
+    },
+    "HomeMemoFormContentPlaceholder" : {
+      "comment" : "Placeholder for memo content editor",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write tomorrow’s tasks, preparation list, or morning reminders..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 해야 할 일, 준비물, 아침에 기억할 내용을 적어보세요..."
+          }
+        }
+      }
+    },
+    "HomeMemoFormReminderToggle" : {
+      "comment" : "Label for reminder toggle",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add reminder tomorrow morning"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 아침 리마인더 추가"
+          }
+        }
+      }
+    },
+    "HomeMemoFormReminderLabel" : {
+      "comment" : "Label for reminder time picker",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder time"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "리마인더 시간"
+          }
+        }
+      }
+    },
+    "HomeMemoFormSaveButton" : {
+      "comment" : "Label for memo save button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 저장"
+          }
+        }
+      }
+    },
+    "HomeMemoFormToastEmptyContent" : {
+      "comment" : "Toast message when content is empty",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write something before saving your memo."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모를 저장하기 전에 내용을 작성해주세요."
+          }
+        }
+      }
+    },
+    "HomeMemoFormToastSaved" : {
+      "comment" : "Toast message when memo saved successfully",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memo saved for tomorrow."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일을 위한 메모가 저장되었습니다."
+          }
+        }
+      }
+    },
+    "HomeMemoFormToastUpdated" : {
+      "comment" : "Toast message when memo updated successfully",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memo updated."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모가 수정되었습니다."
+          }
+        }
+      }
+    },
+    "HomeMemoFormToastError" : {
+      "comment" : "Toast message when memo save fails",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to save memo: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 저장에 실패했습니다: %@"
+          }
+        }
+      }
+    },
+    "HomeMemoFormDefaultTitle" : {
+      "comment" : "Default title format for memo",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan for %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 계획"
+          }
+        }
+      }
+    },
+    "HomeMemoFormDateLabel" : {
+      "comment" : "Label for selecting memo scheduled date",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled for"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작성 예정일"
+          }
+        }
+      }
+    },
+    "HomeMemoCalendarTitle" : {
+      "comment" : "Navigation title for memo calendar",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memo Calendar"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 캘린더"
+          }
+        }
+      }
+    },
+    "HomeMemoCalendarSelectedDateTitle" : {
+      "comment" : "Section title showing selected date in memo calendar",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memos for %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 메모"
+          }
+        }
+      }
+    },
+    "HomeMemoCalendarEmpty" : {
+      "comment" : "Empty state text when no memos on selected date",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No memos on this day. Try adding one from the home screen."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 날에는 메모가 없습니다. 홈 화면에서 새 메모를 추가해보세요."
+          }
+        }
+      }
+    },
+    "HomeWakeDurationSubtitle" : {
+      "comment" : "Subtitle under wake duration title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep track of how long it took to fully wake up"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "완전히 일어나는 데 걸린 시간을 기록해요"
+          }
+        }
+      }
+    },
+    "HomeWakeDurationTitle" : {
+      "comment" : "Title label for wake duration section",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wake-up duration"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기상 소요 시간"
+          }
+        }
+      }
+    },
+    "HomeWakeDurationPlaceholder" : {
+      "comment" : "Placeholder text when wake duration is unavailable",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No data yet"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 데이터가 없어요"
+          }
+        }
+      }
+    },
+    "HomeWakeDurationFormatHours" : {
+      "comment" : "Format string for wake duration in hours and minutes",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d hr %d min"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d시간 %d분"
+          }
+        }
+      }
+    },
+    "HomeWakeDurationFormatMinutes" : {
+      "comment" : "Format string for wake duration in minutes and seconds",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d min %d sec"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d분 %d초"
+          }
+        }
+      }
+    },
+    "HomeWakeDurationFormatSeconds" : {
+      "comment" : "Format string for wake duration in seconds",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d sec"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d초"
+          }
+        }
+      }
+    },
+    "HomeMemoTodayTitle" : {
+      "comment" : "Section title for today's memos",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s memos"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘의 메모"
+          }
+        }
+      }
+    },
+    "HomeMemoShowCalendar" : {
+      "comment" : "Button title to open memo calendar",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See all"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 보기"
+          }
+        }
+      }
+    },
+    "HomeMemoEmptyToday" : {
+      "comment" : "Placeholder when there are no memos today",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No memos for today. Add one to start your morning prepared."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 작성된 메모가 없습니다. 메모를 추가해 아침을 준비해보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationPlanDescription" : {
+      "comment" : "Description for plan tomorrow routine suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List three things you want to do tomorrow."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 하고 싶은 일을 세 가지 적어보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationPlanTitle" : {
+      "comment" : "Title for plan tomorrow routine suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan tomorrow"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일을 계획하기"
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationPlanContent" : {
+      "comment" : "Full memo content for plan tomorrow routine",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan tomorrow by writing down three priorities and one energising activity."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일의 우선순위 세 가지와 에너지를 줄 한 가지 활동을 적어봅니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBreathingContent" : {
+      "comment" : "Full memo content for breathing routine",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Practice the 4-7-8 breathing cycle three times to reset your evening rhythm."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-7-8 호흡 사이클을 세 번 반복하여 저녁 리듬을 리셋합니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationStretchContent" : {
+      "comment" : "Full memo content for stretching routine",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loosen shoulders, neck, and calves with gentle stretches before bed."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠들기 전에 어깨와 목, 종아리를 부드럽게 풀어줍니다."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBreathingDescription" : {
+      "comment" : "Description for breathing exercise suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-7-8 breathing for gentle relaxation."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-7-8 호흡법으로 부드럽게 이완해보세요."
+          }
+        }
+      }
+    },
+    "HomeMemoRecommendationBreathingTitle" : {
+      "comment" : "Title for breathing exercise suggestion",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breathing reset"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "호흡 리셋"
+          }
+        }
+      }
+    },
+    "HomeMemoSheetTitle" : {
+      "comment" : "Navigation title for memo sheet",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모"
+          }
+        }
+      }
+    },
     "SettingTitle" : {
       "comment" : "Setting View Title",
       "extractionState" : "manual",

@@ -15,8 +15,6 @@ struct SettingFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
-                    .domain(target: "LocalizationDomain", type: .interface),
-                    .domain(target: "NotificationDomain", type: .interface),
                     .shared(target: "Localization"),
                     .shared(target: "Dependency"),
                 ]
@@ -26,7 +24,7 @@ struct SettingFeature: Module {
                 dependencies: [
                     .domain(target: "LocalizationDomain", type: .interface),
                     .domain(target: "NotificationDomain", type: .interface),
-                    .shared(target: "Localization"),
+                    .shared(target: "Localization")
                 ]
             )
             Example(

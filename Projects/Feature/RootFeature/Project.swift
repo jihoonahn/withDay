@@ -15,13 +15,17 @@ struct RootFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
-                    .feature(target: "SplashFeature", type: .interface),
-                    .feature(target: "LoginFeature", type: .interface),
-                    .feature(target: "MainFeature", type: .interface),
                     .shared(target: "Designsystem")
                 ]
             )
-            Interface(name: typeName)
+            Interface(
+                name: typeName,
+                dependencies: [
+                    .feature(target: "SplashFeature", type: .interface),
+                    .feature(target: "LoginFeature", type: .interface),
+                    .feature(target: "MainFeature", type: .interface)
+                ]
+            )
             Testing(
                 name: typeName,
                 dependencies: [

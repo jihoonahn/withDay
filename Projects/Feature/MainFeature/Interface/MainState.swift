@@ -3,12 +3,15 @@ import RefineUIIcons
 
 public struct MainState: StateType {
     public enum Flow: Sendable, Codable, CaseIterable {
+        case home
         case alarm
         case weather
         case setting
 
         public var displayName: String {
             switch self {
+            case .home:
+                return "Home"
             case .alarm:
                 return "Alarm"
             case .weather:
@@ -20,6 +23,8 @@ public struct MainState: StateType {
         
         public var icon: RefineUIIcons {
             switch self {
+            case .home:
+                return .home32Regular
             case .alarm:
                 return .clockAlarm32Regular
             case .weather:
@@ -30,7 +35,7 @@ public struct MainState: StateType {
         }
     }
 
-    public var flow: Flow = .alarm
+    public var flow: Flow = .home
 
     public init() {}
 }

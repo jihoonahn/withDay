@@ -9,10 +9,11 @@ public enum MemoDTO {
         MemoModel(
             id: entity.id,
             userId: entity.userId,
-            title: "",
+            title: entity.title,
             content: entity.content,
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt
+            reminderTime: entity.reminderTime,
+            createdAt: entity.createdAt ?? Date(),
+            updatedAt: entity.updatedAt ?? Date()
         )
     }
     
@@ -21,10 +22,10 @@ public enum MemoDTO {
         MemoEntity(
             id: model.id,
             userId: model.userId,
+            title: model.title,
             content: model.content,
-            date: model.createdAt,
             alarmId: nil,
-            reminderTime: nil,
+            reminderTime: model.reminderTime,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt
         )

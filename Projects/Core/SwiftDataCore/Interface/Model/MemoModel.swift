@@ -7,6 +7,7 @@ public final class MemoModel {
     public var userId: UUID
     public var title: String
     public var content: String
+    public var reminderTime: String?
     public var createdAt: Date
     public var updatedAt: Date
     
@@ -15,6 +16,7 @@ public final class MemoModel {
         userId: UUID,
         title: String,
         content: String,
+        reminderTime: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -22,6 +24,7 @@ public final class MemoModel {
         self.userId = userId
         self.title = title
         self.content = content
+        self.reminderTime = reminderTime
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
