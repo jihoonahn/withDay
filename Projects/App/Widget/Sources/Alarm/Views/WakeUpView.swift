@@ -20,7 +20,13 @@ struct WakeUpView: View {
             } else {
                 Text(String().formatTime(attributes.scheduledTime))
                     .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.white, .gray],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
             }
         }
         .frame(maxWidth: .infinity)
