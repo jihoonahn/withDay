@@ -15,6 +15,7 @@ struct HomeFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
+                    .feature(target: "MemoFeature", type: .interface),
                     .shared(target: "Localization"),
                     .shared(target: "Dependency")
                 ]
@@ -22,10 +23,10 @@ struct HomeFeature: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "MemoDomain", type: .interface),
+                    .feature(target: "MemoFeature", type: .interface),
                     .domain(target: "UserDomain", type: .interface),
-                    .domain(target: "AlarmExecutionDomain", type: .interface),
-                    .domain(target: "MemoDomain", type: .interface)
+                    .domain(target: "MemoDomain", type: .interface),
+                    .domain(target: "AlarmExecutionDomain", type: .interface)
                 ]
             )
             Example(

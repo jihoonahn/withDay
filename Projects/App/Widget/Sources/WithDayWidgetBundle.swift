@@ -1,7 +1,7 @@
 import WidgetKit
 import SwiftUI
 import ActivityKit
-import AlarmCore
+import AlarmScheduleCore
 import AppIntents
 
 @main

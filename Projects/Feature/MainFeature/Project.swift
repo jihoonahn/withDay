@@ -24,7 +24,8 @@ struct MainFeature: Module {
                     .feature(target: "HomeFeature", type: .interface),
                     .feature(target: "AlarmFeature", type: .interface),
                     .feature(target: "WeatherFeature", type: .interface),
-                    .feature(target: "SettingFeature", type: .interface)
+                    .feature(target: "SettingFeature", type: .interface),
+                    .feature(target: "MotionFeature", type: .interface)
                 ]
             )
             Example(

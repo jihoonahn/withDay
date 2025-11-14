@@ -15,11 +15,13 @@ struct LocalizationCore: Module {
                 resources: ["Resources/**"],
                 dependencies: [
                     .core(target: typeName, type: .interface),
-                    .domain(target: "LocalizationDomain", type: .interface)
                 ]
             )
             Interface(
-                name: typeName
+                name: typeName,
+                dependencies: [
+                    .domain(target: "LocalizationDomain", type: .interface)
+                ]
             )
             Testing(
                 name: typeName,

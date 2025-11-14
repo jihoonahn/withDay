@@ -1,5 +1,5 @@
 import SwiftUI
-import AlarmCore
+import AlarmScheduleCore
 import ActivityKit
 
 struct LockScreenView: View {
@@ -10,32 +10,13 @@ struct LockScreenView: View {
         VStack(spacing: 16) {
             if state.isAlerting {
                 VStack(spacing: 12) {
-                    let remaining = max(0, state.requiredMotionCount - state.motionCount)
-                    Text("\(remaining)")
-                        .font(.system(size: 64, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: remaining > 0 ? [.white, .gray] : [.green, .mint],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .contentTransition(.numericText())
+                    Text("Wake Up")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
                     
-                    if remaining > 0 {
-                        Text("Shake\(remaining == 1 ? "" : "s") needed to dismiss")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("Complete!")
-                            .font(.subheadline)
-                            .foregroundColor(.green)
-                            .fontWeight(.semibold)
-                    }
-                    
-                    if state.motionCount > 0 {
-                        Text("\(state.motionCount)/\(state.requiredMotionCount) shakes detected")
-                            .font(.caption)
+                    if let label = attributes.alarmLabel {
+                        Text(label)
+                            .font(.system(size: 24, weight: .semibold, design: .rounded))
                             .foregroundColor(.secondary)
                     }
                 }

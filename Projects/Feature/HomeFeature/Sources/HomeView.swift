@@ -3,7 +3,9 @@ import SwiftUI
 import Rex
 import RootFeatureInterface
 import HomeFeatureInterface
+import MemoFeatureInterface
 import Designsystem
+import Dependency
 import Localization
 import MemoDomainInterface
 
@@ -11,10 +13,13 @@ public struct HomeView: View {
     let interface: HomeInterface
     @State private var state = HomeState()
 
+    let memoFactory: MemoFactory
+
     public init(
-        interface: HomeInterface
+        interface: HomeInterface,
     ) {
         self.interface = interface
+        self.memoFactory = DIContainer.shared.resolve(MemoFactory.self)
     }
     
     public var body: some View {
@@ -39,25 +44,18 @@ public struct HomeView: View {
                     interface.send(.showMemoSheet(value))
                 })
             ) {
-                MemoView(
-                    interface: interface,
-                    state: state
-                )
+                memoFactory.makeView()
             }
             .sheet(isPresented: Binding(
                 get: { state.memoDetailPresented },
-                set: { interface.send(.showMemoDetail($0)) }
+                set: { value in
+                    interface.send(.showMemoDetail(value))
+                }
             )) {
-                MemoCalendarView(interface: interface, state: state)
+                memoFactory.makeView()
             }
         }
         .navigationBarHidden(true)
-        .toast(isPresented: Binding(
-            get: { state.memoToastIsPresented },
-            set: { interface.send(.memoToastStatus($0)) }
-        )) {
-            Toast(title: state.memoToastMessage)
-        }
         .onAppear {
             interface.send(.viewAppear)
         }
@@ -155,7 +153,7 @@ private extension HomeView {
     
     func memoRow(_ memo: MemoEntity) -> some View {
         Button(action: {
-            interface.send(.editMemo(memo))
+            interface.send(.showMemoSheet(true))
         }) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -190,7 +188,7 @@ private extension HomeView {
     
     func formattedReminder(from isoString: String?) -> String? {
         guard let isoString,
-              let date = HomeState.reminderTimeFormatter.date(from: isoString) else {
+              let date = MemoState.reminderTimeFormatter.date(from: isoString) else {
             return nil
         }
         let components = Calendar.current.dateComponents([.hour, .minute], from: date)

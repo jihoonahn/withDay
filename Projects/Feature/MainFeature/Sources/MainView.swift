@@ -5,6 +5,7 @@ import HomeFeatureInterface
 import AlarmFeatureInterface
 import WeatherFeatureInterface
 import SettingFeatureInterface
+import MotionFeatureInterface
 import Dependency
 import RefineUIIcons
 import Designsystem
@@ -17,6 +18,7 @@ public struct MainView: View {
     private let alarmFactory: AlarmFactory
     private let weatherFactory: WeatherFactory
     private let settingFactory: SettingFactory
+    private let motionFactory: MotionFactory
 
     public init(
         interface: MainInterface
@@ -26,6 +28,7 @@ public struct MainView: View {
         self.alarmFactory = DIContainer.shared.resolve(AlarmFactory.self)
         self.weatherFactory = DIContainer.shared.resolve(WeatherFactory.self)
         self.settingFactory = DIContainer.shared.resolve(SettingFactory.self)
+        self.motionFactory = DIContainer.shared.resolve(MotionFactory.self)
     }
     
     public var body: some View {

@@ -24,16 +24,18 @@ struct WithDay: Module {
                     .feature(target: "LoginFeature"),
                     .feature(target: "MainFeature"),
                     .feature(target: "HomeFeature"),
+                    .feature(target: "MotionFeature"),
+                    .feature(target: "MemoFeature"),
                     .feature(target: "AlarmFeature"),
                     .feature(target: "WeatherFeature"),
                     .feature(target: "SettingFeature"),
+                    .core(target: "AlarmScheduleCore"),
+                    .core(target: "MotionCore"),
                     .core(target: "NetworkCore"),
                     .core(target: "NotificationCore"),
                     .core(target: "SupabaseCore"),
                     .core(target: "SwiftDataCore"),
                     .core(target: "LocalizationCore"),
-                    .core(target: "AlarmCore"),
-                    .domain(target: "AlarmDomain", type: .interface),
                     .shared(target: "Dependency"),
                     .shared(target: "Localization"),
                     .shared(target: "Utility"),
@@ -51,7 +53,7 @@ struct WithDay: Module {
                 ],
                 configuration: .App,
                 dependencies: [
-                    .core(target: "AlarmCore"),
+                    .core(target: "AlarmScheduleCore"),
                     .shared(target: "Utility")
                 ]
             )

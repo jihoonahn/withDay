@@ -4,7 +4,6 @@ import RootFeatureInterface
 import Dependency
 import SwiftDataCoreInterface
 import ActivityKit
-import AlarmCore
 
 @main
 struct WithDayApp: App {

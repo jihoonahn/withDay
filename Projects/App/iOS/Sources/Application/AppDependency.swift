@@ -1,5 +1,4 @@
 import Foundation
-import Dependency
 import SwiftData
 
 // Feature
@@ -11,6 +10,10 @@ import LoginFeatureInterface
 import LoginFeature
 import MainFeatureInterface
 import MainFeature
+import MemoFeatureInterface
+import MemoFeature
+import MotionFeatureInterface
+import MotionFeature
 import HomeFeatureInterface
 import HomeFeature
 import AlarmFeatureInterface
@@ -23,32 +26,30 @@ import SettingFeature
 // Domain
 import UserDomainInterface
 import AlarmDomainInterface
+import AlarmScheduleDomainInterface
 import MemoDomainInterface
 import AlarmExecutionDomainInterface
 import MotionRawDataDomainInterface
+import MotionDomainInterface
 import AchievementDomainInterface
 import LocalizationDomainInterface
 import NotificationDomainInterface
 
-// Core - Supabase
+// Core
 import SupabaseCoreInterface
 import SupabaseCore
-
-// Core - SwiftData
 import SwiftDataCoreInterface
 import SwiftDataCore
-
-// Core - Alarm
-import AlarmCoreInterface
-import AlarmCore
-
-// Core - Localization
+import AlarmScheduleCoreInterface
+import AlarmScheduleCore
 import LocalizationCoreInterface
 import LocalizationCore
-
-// Core - Notification
 import NotificationCoreInterface
 import NotificationCore
+import MotionCoreInterface
+import MotionCore
+
+import Dependency
 import Localization
 
 @MainActor
@@ -57,12 +58,12 @@ public class AppDependencies {
     public static func setup() {
         let container = DIContainer.shared
         
+        // MARK: - Supabase Service
         let supabaseService = SupabaseServiceImpl()
         container.registerSingleton(SupabaseService.self, instance: supabaseService)
-        
         let client = supabaseService.client
         
-        // Services
+        // MARK: - Supabase Services
         container.registerSingleton(
             SupabaseCoreInterface.UserService.self,
             instance: UserServiceImpl(client: client)
@@ -88,7 +89,7 @@ public class AppDependencies {
             instance: AchievementServiceImpl(client: client)
         )
         
-        // Repositories
+        // MARK: - Repositories
         container.register(UserRepository.self) {
             UserRepositoryImpl(
                 userService: container.resolve(SupabaseCoreInterface.UserService.self),
@@ -96,39 +97,39 @@ public class AppDependencies {
             )
         }
         container.register(AlarmRepository.self) {
-            SupabaseCore.AlarmRepositoryImpl(
-                alarmService: container.resolve(SupabaseCoreInterface.AlarmService.self)
-            )
+            let alarmService = container.resolve(SupabaseCoreInterface.AlarmService.self)
+            typealias SupabaseAlarmRepository = SupabaseCore.AlarmRepositoryImpl
+            return SupabaseAlarmRepository(alarmDataService: alarmService)
         }
         container.register(MemoRepository.self) {
-            SupabaseCore.MemoRepositoryImpl(
+            MemoRepositoryImpl(
                 memoService: container.resolve(SupabaseCoreInterface.MemoService.self)
             )
         }
         container.register(AlarmExecutionRepository.self) {
-            SupabaseCore.AlarmExecutionRepositoryImpl(
+            AlarmExecutionRepositoryImpl(
                 alarmExecutionService: container.resolve(SupabaseCoreInterface.AlarmExecutionService.self)
             )
         }
         container.register(MotionRawDataRepository.self) {
-            SupabaseCore.MotionRawDataRepositoryImpl(
+            MotionRawDataRepositoryImpl(
                 motionRawDataService: container.resolve(SupabaseCoreInterface.MotionRawDataService.self)
             )
         }
         container.register(AchievementRepository.self) {
-            SupabaseCore.AchievementRepositoryImpl(
+            AchievementRepositoryImpl(
                 achievementService: container.resolve(SupabaseCoreInterface.AchievementService.self)
             )
         }
         
-        // UseCases
+        // MARK: - UseCases
         container.register(UserUseCase.self) {
             SupabaseCore.UserUseCaseImpl(
                 userRepository: container.resolve(UserRepository.self)
             )
         }
         container.register(AlarmUseCase.self) {
-            SupabaseCore.AlarmUseCaseImpl(
+            SwiftDataCore.AlarmUseCaseImpl(
                 alarmRepository: container.resolve(AlarmRepository.self)
             )
         }
@@ -153,38 +154,36 @@ public class AppDependencies {
             )
         }
         
-        // Localization Repository & UseCase
+        // MARK: - Localization Repository & UseCase
         container.register(LocalizationRepository.self) {
             LocalizationCore.LocalizationRepositoryImpl(
                 service: container.resolve(LocalizationCoreInterface.LocalizationService.self)
             )
         }
-        
         container.register(LocalizationUseCase.self) {
             LocalizationCore.LocalizationUseCaseImpl(
                 repository: container.resolve(LocalizationRepository.self)
             )
         }
         
-        // Notification Repository & UseCase
+        // MARK: - Notification Repository & UseCase
         container.register(NotificationRepository.self) {
             NotificationCore.NotificationRepositoryImpl(
                 service: container.resolve(NotificationCoreInterface.NotificationService.self)
             )
         }
-        
         container.register(NotificationUseCase.self) {
             NotificationCore.NotificationUseCaseImpl(
                 repository: container.resolve(NotificationRepository.self)
             )
         }
         
+        // MARK: - SwiftData Service
         let swiftDataService = SwiftDataServiceImpl()
         container.registerSingleton(SwiftDataService.self, instance: swiftDataService)
-        
         let modelContainer = swiftDataService.container
         
-        // Services (Local Storage)
+        // MARK: - SwiftData Services (Local Storage)
         container.registerSingleton(
             SwiftDataCoreInterface.AlarmService.self,
             instance: SwiftDataCore.AlarmServiceImpl(container: modelContainer)
@@ -206,27 +205,54 @@ public class AppDependencies {
             instance: SwiftDataCore.AchievementServiceImpl(container: modelContainer)
         )
         
-        container.registerSingleton(
-            AlarmCoreInterface.AlarmSchedulerService.self,
-            instance: AlarmCore.AlarmServiceImpl()
-        )
-        
+        // MARK: - Core Services
         container.registerSingleton(
             LocalizationCoreInterface.LocalizationService.self,
             instance: LocalizationCore.LocalizationServiceImpl()
         )
-        
         container.registerSingleton(
             NotificationCoreInterface.NotificationService.self,
             instance: NotificationCore.NotificationServiceImpl()
         )
+        
+        // MARK: - AlarmSchedule Service & Repository & UseCase
+        container.registerSingleton(
+            AlarmScheduleCoreInterface.AlarmScheduleService.self,
+            instance: AlarmScheduleCore.AlarmScheduleServiceImpl()
+        )
+        container.register(AlarmScheduleRepository.self) {
+            AlarmScheduleCore.AlarmScheduleRepositoryImpl(
+                service: container.resolve(AlarmScheduleCoreInterface.AlarmScheduleService.self)
+            )
+        }
+        container.register(AlarmScheduleUseCase.self) {
+            AlarmScheduleCore.AlarmScheduleUseCaseImpl(
+                repository: container.resolve(AlarmScheduleRepository.self)
+            )
+        }
+        
+        // MARK: - Motion Service & Repository & UseCase
+        container.registerSingleton(
+            MotionCoreInterface.MotionService.self,
+            instance: MotionCore.MotionServiceImpl()
+        )
+        container.register(MotionRepository.self) {
+            MotionCore.MotionRepositoryImpl(
+                service: container.resolve(MotionCoreInterface.MotionService.self)
+            )
+        }
+        container.register(MotionUseCase.self) {
+            MotionCore.MotionUseCaseImpl(
+                repository: container.resolve(MotionRepository.self)
+            )
+        }
         
         // MARK: - Feature Factories
         container.register(RootFactory.self) {
             let userUseCase = container.resolve(UserUseCase.self)
             return RootFactoryImpl.create(userUseCase: userUseCase)
         }
-
+        
         container.register(SplashFactory.self) {
             return SplashFactoryImpl.create()
         }
@@ -245,12 +271,12 @@ public class AppDependencies {
         }
         
         container.register(AlarmFactory.self) {
-            let remoteRepository = container.resolve(AlarmRepository.self)
-            let localService = container.resolve(SwiftDataCoreInterface.AlarmService.self)
+            let alarmUseCase = container.resolve(AlarmUseCase.self)
+            let alarmScheduleUseCase = container.resolve(AlarmScheduleUseCase.self)
             let userUseCase = container.resolve(UserUseCase.self)
             return AlarmFactoryImpl.create(
-                remoteRepository: remoteRepository,
-                localService: localService,
+                alarmUseCase: alarmUseCase,
+                alarmScheduleUseCase: alarmScheduleUseCase,
                 userUseCase: userUseCase
             )
         }
@@ -266,7 +292,27 @@ public class AppDependencies {
             return SettingFactoryImpl.create(
                 userUseCase: userUseCase,
                 localizationUseCase: localizationUseCase,
-                notificationUseCase: notificationUseCase,
+                notificationUseCase: notificationUseCase
+            )
+        }
+        
+        container.register(MemoFactory.self) {
+            let memoUseCase = container.resolve(MemoUseCase.self)
+            let userUseCase = container.resolve(UserUseCase.self)
+            return MemoFactoryImpl.create(
+                memoUseCase: memoUseCase,
+                userUseCase: userUseCase
+            )
+        }
+        
+        container.register(MotionFactory.self) {
+            let userUseCase = container.resolve(UserUseCase.self)
+            let motionUseCase = container.resolve(MotionUseCase.self)
+            let motionRawDataUseCase = container.resolve(MotionRawDataUseCase.self)
+            return MotionFactoryImpl.create(
+                userUseCase: userUseCase,
+                motionUseCase: motionUseCase,
+                motionRawDataUseCase: motionRawDataUseCase
             )
         }
         
@@ -326,10 +372,6 @@ extension DIContainer {
     public var localAchievementService: SwiftDataCoreInterface.AchievementService {
         resolve(SwiftDataCoreInterface.AchievementService.self)
     }
-        
-    public var alarmSchedulerService: AlarmCoreInterface.AlarmSchedulerService {
-        resolve(AlarmCoreInterface.AlarmSchedulerService.self)
-    }
     
     public var localizationService: LocalizationCoreInterface.LocalizationService {
         resolve(LocalizationCoreInterface.LocalizationService.self)
@@ -337,6 +379,10 @@ extension DIContainer {
     
     public var notificationService: NotificationCoreInterface.NotificationService {
         resolve(NotificationCoreInterface.NotificationService.self)
+    }
+    
+    public var alarmScheduleUseCase: AlarmScheduleUseCase {
+        resolve(AlarmScheduleUseCase.self)
     }
 }
 

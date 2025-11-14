@@ -3,33 +3,29 @@ import AlarmDomainInterface
 import SupabaseCoreInterface
 
 public final class AlarmRepositoryImpl: AlarmRepository {
-    private let alarmService: SupabaseCoreInterface.AlarmService
+    private let alarmDataService: SupabaseCoreInterface.AlarmService
     
-    public init(alarmService: SupabaseCoreInterface.AlarmService) {
-        self.alarmService = alarmService
+    public init(alarmDataService: SupabaseCoreInterface.AlarmService) {
+        self.alarmDataService = alarmDataService
     }
     
     public func fetchAlarms(userId: UUID) async throws -> [AlarmEntity] {
-        return try await alarmService.fetchAlarms(for: userId)
+        return try await alarmDataService.fetchAlarms(for: userId)
     }
     
     public func createAlarm(_ alarm: AlarmEntity) async throws {
-        try await alarmService.createAlarm(alarm)
+        try await alarmDataService.createAlarm(alarm)
     }
     
     public func updateAlarm(_ alarm: AlarmEntity) async throws {
-        try await alarmService.updateAlarm(alarm)
+        try await alarmDataService.updateAlarm(alarm)
     }
     
     public func deleteAlarm(alarmId: UUID) async throws {
-        try await alarmService.deleteAlarm(id: alarmId)
+        try await alarmDataService.deleteAlarm(id: alarmId)
     }
     
     public func toggleAlarm(alarmId: UUID, isEnabled: Bool) async throws {
-        try await alarmService.toggleAlarm(id: alarmId, isEnabled: isEnabled)
+        try await alarmDataService.toggleAlarm(id: alarmId, isEnabled: isEnabled)
     }
-}
-
-public enum AlarmRepositoryError: Error {
-    case alarmNotFound
 }

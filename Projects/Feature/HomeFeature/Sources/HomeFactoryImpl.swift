@@ -1,6 +1,7 @@
 import SwiftUI
 import Rex
 import HomeFeatureInterface
+import MemoFeatureInterface
 import MemoDomainInterface
 import UserDomainInterface
 import AlarmExecutionDomainInterface
@@ -8,9 +9,11 @@ import Dependency
 
 public struct HomeFactoryImpl: HomeFactory {
     private let store: Store<HomeReducer>
+    private let memoFactory: MemoFactory
     
-    public init(store: Store<HomeReducer>) {
+    public init(store: Store<HomeReducer>, memoFactory: MemoFactory) {
         self.store = store
+        self.memoFactory = memoFactory
     }
 
     public func makeInterface() -> HomeInterface {
@@ -35,7 +38,8 @@ public extension HomeFactoryImpl {
             initialState: HomeState(),
             reducer: reducer
         )
-        return HomeFactoryImpl(store: store)
+        let memoFactory = container.resolve(MemoFactory.self)
+        return HomeFactoryImpl(store: store, memoFactory: memoFactory)
     }
     
     static func create(initialState: HomeState) -> HomeFactoryImpl {
@@ -49,7 +53,8 @@ public extension HomeFactoryImpl {
             initialState: initialState,
             reducer: reducer
         )
-        return HomeFactoryImpl(store: store)
+        let memoFactory = container.resolve(MemoFactory.self)
+        return HomeFactoryImpl(store: store, memoFactory: memoFactory)
     }
 }
 

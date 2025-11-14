@@ -26,8 +26,8 @@ struct SupabaseCore: Module {
                     .domain(target: "SleepPatternDomain", type: .interface),
                     .domain(target: "UserDomain", type: .interface),
                     .domain(target: "MemoDomain", type: .interface),
+                    .domain(target: "MotionDomain", type: .interface),
                     .domain(target: "MotionRawDataDomain", type: .interface),
-                    .core(target: "AlarmCore", type: .interface),
                     .external(name: "Supabase")
                 ]
             )

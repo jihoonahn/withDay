@@ -1,5 +1,5 @@
 import ActivityKit
-import AlarmCore
+import AlarmScheduleCore
 import AppIntents
 import WidgetKit
 import SwiftUI
@@ -21,10 +21,7 @@ struct AlarmWidget: Widget {
                 DynamicIslandExpandedRegion(.center) {
                     Group {
                         if contentState.isAlerting {
-                            MotionCountdownView(
-                                motionCount: contentState.motionCount,
-                                requiredCount: contentState.requiredMotionCount
-                            )
+                            MotionCountdownView(attributes: context.attributes)
                         } else {
                             TimeCountdownView(nextAlarmTime: context.attributes.scheduledTime)
                         }
@@ -35,10 +32,7 @@ struct AlarmWidget: Widget {
                 LogoView(style: .compact)
             } compactTrailing: {
                 if contentState.isAlerting {
-                    CompactMotionView(
-                        motionCount: contentState.motionCount,
-                        requiredCount: contentState.requiredMotionCount
-                    )
+                    CompactMotionView()
                 } else {
                     CompactTimeView(nextAlarmTime: context.attributes.scheduledTime)
                 }
