@@ -1,7 +1,8 @@
 import SwiftUI
-import AlarmScheduleCore
+import RefineUIIcons
+import AlarmScheduleCoreInterface
 
-struct MotionCountdownView: View {
+struct WakeUpView: View {
     let attributes: AlarmAttributes
     
     var body: some View {
@@ -17,8 +18,8 @@ struct MotionCountdownView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
             } else {
-                Text("🔔")
-                    .font(.system(size: 30, weight: .bold))
+                Text(String().formatTime(attributes.scheduledTime))
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
         }

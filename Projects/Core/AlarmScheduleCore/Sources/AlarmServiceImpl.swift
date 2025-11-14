@@ -8,6 +8,7 @@ import AlarmScheduleDomainInterface
 import Utility
 import AppIntents
 import ActivityKit
+import BaseFeature
 
 public final class AlarmScheduleServiceImpl: AlarmScheduleService {
 
@@ -15,16 +16,13 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
 
     private var cachedEntities: [UUID: AlarmScheduleEntity] = [:]
     private var activeActivities: [UUID: Activity<AlarmAttributes>] = [:]
-    private var scheduledNotifications: [UUID: String] = [:]
+    private var lastActivityUpdateTime: [UUID: Date] = [:]
+    private var triggeredAlarmIds: Set<UUID> = [] // isAlerting이 true로 설정된 알람 ID들
 
     private var alarmCheckTask: Task<Void, Never>?
     private var activityMonitorTask: Task<Void, Never>?
     private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
     private var soundLoopTask: Task<Void, Never>?
-    private var soundLoopTimer: Timer?
-    
-    private var isStartingActivity: Bool = false
-    private let activityCreationQueue = DispatchQueue(label: "com.withday.activity-creation", qos: .userInitiated)
 
     public init() {
         setupAppStateObserver()
@@ -262,6 +260,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             print("🔄 [AlarmService] 기존 Activity 재사용 및 업데이트: \(closestAlarm.alarmId)")
             activeActivities[closestAlarm.alarmId] = existingActivity
             await existingActivity.update(activityContent)
+            lastActivityUpdateTime[closestAlarm.alarmId] = Date()
             
             // 다른 알람의 Activity는 모두 종료 (가장 가까운 알람의 Activity만 유지)
             for activity in currentActivities {
@@ -271,6 +270,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
                     let finalContent = ActivityContent(state: finalState, staleDate: nil)
                     await activity.end(finalContent, dismissalPolicy: .immediate)
                     activeActivities.removeValue(forKey: activity.attributes.alarmId)
+                    lastActivityUpdateTime.removeValue(forKey: activity.attributes.alarmId)
                 }
             }
         } else {
@@ -291,6 +291,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             )
             
                 activeActivities[closestAlarm.alarmId] = activity
+                lastActivityUpdateTime[closestAlarm.alarmId] = Date()
                 print("✅ [AlarmService] Activity 생성 성공: \(closestAlarm.alarmId)")
             } catch {
                 let errorDescription = error.localizedDescription
@@ -310,62 +311,69 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
     
     // MARK: - Live Activity 업데이트
     private func updateLiveActivity(for alarmId: UUID, contentState: AlarmAttributes.ContentState) async {
+        // 먼저 activeActivities에서 찾기
         if let activity = activeActivities[alarmId] {
+            // 현재 Activity의 상태 확인
+            let currentState = activity.content.state
+            print("🔄 [AlarmService] Live Activity 업데이트 전: \(alarmId), 현재 isAlerting: \(currentState.isAlerting), 업데이트할 isAlerting: \(contentState.isAlerting)")
+            
+            // isAlerting 상태가 같고 isAlerting이 true면 업데이트 스킵 (Wake Up 화면은 시간 업데이트 불필요)
+            // 단, isAlerting이 false인 경우(시간 업데이트)에는 lastUpdateTime이 다르면 업데이트
+            if currentState.isAlerting == contentState.isAlerting {
+                if contentState.isAlerting == true {
+                    // Wake Up 화면은 업데이트 스킵
+                    print("⏭️ [AlarmService] Live Activity 상태 변경 없음 (Wake Up 화면), 업데이트 스킵: \(alarmId)")
+                    return
+                } else {
+                    // 시간 업데이트는 lastUpdateTime이 0.9초 이상 차이나면 업데이트
+                    let timeDifference = abs(contentState.lastUpdateTime.timeIntervalSince(currentState.lastUpdateTime))
+                    if timeDifference < 0.9 {
+                        // 1초 이내의 업데이트는 스킵 (너무 빈번한 업데이트 방지)
+                        return
+                    }
+                }
+            }
+            
             let activityContent = ActivityContent(state: contentState, staleDate: nil)
-            await activity.update(activityContent)
+            
+            // Activity 업데이트 시도
+            do {
+                try await activity.update(activityContent)
+                print("✅ [AlarmService] Live Activity 업데이트 성공: \(alarmId), isAlerting: \(contentState.isAlerting)")
+            } catch {
+                print("❌ [AlarmService] Live Activity 업데이트 실패: \(alarmId), error: \(error)")
+            }
         } else {
+            // activeActivities에 없으면 전체 Activity 목록에서 찾기
             let activities = Activity<AlarmAttributes>.activities
             
             if let activity = activities.first(where: { $0.attributes.alarmId == alarmId }) {
+                // 캐시에 추가
                 activeActivities[alarmId] = activity
                 
+                let currentState = activity.content.state
+                print("🔄 [AlarmService] Live Activity 업데이트 전 (재활성화): \(alarmId), 현재 isAlerting: \(currentState.isAlerting), 업데이트할 isAlerting: \(contentState.isAlerting)")
+                
                 let activityContent = ActivityContent(state: contentState, staleDate: nil)
-                await activity.update(activityContent)
+                
+                do {
+                    try await activity.update(activityContent)
+                    print("✅ [AlarmService] Live Activity 업데이트 성공 (재활성화): \(alarmId), isAlerting: \(contentState.isAlerting)")
+            } catch {
+                    print("❌ [AlarmService] Live Activity 업데이트 실패 (재활성화): \(alarmId), error: \(error)")
+                }
+            } else {
+                print("⚠️ [AlarmService] Live Activity를 찾을 수 없음: \(alarmId)")
+                // 활성 Activity 목록 확인
+                let allActivities = Activity<AlarmAttributes>.activities
+                print("📋 [AlarmService] 현재 활성 Activity 개수: \(allActivities.count)")
+                for activeActivity in allActivities {
+                    print("   - Activity: \(activeActivity.attributes.alarmId), isAlerting: \(activeActivity.content.state.isAlerting)")
+                }
             }
         }
     }
     
-    // MARK: - Live Activity 종료 (다음 알람이 없을 때만)
-    private func endLiveActivity(for alarmId: UUID) async {
-        let currentActivities = Activity<AlarmAttributes>.activities
-        guard let activity = currentActivities.first(where: { $0.attributes.alarmId == alarmId }) else {
-            activeActivities.removeValue(forKey: alarmId)
-            return
-        }
-        
-        // 다음 알람 정보 확인
-        let nextAlarmId = activity.attributes.nextAlarmId
-        let nextAlarmTime = activity.attributes.nextAlarmTime
-        
-        // 다음 알람이 있으면 Activity를 종료하고 다음 알람으로 전환
-        if let nextId = nextAlarmId, let nextTime = nextAlarmTime, let nextAlarm = cachedEntities[nextId], nextAlarm.isEnabled {
-            print("🔄 [AlarmService] 다음 알람 있음 - Activity 종료 후 전환: \(nextId)")
-            
-            // 현재 Activity 종료
-        let finalState = activity.content.state
-        let finalContent = ActivityContent(state: finalState, staleDate: nil)
-        await activity.end(finalContent, dismissalPolicy: .immediate)
-            activeActivities.removeValue(forKey: alarmId)
-            
-            // 약간의 대기 후 다음 알람 Activity 시작
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5초
-            
-            do {
-                try await startLiveActivity(alarm: nextAlarm, scheduledTime: nextTime)
-            } catch {
-                print("❌ [AlarmService] 다음 알람 Activity 시작 실패: \(error)")
-                await startNextClosestAlarmLiveActivity()
-            }
-            return
-        }
-        
-        // 다음 알람이 없을 때만 Activity 종료
-        print("🔔 [AlarmService] 다음 알람 없음 - Activity 종료: \(alarmId)")
-        let finalState = activity.content.state
-        let finalContent = ActivityContent(state: finalState, staleDate: nil)
-        await activity.end(finalContent, dismissalPolicy: .immediate)
-        activeActivities.removeValue(forKey: alarmId)
-    }
 
     // MARK: - cancel
     public func cancelAlarm(_ alarmId: UUID) async throws {
@@ -376,6 +384,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             let finalContent = ActivityContent(state: finalState, staleDate: nil)
             await activity.end(finalContent, dismissalPolicy: .immediate)
             activeActivities.removeValue(forKey: alarmId)
+            lastActivityUpdateTime.removeValue(forKey: alarmId)
         }
         
         // 모션 감지 중지는 AlarmFeature에서 처리
@@ -387,11 +396,12 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
         
         cachedEntities.removeValue(forKey: alarmId)
         
-        // 다음 알람 시작
-        await startNextClosestAlarmLiveActivity()
-        
+        // 사운드 및 백그라운드 태스크 정리
             stopSoundLoop()
             endBackgroundTask()
+        
+        // 다음 알람 시작
+        await startNextClosestAlarmLiveActivity()
     }
 
     // MARK: - update
@@ -423,10 +433,6 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             }
         }
         
-        if scheduledNotifications[alarmId] != nil {
-            return .scheduled
-        }
-        
         return nil
     }
     
@@ -437,6 +443,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             
             while !Task.isCancelled {
                 await self.checkActiveAlarms()
+                // 정확히 1초마다 실행 (Task.sleep은 정확한 타이밍을 보장하지 않으므로 다시 호출)
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
         }
@@ -478,43 +485,114 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
         let now = Date()
         let cachedAlarmIds = Array(cachedEntities.keys)
         
+        // 알람 트리거는 먼저 처리
         for alarmId in cachedAlarmIds {
             guard cachedEntities[alarmId] != nil else { continue }
             guard let activity = activeActivities[alarmId] else { continue }
             
             let scheduledTime = activity.attributes.scheduledTime
+            let currentIsAlerting = activity.content.state.isAlerting
             
-            if now >= scheduledTime && !activity.content.state.isAlerting {
+            // 알람 시간이 되었고 아직 실행되지 않은 경우에만 트리거
+            if now >= scheduledTime && !currentIsAlerting {
                 guard cachedEntities[alarmId] != nil else { continue }
+                print("⏰ [AlarmService] 알람 시간 도달: \(alarmId), scheduledTime: \(scheduledTime), now: \(now)")
+                triggeredAlarmIds.insert(alarmId) // 트리거된 알람 ID 기록
                 await triggerAlarm(alarmId: alarmId)
-            } else if !activity.content.state.isAlerting {
+            }
+        }
+        
+        // Widget 타이머 업데이트는 병렬로 처리하여 성능 향상
+        // isAlerting이 true인 알람은 시간 업데이트를 하지 않음 (이미 Wake Up 화면이므로)
+        await withTaskGroup(of: Void.self) { group in
+            for alarmId in cachedAlarmIds {
+                guard cachedEntities[alarmId] != nil else { continue }
+                guard let activity = activeActivities[alarmId] else { continue }
+                
+                // 트리거된 알람이거나 실행 중인 알람은 시간 업데이트 스킵 (Wake Up 화면)
+                if triggeredAlarmIds.contains(alarmId) {
+                    continue
+                }
+                
+                // 알람이 실행 중이 아닐 때만 시간 업데이트
+                guard !activity.content.state.isAlerting else { 
+                    // isAlerting이 true면 위젯 업데이트 스킵 (Wake Up 화면)
+                    continue 
+                }
+                
+                // lastActivityUpdateTime이 없으면 초기화 (첫 업데이트를 위해)
+                if lastActivityUpdateTime[alarmId] == nil {
+                    lastActivityUpdateTime[alarmId] = Date.distantPast
+                }
+                
+                let lastUpdate = lastActivityUpdateTime[alarmId] ?? Date.distantPast
+                let timeSinceLastUpdate = now.timeIntervalSince(lastUpdate)
+                
+                // 1초 이상 경과했을 때만 업데이트 (Widget이 1초마다 리렌더링되도록)
+                if timeSinceLastUpdate >= 1.0 {
+                    group.addTask { [weak self] in
+                        guard let self = self else { return }
                 let newState = AlarmAttributes.ContentState(
                     isAlerting: false,
                     lastUpdateTime: now
                 )
-                await updateLiveActivity(for: alarmId, contentState: newState)
+                        await self.updateLiveActivity(for: alarmId, contentState: newState)
+                        await MainActor.run {
+                            self.lastActivityUpdateTime[alarmId] = now
+                        }
+                        print("⏱️ [AlarmService] 위젯 시간 업데이트: \(alarmId), timeSinceLastUpdate: \(String(format: "%.1f", timeSinceLastUpdate))s")
+                    }
+                }
             }
         }
     }
     
     // MARK: - 알람 트리거
     func triggerAlarm(alarmId: UUID) async {
-        guard let entity = cachedEntities[alarmId] else { return }
+        guard let entity = cachedEntities[alarmId] else { 
+            print("⚠️ [AlarmService] 알람 엔티티 없음: \(alarmId)")
+            return 
+        }
         
-        if activeActivities[alarmId] == nil {
+        // Activity 확인 및 재활성화
+        var activity = activeActivities[alarmId]
+        if activity == nil {
+            // activeActivities에 없으면 전체 Activity 목록에서 찾기
+            let allActivities = Activity<AlarmAttributes>.activities
+            if let foundActivity = allActivities.first(where: { $0.attributes.alarmId == alarmId }) {
+                activeActivities[alarmId] = foundActivity
+                activity = foundActivity
+                print("✅ [AlarmService] Activity 재활성화: \(alarmId)")
+            } else {
+                // Activity가 없으면 생성
             do {
                 try await startLiveActivity(alarm: entity, scheduledTime: Date())
+                    activity = activeActivities[alarmId]
+                    print("✅ [AlarmService] Live Activity 생성 완료: \(alarmId)")
             } catch {
                 print("❌ [AlarmService] Live Activity 생성 실패: \(error)")
+                    return
+                }
             }
         }
         
+        guard let activity = activity else {
+            print("⚠️ [AlarmService] 알람 트리거: Activity를 찾을 수 없음: \(alarmId)")
+            return
+        }
+        
+        // isAlerting을 true로 업데이트
+        let now = Date()
         let alertingState = AlarmAttributes.ContentState(
             isAlerting: true,
-            lastUpdateTime: Date()
+            lastUpdateTime: now
         )
         
+        print("🔔 [AlarmService] 알람 트리거: \(alarmId), isAlerting: true, 현재 Activity 상태: \(activity.content.state.isAlerting)")
         await updateLiveActivity(for: alarmId, contentState: alertingState)
+        
+        // lastActivityUpdateTime 업데이트하여 위젯 업데이트 로직이 덮어쓰지 않도록 방지
+        lastActivityUpdateTime[alarmId] = now
         
         // 모션 감지는 AlarmFeature에서 처리
         NotificationCenter.default.post(
@@ -522,6 +600,11 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
             object: nil,
             userInfo: ["alarmId": alarmId]
         )
+        
+        // GlobalEventBus로 AlarmEvent 전송
+        Task {
+            await GlobalEventBus.shared.publish(AlarmEvent.triggered(alarmId: alarmId))
+        }
         
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
         playAlarmSound()
@@ -544,45 +627,19 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
     
     // MARK: - 사운드 반복 재생
     private func startSoundLoop() {
-        soundLoopTimer?.invalidate()
         soundLoopTask?.cancel()
         soundLoopTask = Task { [weak self] in
             guard let self = self else { return }
             
             while !Task.isCancelled {
-                // 사운드 루프는 모션 감지와 독립적으로 관리
-                // stopSoundLoop()가 호출되면 Task가 취소됨
-                
                 AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
                 AudioServicesPlaySystemSound(1005)
-                
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
-            }
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if UIApplication.shared.applicationState == .active {
-                self.soundLoopTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-                    guard let self = self else { return }
-                    
-                    // 사운드 루프는 모션 감지와 독립적으로 관리
-                    if true {
-                        self.soundLoopTimer?.invalidate()
-                        self.soundLoopTimer = nil
-                        return
-                    }
-                    
-                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-                    AudioServicesPlaySystemSound(1005)
-                }
             }
         }
     }
     
     private func stopSoundLoop() {
-        soundLoopTimer?.invalidate()
-        soundLoopTimer = nil
         soundLoopTask?.cancel()
         soundLoopTask = nil
     }
@@ -600,13 +657,9 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
                     guard let self = self else { return }
                     let expiredTaskId = self.backgroundTaskId
                     self.backgroundTaskId = .invalid
-                    
                     UIApplication.shared.endBackgroundTask(expiredTaskId)
-                    
-                    // 사운드 루프는 모션 감지와 독립적으로 관리
-                    if true {
+                    // 만료 시 새로운 백그라운드 태스크 시작
                         self.startBackgroundTask()
-                    }
                 }
             )
         }
@@ -623,77 +676,58 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
         }
     }
     
-    // MARK: - 알람 중지 (모션 완료 시 호출)
+    // MARK: - 알람 중지 (앱에서 Stop 기능 호출 시 Activity 종료)
     public func stopAlarm(_ alarmId: UUID) async {
+        print("🛑 [AlarmService] stopAlarm 호출됨: \(alarmId)")
+        
+        // 트리거된 알람 목록에서 제거
+        triggeredAlarmIds.remove(alarmId)
+        print("🛑 [AlarmService] 알람 중지: \(alarmId), triggeredAlarmIds에서 제거")
+        
         // 사운드 중지
         stopSoundLoop()
         endBackgroundTask()
         
-        // 현재 Activity 확인
+        // GlobalEventBus로 AlarmEvent 전송
+        Task {
+            await GlobalEventBus.shared.publish(AlarmEvent.stopped(alarmId: alarmId))
+        }
+        
+        // 알람 중지 notification 발송
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AlarmStopped"),
+            object: nil,
+            userInfo: ["alarmId": alarmId]
+        )
+        
+        // Activity 종료
         let currentActivities = Activity<AlarmAttributes>.activities
-        guard let currentActivity = currentActivities.first(where: { $0.attributes.alarmId == alarmId }) else {
-            // Activity가 없으면 다음 알람 시작
-            await startNextClosestAlarmLiveActivity()
-            return
-        }
-        
-        // 다음 알람 정보 가져오기
-        let nextAlarmId = currentActivity.attributes.nextAlarmId
-        let nextAlarmTime = currentActivity.attributes.nextAlarmTime
-        
-        // 다음 알람 정보로 Activity 전환
-        if let nextId = nextAlarmId, let nextTime = nextAlarmTime, let nextAlarm = cachedEntities[nextId], nextAlarm.isEnabled {
-            print("🔄 [AlarmService] 다음 알람으로 전환: \(nextId)")
-            
-            // 모든 Activity 조회해서 다음 알람의 Activity가 있는지 확인
-            let allActivities = Activity<AlarmAttributes>.activities
-            let nextAlarmActivity = allActivities.first(where: { $0.attributes.alarmId == nextId })
-            
-            if let nextActivity = nextAlarmActivity {
-                // 다음 알람의 Activity가 이미 있으면 content만 업데이트
-                print("🔄 [AlarmService] 다음 알람 Activity 재사용: \(nextId)")
-                let newState = AlarmAttributes.ContentState(
-                    isAlerting: false,
-                    lastUpdateTime: Date()
-                )
-                let activityContent = ActivityContent(state: newState, staleDate: nil)
-                await nextActivity.update(activityContent)
-                
-                // 현재 Activity 종료 (다음 알람이 있으므로)
+        if let currentActivity = currentActivities.first(where: { $0.attributes.alarmId == alarmId }) {
+            print("🔔 [AlarmService] Activity 종료: \(alarmId)")
                 let finalState = currentActivity.content.state
                 let finalContent = ActivityContent(state: finalState, staleDate: nil)
                 await currentActivity.end(finalContent, dismissalPolicy: .immediate)
                 activeActivities.removeValue(forKey: alarmId)
-                activeActivities[nextId] = nextActivity
+            lastActivityUpdateTime.removeValue(forKey: alarmId)
             } else {
-                // 다음 알람의 Activity가 없으면 현재 Activity 종료 후 새로 생성
-                let finalState = currentActivity.content.state
-                let finalContent = ActivityContent(state: finalState, staleDate: nil)
-                await currentActivity.end(finalContent, dismissalPolicy: .immediate)
-                activeActivities.removeValue(forKey: alarmId)
-                
-                // 약간의 대기 후 다음 알람 Activity 시작 (visibility 에러 방지)
-                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5초
-                
-                do {
-                    try await startLiveActivity(alarm: nextAlarm, scheduledTime: nextTime)
-                } catch {
-                    print("❌ [AlarmService] 다음 알람 Activity 시작 실패: \(error)")
-                    // 실패 시 가장 가까운 알람 시작
-                    await startNextClosestAlarmLiveActivity()
-                }
-            }
-        } else {
-            // 다음 알람이 없을 때만 Activity 종료
-            print("🔔 [AlarmService] 다음 알람 없음 - Activity 종료: \(alarmId)")
-            let finalState = currentActivity.content.state
-            let finalContent = ActivityContent(state: finalState, staleDate: nil)
-            await currentActivity.end(finalContent, dismissalPolicy: .immediate)
-            activeActivities.removeValue(forKey: alarmId)
-            
-            // 가장 가까운 알람 시작
-            await startNextClosestAlarmLiveActivity()
+            print("⚠️ [AlarmService] Activity를 찾을 수 없음: \(alarmId)")
         }
+        
+        // 다음 알람 시작
+        await startNextClosestAlarmLiveActivity()
+    }
+    
+    // MARK: - 활성화된 알람 정보 조회 (foreground에서)
+    public func getActiveAlarms() async -> [(attributes: AlarmAttributes, state: AlarmAttributes.ContentState)] {
+        let allActivities = Activity<AlarmAttributes>.activities
+        var activeAlarms: [(attributes: AlarmAttributes, state: AlarmAttributes.ContentState)] = []
+        
+        for activity in allActivities {
+            activeAlarms.append((attributes: activity.attributes, state: activity.content.state))
+        }
+        
+        print("📋 [AlarmService] 활성화된 알람 \(activeAlarms.count)개 발견")
+        return activeAlarms
     }
     
 

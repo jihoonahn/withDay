@@ -14,4 +14,5 @@ public enum AlarmAction: ActionType {
     case loadAlarms
     case setAlarms([AlarmEntity])
     case setError(String?)
+    case stopAlarm(id: UUID)
 }

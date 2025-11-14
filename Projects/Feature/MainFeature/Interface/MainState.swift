@@ -1,5 +1,6 @@
 import Rex
 import RefineUIIcons
+import Foundation
 
 public struct MainState: StateType {
     public enum Flow: Sendable, Codable, CaseIterable {
@@ -36,6 +37,8 @@ public struct MainState: StateType {
     }
 
     public var flow: Flow = .home
+    public var isShowingMotion: Bool = false
+    public var motionAlarmId: UUID?
 
     public init() {}
 }

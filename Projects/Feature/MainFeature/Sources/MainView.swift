@@ -58,6 +58,16 @@ public struct MainView: View {
                 )
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { state.isShowingMotion },
+            set: { isPresented in
+                if !isPresented, let alarmId = state.motionAlarmId {
+                    interface.send(.closeMotion(id: alarmId))
+                }
+            }
+        )) {
+            motionFactory.makeView()
+        }
         .ignoresSafeArea()
         .task {
             for await newState in interface.stateStream {

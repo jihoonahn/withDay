@@ -14,14 +14,16 @@ struct AlarmScheduleCore: Module {
                 name: typeName,
                 dependencies: [
                     .core(target: typeName, type: .interface),
+                    .sdk(name: "ActivityKit", type: .framework),
                     .shared(target: "Dependency"),
-                    .sdk(name: "ActivityKit", type: .framework)
+                    .feature(target: "BaseFeature", type: .sources)
                 ]
             )
             Interface(
                 name: typeName,
                 dependencies: [
                     .domain(target: "AlarmScheduleDomain", type: .interface),
+                    .sdk(name: "ActivityKit", type: .framework),
                 ]
             )
             Testing(

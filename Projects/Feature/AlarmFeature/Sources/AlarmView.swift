@@ -153,6 +153,8 @@ public struct AlarmView: View {
         }
         .task {
             interface.send(.loadAlarms)
+        }
+        .task {
             for await newState in interface.stateStream {
                 await MainActor.run {
                     self.state = newState

@@ -1,5 +1,6 @@
 import Rex
 import MainFeatureInterface
+import BaseFeature
 
 public class MainStore: MainInterface {
     private let store: Store<MainReducer>
@@ -31,5 +32,19 @@ public class MainStore: MainInterface {
         return store.getInitialState()
     }
     
-    private func setupEventBusObserver() {}
+    private func setupEventBusObserver() {
+        Task {
+            await GlobalEventBus.shared.subscribe { event in
+                guard let alarmEvent = event as? AlarmEvent else {
+                    return
+                }
+                switch alarmEvent {
+                case let .triggered(alarmId: id):
+                    self.send(.showMotion(id: id))
+                case let .stopped(alarmId: id):
+                    self.send(.closeMotion(id: id))
+                }
+            }
+        }
+    }
 }

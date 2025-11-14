@@ -86,6 +86,9 @@ public struct MotionView: View {
             }
         }
         .interactiveDismissDisabled(state.isMonitoring)
+        .onAppear {
+            interface.send(.viewAppear)
+        }
         .task {
             // State 스트림 구독
             for await newState in interface.stateStream {

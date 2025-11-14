@@ -4,7 +4,7 @@ struct CompactTimeView: View {
     let nextAlarmTime: Date
     
     var body: some View {
-        Text(String().compactTimeRemaining(from: nextAlarmTime))
+        Text(String().timeRemainingString(from: nextAlarmTime))
             .font(.system(size: 16, weight: .bold, design: .rounded))
             .foregroundStyle(
                 LinearGradient(

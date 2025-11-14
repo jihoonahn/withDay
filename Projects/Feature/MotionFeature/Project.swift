@@ -17,6 +17,8 @@ struct MotionFeature: Module {
                     .feature(target: typeName, type: .interface),
                     .shared(target: "Designsystem"),
                     .shared(target: "Localization"),
+                    .core(target: "MotionCore", type: .interface),
+                    .shared(target: "Dependency"),
                 ]
             )
             Interface(

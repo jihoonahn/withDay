@@ -1,5 +1,6 @@
 import Foundation
 import AlarmScheduleDomainInterface
+import ActivityKit
 
 public enum Weekday: Int {
     case sunday = 1, monday, tuesday, wednesday, thursday, friday, saturday
@@ -65,4 +66,5 @@ public protocol AlarmScheduleService {
     func toggleAlarm(_ alarmId: UUID, isEnabled: Bool) async throws
     func getAlarmStatus(alarmId: UUID) async throws -> AlarmStatus?
     func stopAlarm(_ alarmId: UUID) async
+    func getActiveAlarms() async -> [(attributes: AlarmAttributes, state: AlarmAttributes.ContentState)]
 }

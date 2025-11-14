@@ -309,10 +309,14 @@ public class AppDependencies {
             let userUseCase = container.resolve(UserUseCase.self)
             let motionUseCase = container.resolve(MotionUseCase.self)
             let motionRawDataUseCase = container.resolve(MotionRawDataUseCase.self)
+            let alarmScheduleUseCase = container.resolve(AlarmScheduleUseCase.self)
+            let motionService = container.resolve(MotionCoreInterface.MotionService.self)
             return MotionFactoryImpl.create(
                 userUseCase: userUseCase,
                 motionUseCase: motionUseCase,
-                motionRawDataUseCase: motionRawDataUseCase
+                motionRawDataUseCase: motionRawDataUseCase,
+                alarmScheduleUseCase: alarmScheduleUseCase,
+                motionService: motionService
             )
         }
         

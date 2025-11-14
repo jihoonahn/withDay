@@ -94,31 +94,9 @@ public struct AlarmReducer: Reducer {
         case .setAlarms(let alarms):
             state.isLoading = false
             state.alarms = alarms.sorted { $0.time < $1.time }
-            return [
-                Effect { [self, alarms] emitter in
-                    // 활성화된 알람들을 스케줄링
-                    for alarm in alarms where alarm.isEnabled {
-                        do {
-                            let scheduleEntity = toScheduleEntity(alarm)
-                            try await alarmScheduleUseCase.cancelAlarm(scheduleEntity.id)
-                            print("🔔 [AlarmReducer] 알람 스케줄링: \(alarm.id)")
-                            try await alarmScheduleUseCase.scheduleAlarm(scheduleEntity)
-                        } catch {
-                            print("❌ [AlarmReducer] 알람 스케줄링 실패: \(alarm.id), \(error)")
-                        }
-                    }
-                    
-                    // 비활성화된 알람들 취소
-                    for alarm in alarms where !alarm.isEnabled {
-                        do {
-                            try await alarmScheduleUseCase.cancelAlarm(alarm.id)
-                            print("🔕 [AlarmReducer] 비활성화된 알람 취소: \(alarm.id)")
-                        } catch {
-                            print("❌ [AlarmReducer] 알람 취소 실패: \(alarm.id), \(error)")
-                        }
-                    }
-                }
-            ]
+            // 스케줄링은 명시적으로 알람이 변경될 때만 수행
+            // (createAlarm, updateAlarm, toggleAlarm 등에서 처리)
+            return []
             
         case .createAlarm(let time, let label, let repeatDays):
             state.errorMessage = nil
@@ -232,11 +210,8 @@ public struct AlarmReducer: Reducer {
                         
                         // 2. 알람 스케줄링 업데이트
                         let scheduleEntity = toScheduleEntity(alarm)
-                        try await alarmScheduleUseCase.cancelAlarm(scheduleEntity.id)
-                        if alarm.isEnabled {
-                            print("🔔 [AlarmReducer] 알람 재스케줄링: \(alarm.id)")
-                            try await alarmScheduleUseCase.scheduleAlarm(scheduleEntity)
-                        }
+                        print("🔔 [AlarmReducer] 알람 스케줄링 업데이트: \(alarm.id)")
+                        try await alarmScheduleUseCase.updateAlarm(scheduleEntity)
                         
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
                         
@@ -323,19 +298,8 @@ public struct AlarmReducer: Reducer {
                         try await alarmUseCase.toggle(id: id, isEnabled: newIsEnabled)
                         
                         // 2. 알람 스케줄링 토글
-                        if newIsEnabled {
-                            // 알람 재스케줄링 (전체 알람 정보가 필요)
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
-                            if let alarm = alarms.first(where: { $0.id == id }) {
-                                print("🔔 [AlarmReducer] 알람 활성화 스케줄링: \(id)")
-                                let scheduleEntity = toScheduleEntity(alarm)
-                                try await alarmScheduleUseCase.scheduleAlarm(scheduleEntity)
-                            }
-                        } else {
-                            print("🔕 [AlarmReducer] 알람 비활성화: \(id)")
-                            try await alarmScheduleUseCase.cancelAlarm(id)
-                        }
+                        print("🔔 [AlarmReducer] 알람 스케줄링 토글: \(id) -> \(newIsEnabled)")
+                        try await alarmScheduleUseCase.toggleAlarm(id, isEnabled: newIsEnabled)
                         
                         print("✅ [AlarmReducer] 알람 토글 완료: \(id) -> \(newIsEnabled)")
                     } catch {
@@ -451,6 +415,19 @@ public struct AlarmReducer: Reducer {
         case let .showingEditAlarmState(alarm):
             state.editingAlarm = alarm
             return []
+            
+        case .stopAlarm(let id):
+            return [
+                Effect { [self, id] emitter in
+                    do {
+                        print("🛑 [AlarmReducer] 알람 중지 요청: \(id)")
+                        await alarmScheduleUseCase.stopAlarm(id)
+                        print("✅ [AlarmReducer] 알람 중지 완료: \(id)")
+                    } catch {
+                        print("❌ [AlarmReducer] 알람 중지 실패: \(error)")
+                    }
+                }
+            ]
         }
     }
 }

@@ -4,6 +4,8 @@ import MotionFeatureInterface
 import UserDomainInterface
 import MotionRawDataDomainInterface
 import MotionDomainInterface
+import AlarmScheduleDomainInterface
+import MotionCoreInterface
 import Dependency
 
 public struct MotionFactoryImpl: MotionFactory {
@@ -27,14 +29,18 @@ public extension MotionFactoryImpl {
     static func create(
         userUseCase: UserUseCase,
         motionUseCase: MotionUseCase,
-        motionRawDataUseCase: MotionRawDataUseCase
+        motionRawDataUseCase: MotionRawDataUseCase,
+        alarmScheduleUseCase: AlarmScheduleUseCase,
+        motionService: MotionCoreInterface.MotionService
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: MotionState(),
             reducer: MotionReducer(
                 userUseCase: userUseCase,
                 motionUseCase: motionUseCase,
-                motionRawDataUseCase: motionRawDataUseCase
+                motionRawDataUseCase: motionRawDataUseCase,
+                alarmScheduleUseCase: alarmScheduleUseCase,
+                motionService: motionService
             )
         )
         return MotionFactoryImpl(store: store)
@@ -44,14 +50,18 @@ public extension MotionFactoryImpl {
         initialState: MotionState,
         userUseCase: UserUseCase,
         motionUseCase: MotionUseCase,
-        motionRawDataUseCase: MotionRawDataUseCase
+        motionRawDataUseCase: MotionRawDataUseCase,
+        alarmScheduleUseCase: AlarmScheduleUseCase,
+        motionService: MotionCoreInterface.MotionService
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: initialState,
             reducer: MotionReducer(
                 userUseCase: userUseCase,
                 motionUseCase: motionUseCase,
-                motionRawDataUseCase: motionRawDataUseCase
+                motionRawDataUseCase: motionRawDataUseCase,
+                alarmScheduleUseCase: alarmScheduleUseCase,
+                motionService: motionService
             )
         )
         return MotionFactoryImpl(store: store)

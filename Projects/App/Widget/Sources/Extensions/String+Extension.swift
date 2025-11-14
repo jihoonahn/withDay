@@ -43,4 +43,10 @@ extension String {
             return String(format: "%ds", totalSeconds)
         }
     }
+
+    func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
 }

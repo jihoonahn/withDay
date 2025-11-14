@@ -9,6 +9,8 @@ public enum MotionServiceError: Error {
 
 public protocol MotionService {
     func startMonitoring(for executionId: UUID) async throws -> MotionEntity
-    func stopMonitoring(for executionId: UUID)
+    func startMonitoring(for alarmId: UUID, requiredCount: Int) async throws
+    func stopMonitoring(for alarmId: UUID)
     func stopAllMonitoring()
+    func getMotionCount(for alarmId: UUID) -> Int
 }
