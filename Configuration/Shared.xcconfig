@@ -1,6 +1,7 @@
 OTHER_SWIFT_FLAGS[config=DEV][sdk=*] = $(inherited) -DDEV
 OTHER_SWIFT_FLAGS[config=STAGE][sdk=*] = $(inherited) -DSTAGE
 OTHER_SWIFT_FLAGS[config=PROD][sdk=*] = $(inherited) -DPROD
+OTHER_LDFLAGS = $(inherited)
 
 SUPABASE_URL = https://uikavecpbbswtwcgmnpp.supabase.co
 SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpa2F2ZWNwYmJzd3R3Y2dtbnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzODIwNDksImV4cCI6MjA3Mzk1ODA0OX0.qEMYd8VCfvPRk1EuBKuOZlwCzDEG9TX_tjgDtTEwcRE
