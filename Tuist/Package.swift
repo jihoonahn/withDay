@@ -6,7 +6,9 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         productTypes: [
-            "Rex": .framework
+            "Rex": .framework,
+            // 충돌 방지를 위해 SPM 'Network' 제품을 정적 라이브러리로 빌드
+            "Network": .staticLibrary
         ],
         baseSettings: .settings(
             configurations: [
@@ -25,6 +27,5 @@ let package = Package(
         .package(url: "https://github.com/pelagornis/refineui-system-icons", from: "0.3.17"),
         .package(url: "https://github.com/supabase/supabase-swift.git", from: "2.32.0"),
         .package(url: "https://github.com/apple/swift-log", from: "1.6.4"),
-        .package(url: "https://github.com/pelagornis/swift-network", from: "0.1.1")
     ]
 )

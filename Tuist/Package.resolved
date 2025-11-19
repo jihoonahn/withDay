@@ -1,5 +1,5 @@
 {
-  "originHash" : "0f1e3bc233f6bb1725d70ee2cc70ca389cc06821726909e0d6ac326ab6492370",
+  "originHash" : "983cc198985e91484e1f3d891e15c5b8d954b6e022b3ecb43d5086b0d98e56db",
   "pins" : [
     {
       "identity" : "refineui-system-icons",
@@ -71,15 +71,6 @@
       "state" : {
         "revision" : "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
         "version" : "1.6.4"
-      }
-    },
-    {
-      "identity" : "swift-network",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pelagornis/swift-network",
-      "state" : {
-        "revision" : "8db310663356934f1d179e8557ffe78c86c8752e",
-        "version" : "0.1.1"
       }
     },
     {
