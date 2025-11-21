@@ -1,38 +1,38 @@
 import SwiftUI
 import Rex
-import WeatherFeatureInterface
+import RankFeatureInterface
 
-public struct WeatherFactoryImpl: WeatherFactory {
-    private let store: Store<WeatherReducer>
+public struct RankFactoryImpl: RankFactory {
+    private let store: Store<RankReducer>
     
-    public init(store: Store<WeatherReducer>) {
+    public init(store: Store<RankReducer>) {
         self.store = store
     }
 
-    public func makeInterface() -> WeatherInterface {
-        return WeatherStore(store: store)
+    public func makeInterface() -> RankInterface {
+        return RankStore(store: store)
     }
     
     public func makeView() -> AnyView {
         let interface = makeInterface()
-        return AnyView(WeatherView(interface: interface))
+        return AnyView(RankView(interface: interface))
     }
 }
 
-public extension WeatherFactoryImpl {
-    static func create() -> WeatherFactoryImpl {
-        let store = Store<WeatherReducer>(
-            initialState: WeatherState(),
-            reducer: WeatherReducer()
+public extension RankFactoryImpl {
+    static func create() -> RankFactoryImpl {
+        let store = Store<RankReducer>(
+            initialState: RankState(),
+            reducer: RankReducer()
         )
-        return WeatherFactoryImpl(store: store)
+        return RankFactoryImpl(store: store)
     }
     
-    static func create(initialState: WeatherState) -> WeatherFactoryImpl {
-        let store = Store<WeatherReducer>(
+    static func create(initialState: RankState) -> RankFactoryImpl {
+        let store = Store<RankReducer>(
             initialState: initialState,
-            reducer: WeatherReducer()
+            reducer: RankReducer()
         )
-        return WeatherFactoryImpl(store: store)
+        return RankFactoryImpl(store: store)
     }
 }

@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import Rex
-import RootFeatureInterface
 import MotionFeatureInterface
 import Designsystem
 import Localization
@@ -24,8 +23,6 @@ public struct MotionView: View {
             if state.isMonitoring {
                 VStack(spacing: 40) {
                     Spacer()
-                    
-                    // 카운트 표시 (중점)
                     VStack(spacing: 20) {
                         Text("\(state.motionCount)")
                             .font(.system(size: 120, weight: .bold, design: .rounded))
@@ -38,8 +35,6 @@ public struct MotionView: View {
                             .foregroundColor(JColor.textSecondary)
                             .opacity(0.6)
                     }
-                    
-                    // 진행 바
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 8)
@@ -57,8 +52,7 @@ public struct MotionView: View {
                     }
                     .frame(height: 12)
                     .padding(.horizontal, 60)
-                    
-                    // 안내 텍스트
+
                     VStack(spacing: 12) {
                         Text("기기를 흔들어주세요")
                             .font(.system(size: 24, weight: .semibold))
@@ -72,8 +66,7 @@ public struct MotionView: View {
                     Spacer()
                 }
                 .padding(.vertical, 60)
-            } else {
-                // 모니터링이 끝났을 때
+            } else if state.alarmId != nil {
                 VStack(spacing: 20) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 80))
@@ -82,6 +75,16 @@ public struct MotionView: View {
                     Text("알람이 종료되었습니다")
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(JColor.textPrimary)
+                }
+            } else {
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .tint(JColor.primaryVariant)
+                    
+                    Text("알람 대기 중...")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(JColor.textSecondary)
                 }
             }
         }

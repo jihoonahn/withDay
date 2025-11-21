@@ -1,11 +1,7 @@
 import Rex
 
-public enum WeatherAction: ActionType {
-    case loadWeather
-    case refreshWeather
-    case updateCurrentWeather(WeatherData)
-    case updateHourlyWeather([HourlyWeatherData])
-    case updateWeeklyWeather([WeeklyWeatherData])
+public enum RankAction: ActionType {
+    case loadRank
     case setLoading(Bool)
     case setError(String?)
     case clearError

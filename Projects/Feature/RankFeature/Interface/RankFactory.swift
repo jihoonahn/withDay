@@ -1,7 +1,7 @@
 import SwiftUI
 import Rex
 
-public protocol WeatherFactory {
-    func makeInterface() -> WeatherInterface
+public protocol RankFactory {
+    func makeInterface() -> RankInterface
     func makeView() -> AnyView
 }

@@ -34,13 +34,11 @@ public class MainStore: MainInterface {
     
     private func setupEventBusObserver() {
         Task {
-            await GlobalEventBus.shared.subscribe { event in
-                guard let alarmEvent = event as? AlarmEvent else {
-                    return
-                }
-                switch alarmEvent {
-                case let .triggered(alarmId: id):
-                    self.send(.showMotion(id: id))
+            await GlobalEventBus.shared.subscribe(AlarmEvent.self) { [weak self] event in
+                guard let self = self else { return }
+                switch event {
+                case let .triggered(id, executionId):
+                    self.send(.showMotion(id: id, executionId: executionId))
                 case let .stopped(alarmId: id):
                     self.send(.closeMotion(id: id))
                 }

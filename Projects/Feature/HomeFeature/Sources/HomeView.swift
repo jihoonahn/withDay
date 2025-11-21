@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
+import RefineUIIcons
 import Rex
-import RootFeatureInterface
 import HomeFeatureInterface
 import MemoFeatureInterface
 import Designsystem
@@ -46,14 +46,6 @@ public struct HomeView: View {
             ) {
                 memoFactory.makeView()
             }
-            .sheet(isPresented: Binding(
-                get: { state.memoDetailPresented },
-                set: { value in
-                    interface.send(.showMemoDetail(value))
-                }
-            )) {
-                memoFactory.makeView()
-            }
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -88,8 +80,7 @@ private extension HomeView {
                 Image(refineUIIcon: .note24Regular)
                     .foregroundColor(JColor.textPrimary)
                     .frame(width: 40, height: 40)
-                    .background(JColor.surface.opacity(0.8))
-                    .clipShape(Circle())
+                    .glassEffect(.clear.interactive(), in: .circle)
             }
         }
         .padding(.horizontal, 20)
@@ -122,7 +113,7 @@ private extension HomeView {
                     .foregroundStyle(JColor.textPrimary)
                 Spacer()
                 Button(action: {
-                    interface.send(.showMemoDetail(true))
+                    interface.send(.showAllMemos(true))
                 }) {
                     Text("HomeMemoShowCalendar".localized())
                         .font(.system(size: 14, weight: .semibold))

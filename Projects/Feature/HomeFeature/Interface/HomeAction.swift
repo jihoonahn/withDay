@@ -6,6 +6,6 @@ public enum HomeAction: ActionType {
     case viewAppear
     case loadHomeData
     case setHomeData(wakeDuration: Int?, memos: [MemoEntity])
-    case showMemoDetail(Bool)
+    case showAllMemos(Bool)
     case showMemoSheet(Bool)
 }

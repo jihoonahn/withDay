@@ -1,6 +1,5 @@
 import SwiftUI
 import Rex
-import RootFeatureInterface
 import LoginFeatureInterface
 import Designsystem
 

@@ -7,8 +7,8 @@ import Localization
 import BaseFeature
 
 public struct MemoReducer: Reducer {
-    private let memoUseCase: MemoUseCase
     private let userUseCase: UserUseCase
+    private let memoUseCase: MemoUseCase
     private let dateProvider: () -> Date
     private let calendar = Calendar.current
 
@@ -54,25 +54,7 @@ public struct MemoReducer: Reducer {
             state.memoContent = memo.content
             state.memoScheduledDate = scheduledDay(for: memo) ?? normalizedDate(dateProvider())
             state.reminderTime = memo.reminderTime.flatMap { MemoState.reminderTimeFormatter.date(from: $0) }
-            state.sheetAction = true
             return []
-            
-        case let .showMemoDetail(isPresented):
-            state.memoDetailPresented = isPresented
-            return []
-            
-        case let .showMemoSheet(isPresented):
-            state.sheetAction = isPresented
-            if isPresented {
-                state.memoScheduledDate = defaultMemoScheduledDate(for: state)
-                if state.memoTitle.isEmpty {
-                    state.memoTitle = defaultTitle(for: state.memoScheduledDate)
-                }
-            } else {
-                resetMemoDraft(state: &state)
-            }
-            return []
-            
         case let .memoScheduledDateDidChange(date):
             state.memoScheduledDate = normalizedDate(date)
             if state.memoTitle.isEmpty {
@@ -156,7 +138,6 @@ public struct MemoReducer: Reducer {
                 resetMemoDraft(state: &state)
                 return [
                     .just(.showMemoToast(wasEditing ? "HomeMemoFormToastUpdated".localized() : "HomeMemoFormToastSaved".localized())),
-                    .just(.showMemoSheet(false)),
                     .just(.loadMemos)
                 ]
             case let .failure(error):

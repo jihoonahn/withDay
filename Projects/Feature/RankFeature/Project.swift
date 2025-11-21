@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = WeatherFeature().module()
+let project = RankFeature().module()
 
-struct WeatherFeature: Module {
+struct RankFeature: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,
@@ -20,7 +20,7 @@ struct WeatherFeature: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "WeatherDomain", type: .interface)
+                    .domain(target: "RankDomain", type: .interface)
                 ]
             )
             Example(

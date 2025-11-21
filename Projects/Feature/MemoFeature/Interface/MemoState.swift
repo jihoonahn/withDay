@@ -4,6 +4,11 @@ import Utility
 import MemoDomainInterface
 
 public struct MemoState: StateType {
+    public enum Flow: Sendable, Codable, CaseIterable {
+        case all
+        case add
+        case edit
+    }
     // Memo creation
     public var memoTitle: String = ""
     public var memoContent: String = ""
@@ -15,8 +20,8 @@ public struct MemoState: StateType {
     // Loaded data
     public var allMemos: [MemoEntity] = []
     public var selectedMemoDate: Date = Calendar.current.startOfDay(for: Date())
-    public var memoDetailPresented: Bool = false
-    public var sheetAction = false
+    
+    public var flow: Flow = .all
     
     // Toast
     public var memoToastMessage: String = ""

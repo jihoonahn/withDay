@@ -5,6 +5,7 @@ import UserDomainInterface
 import MotionRawDataDomainInterface
 import MotionDomainInterface
 import AlarmScheduleDomainInterface
+import AlarmExecutionDomainInterface
 import MotionCoreInterface
 import Dependency
 
@@ -31,16 +32,16 @@ public extension MotionFactoryImpl {
         motionUseCase: MotionUseCase,
         motionRawDataUseCase: MotionRawDataUseCase,
         alarmScheduleUseCase: AlarmScheduleUseCase,
-        motionService: MotionCoreInterface.MotionService
+        alarmExecutionUseCase: AlarmExecutionUseCase
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: MotionState(),
             reducer: MotionReducer(
                 userUseCase: userUseCase,
-                motionUseCase: motionUseCase,
                 motionRawDataUseCase: motionRawDataUseCase,
                 alarmScheduleUseCase: alarmScheduleUseCase,
-                motionService: motionService
+                motionUseCase: motionUseCase,
+                alarmExecutionUseCase: alarmExecutionUseCase
             )
         )
         return MotionFactoryImpl(store: store)
@@ -52,16 +53,16 @@ public extension MotionFactoryImpl {
         motionUseCase: MotionUseCase,
         motionRawDataUseCase: MotionRawDataUseCase,
         alarmScheduleUseCase: AlarmScheduleUseCase,
-        motionService: MotionCoreInterface.MotionService
+        alarmExecutionUseCase: AlarmExecutionUseCase
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: initialState,
             reducer: MotionReducer(
                 userUseCase: userUseCase,
-                motionUseCase: motionUseCase,
                 motionRawDataUseCase: motionRawDataUseCase,
                 alarmScheduleUseCase: alarmScheduleUseCase,
-                motionService: motionService
+                motionUseCase: motionUseCase,
+                alarmExecutionUseCase: alarmExecutionUseCase
             )
         )
         return MotionFactoryImpl(store: store)

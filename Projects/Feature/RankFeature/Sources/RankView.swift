@@ -1,14 +1,14 @@
 import SwiftUI
 import Rex
-import WeatherFeatureInterface
+import RankFeatureInterface
 import Designsystem
 
-public struct WeatherView: View {
-    let interface: WeatherInterface
-    @State private var state = WeatherState()
+public struct RankView: View {
+    let interface: RankInterface
+    @State private var state = RankState()
 
     public init(
-        interface: WeatherInterface
+        interface: RankInterface
     ) {
         self.interface = interface
     }
@@ -18,42 +18,7 @@ public struct WeatherView: View {
             ZStack {
                 JColor.background.ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(state.currentWeather?.location ?? "서울")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(JColor.textPrimary)
-                                
-                                Text("현재 위치")
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(JColor.textSecondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                interface.send(.refreshWeather)
-                            }) {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(JColor.textPrimary)
-                                    .frame(width: 40, height: 40)
-                                    .background(JColor.primary.opacity(0.1))
-                                    .clipShape(Circle())
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                        
-                        Text("Weather Content")
-                            .font(.title)
-                            .foregroundColor(JColor.textPrimary)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    .padding(.bottom, 100)
-                }
+                ScrollView {}
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
@@ -66,7 +31,7 @@ public struct WeatherView: View {
             }
         }
         .onAppear {
-            interface.send(.loadWeather)
+            interface.send(.loadRank)
         }
     }
 }

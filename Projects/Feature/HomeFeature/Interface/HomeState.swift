@@ -10,8 +10,8 @@ public struct HomeState: StateType {
     // Loaded data
     public var wakeDurationDescription: String?
     public var allMemos: [MemoEntity] = []
-    public var memoDetailPresented: Bool = false
-    
+    public var navigateToAllMemo: Bool = false
+    public var presentedAddMemo: Bool = false
     public init() {}
 }
 

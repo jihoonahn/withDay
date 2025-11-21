@@ -18,21 +18,13 @@ public struct MemoView: View {
 
     public var body: some View {
         ZStack {
-            JColor.background.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                if state.sheetAction {
-                    MemoFormView(interface: interface, state: state)
-                } else if state.memoDetailPresented {
-                    MemoCalendarView(interface: interface, state: state)
-                }
-            }
-        }
-        .task {
-            for await newState in interface.stateStream {
-                await MainActor.run {
-                    self.state = newState
-                }
+            switch state.flow {
+            case .all:
+                MemoListView(interface: interface, state: state)
+            case .add:
+                MemoAddView(interface: interface, state: state)
+            case .edit:
+                MemoEditView(interface: interface, state: state)
             }
         }
         .toast(
@@ -42,6 +34,16 @@ public struct MemoView: View {
             )
         ) {
             Toast(title: state.memoToastMessage)
+        }
+        .onAppear {
+            interface.send(.loadMemos)
+        }
+        .task {
+            for await newState in interface.stateStream {
+                await MainActor.run {
+                    self.state = newState
+                }
+            }
         }
     }
 }

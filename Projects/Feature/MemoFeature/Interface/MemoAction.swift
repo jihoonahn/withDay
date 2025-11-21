@@ -7,8 +7,6 @@ public enum MemoAction: ActionType {
     case setMemos([MemoEntity])
     case selectMemoDate(Date)
     case editMemo(MemoEntity)
-    case showMemoDetail(Bool)
-    case showMemoSheet(Bool)
     case memoScheduledDateDidChange(Date)
     case memoTitleDidChange(String)
     case memoContentDidChange(String)

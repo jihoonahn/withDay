@@ -6,7 +6,7 @@ import BaseFeature
 public class AlarmStore: AlarmInterface {
     private let store: Store<AlarmReducer>
     private var continuation: AsyncStream<AlarmState>.Continuation?
-    
+
     public var stateStream: AsyncStream<AlarmState> {
         AsyncStream { continuation in
             self.continuation = continuation

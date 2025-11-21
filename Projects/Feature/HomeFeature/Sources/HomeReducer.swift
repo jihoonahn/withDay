@@ -60,11 +60,9 @@ public struct HomeReducer: Reducer {
             state.allMemos = memos.sorted(by: reminderSortPredicate)
             state.homeTitle = dateProvider().toString()
             return []
-            
-        case let .showMemoDetail(isPresented):
-            state.memoDetailPresented = isPresented
+        case let .showAllMemos(isNavigated):
+            state.navigateToAllMemo = isNavigated
             return []
-            
         case let .showMemoSheet(isPresented):
             state.sheetAction = isPresented
             return []

@@ -1,9 +1,16 @@
-//
-//  MemoEditView.swift
-//  MemoFeature
-//
-//  Created by Jihoonahn on 11/21/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
+import SwiftUI
+import Rex
+import MemoFeatureInterface
+import Designsystem
 
-import Foundation
+struct MemoEditView: View {
+    let interface: MemoInterface
+    @State var state: MemoState
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            JColor.background.ignoresSafeArea()
+        }
+    }
+}

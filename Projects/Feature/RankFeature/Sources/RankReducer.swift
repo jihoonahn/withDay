@@ -1,10 +1,10 @@
 import Rex
-import WeatherFeatureInterface
+import RankFeatureInterface
 
-public struct WeatherReducer: Reducer {
+public struct RankReducer: Reducer {
     public init() {}
     
-    public func reduce(state: inout WeatherState, action: WeatherAction) -> [Effect<WeatherAction>] {
+    public func reduce(state: inout RankState, action: RankAction) -> [Effect<RankAction>] {
         switch action {
         default:
             return []

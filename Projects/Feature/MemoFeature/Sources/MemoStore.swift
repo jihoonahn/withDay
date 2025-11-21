@@ -1,5 +1,6 @@
 import Rex
 import MemoFeatureInterface
+import BaseFeature
 
 public class MemoStore: MemoInterface {
     private let store: Store<MemoReducer>
@@ -20,6 +21,7 @@ public class MemoStore: MemoInterface {
 
     public init(store: Store<MemoReducer>) {
         self.store = store
+        setupEventBusObserver()
     }
 
     public func send(_ action: MemoAction) {
@@ -28,5 +30,18 @@ public class MemoStore: MemoInterface {
 
     public func getCurrentState() -> MemoState {
         return store.getInitialState()
+    }
+
+    private func setupEventBusObserver() {
+        Task {
+            await GlobalEventBus.shared.subscribe(MemoEvent.self) { event in
+                switch event {
+                case .allMemo:
+                    return
+                case .memoAdd:
+                    return
+                }
+            }
+        }
     }
 }

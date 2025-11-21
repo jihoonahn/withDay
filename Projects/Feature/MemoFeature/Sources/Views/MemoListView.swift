@@ -1,9 +1,17 @@
-//
-//  MemoListView.swift
-//  MemoFeature
-//
-//  Created by Jihoonahn on 11/21/25.
-//  Copyright © 2025 me.jihoon. All rights reserved.
-//
+import SwiftUI
+import Rex
+import MemoFeatureInterface
+import Designsystem
 
-import Foundation
+struct MemoListView: View {
+    let interface: MemoInterface
+    @State var state: MemoState
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                JColor.background.ignoresSafeArea()
+            }
+        }
+    }
+}

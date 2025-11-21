@@ -3,7 +3,7 @@ import Rex
 import MainFeatureInterface
 import HomeFeatureInterface
 import AlarmFeatureInterface
-import WeatherFeatureInterface
+import RankFeatureInterface
 import SettingFeatureInterface
 import MotionFeatureInterface
 import Dependency
@@ -16,7 +16,7 @@ public struct MainView: View {
 
     private let homeFactory: HomeFactory
     private let alarmFactory: AlarmFactory
-    private let weatherFactory: WeatherFactory
+    private let rankFactory: RankFactory
     private let settingFactory: SettingFactory
     private let motionFactory: MotionFactory
 
@@ -26,7 +26,7 @@ public struct MainView: View {
         self.interface = interface
         self.homeFactory = DIContainer.shared.resolve(HomeFactory.self)
         self.alarmFactory = DIContainer.shared.resolve(AlarmFactory.self)
-        self.weatherFactory = DIContainer.shared.resolve(WeatherFactory.self)
+        self.rankFactory = DIContainer.shared.resolve(RankFactory.self)
         self.settingFactory = DIContainer.shared.resolve(SettingFactory.self)
         self.motionFactory = DIContainer.shared.resolve(MotionFactory.self)
     }
@@ -38,8 +38,8 @@ public struct MainView: View {
                 homeFactory.makeView()
             case .alarm:
                 alarmFactory.makeView()
-            case .weather:
-                weatherFactory.makeView()
+            case .rank:
+                rankFactory.makeView()
             case .setting:
                 settingFactory.makeView()
             }

@@ -1,8 +1,8 @@
 import Foundation
 import Rex
 
-public protocol WeatherInterface {
-    var stateStream: AsyncStream<WeatherState> { get }
-    func send(_ action: WeatherAction)
-    func getCurrentState() -> WeatherState
+public protocol RankInterface {
+    var stateStream: AsyncStream<RankState> { get }
+    func send(_ action: RankAction)
+    func getCurrentState() -> RankState
 }

@@ -22,63 +22,76 @@ public struct AlarmView: View {
             ZStack {
                 JColor.background.ignoresSafeArea()
                 
-                VStack(spacing: 0) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("AlarmTitle".localized())
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(JColor.textPrimary)
+                List {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("AlarmTitle".localized())
+                                    .font(.system(size: 34, weight: .bold))
+                                    .foregroundColor(JColor.textPrimary)
+                                
+                                if state.alarms.isEmpty {
+                                    Text("AlarmEmptyStateTitle".localized())
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(JColor.textSecondary)
+                                } else {
+                                    Text(String(
+                                        format: "AlarmDescription".localized(),
+                                        locale: Locale.appLocale,
+                                        state.alarms.count
+                                    ))
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(JColor.textSecondary)
+                                }
+                            }
                             
-                            if state.alarms.isEmpty {
-                                Text("AlarmEmptyStateTitle".localized())
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(JColor.textSecondary)
-                            } else {
-                                Text(String(
-                                    format: "AlarmDescription".localized(),
-                                    locale: Locale.appLocale,
-                                    state.alarms.count
-                                ))
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(JColor.textSecondary)
+                            Spacer()
+                            
+                            Button(action: {
+                                interface.send(.showingAddAlarmState(true))
+                            }) {
+                                Image(refineUIIcon: .add24Regular)
+                                    .foregroundColor(JColor.textPrimary)
+                                    .frame(width: 40, height: 40)
+                                    .glassEffect(.clear.interactive(), in: .circle)
                             }
                         }
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            interface.send(.showingAddAlarmState(true))
-                        }) {
-                            Image(refineUIIcon: .add24Regular)
-                                .foregroundColor(JColor.textPrimary)
-                                .frame(width: 40, height: 40)
-                                .glassEffect(.clear.interactive(), in: .circle)
-                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 20, leading: 20, bottom: 16, trailing: 20))
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 16)
                     
-                    // Alarm List
                     if state.isLoading {
-                        VStack {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: JColor.primary))
+                        Section {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: JColor.primary))
+                                Spacer()
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 40, leading: 20, bottom: 40, trailing: 20))
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if state.alarms.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(refineUIIcon: .clockAlarm32Regular)
-                                .foregroundColor(JColor.textSecondary)
-                                .font(.system(size: 48))
-                            
-                            Text("AlarmEmptyStateTitle".localized())
-                                .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(JColor.textSecondary)
+                        Section {
+                            VStack(spacing: 16) {
+                                Image(refineUIIcon: .clockAlarm32Regular)
+                                    .foregroundColor(JColor.textSecondary)
+                                    .font(.system(size: 48))
+                                
+                                Text("AlarmEmptyStateTitle".localized())
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(JColor.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 40)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
-                        List {
+                        Section {
                             ForEach(state.alarms, id: \.id) { alarm in
                                 AlarmRow(
                                     alarm: alarm,
@@ -101,18 +114,23 @@ public struct AlarmView: View {
                                 }
                             }
                         }
-                        .scrollContentBackground(.hidden)
-                        .padding(.bottom, 80)
-                        .listStyle(.plain)
                     }
+                    
                     if let errorMessage = state.errorMessage {
-                        Text(errorMessage)
-                            .font(.system(size: 14))
-                            .foregroundColor(JColor.error)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
+                        Section {
+                            Text(errorMessage)
+                                .font(.system(size: 14))
+                                .foregroundColor(JColor.error)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        }
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .listStyle(.plain)
             }
         }
         .navigationBarHidden(true)

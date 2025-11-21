@@ -1,5 +1,7 @@
 import Rex
 import MainFeatureInterface
+import BaseFeature
+import Utility
 
 public struct MainReducer: Reducer {
     public init() {}
@@ -8,16 +10,17 @@ public struct MainReducer: Reducer {
         switch action {
         case .changeTab(let flow):
             state.flow = flow
-        case .showMotion(let id):
+            return []
+        case let .showMotion(id, executionId):
             state.isShowingMotion = true
             state.motionAlarmId = id
+            state.motionExecutionId = executionId
+            return []
         case .closeMotion(let id):
-            // 해당 알람 ID와 일치할 때만 닫기
-            if state.motionAlarmId == id {
-                state.isShowingMotion = false
-                state.motionAlarmId = nil
-            }
+            state.isShowingMotion = false
+            state.motionAlarmId = nil
+            state.motionExecutionId = nil
+            return []
         }
-        return []
     }
 }

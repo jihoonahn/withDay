@@ -1,12 +1,12 @@
 import Rex
-import WeatherFeatureInterface
+import RankFeatureInterface
 import BaseFeature
 
-public class WeatherStore: WeatherInterface {
-    private let store: Store<WeatherReducer>
-    private var continuation: AsyncStream<WeatherState>.Continuation?
+public class RankStore: RankInterface {
+    private let store: Store<RankReducer>
+    private var continuation: AsyncStream<RankState>.Continuation?
 
-    public var stateStream: AsyncStream<WeatherState> {
+    public var stateStream: AsyncStream<RankState> {
         AsyncStream { continuation in
             self.continuation = continuation
             continuation.yield(store.getInitialState())
@@ -19,15 +19,15 @@ public class WeatherStore: WeatherInterface {
         }
     }
 
-    public init(store: Store<WeatherReducer>) {
+    public init(store: Store<RankReducer>) {
         self.store = store
     }
 
-    public func send(_ action: WeatherAction) {
+    public func send(_ action: RankAction) {
         store.dispatch(action)
     }
 
-    public func getCurrentState() -> WeatherState {
+    public func getCurrentState() -> RankState {
         return store.getInitialState()
     }
 }
