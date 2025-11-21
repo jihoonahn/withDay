@@ -7,10 +7,9 @@ import SwiftUI
 struct AlarmWidget: Widget {
     var body: some WidgetConfiguration {
         return ActivityConfiguration(for: AlarmAttributes.self) { context in
-            LockScreenView(attributes: context.attributes, state: context.state)
+            return LockScreenView(attributes: context.attributes, state: context.state)
         } dynamicIsland: { context in
             let contentState = context.state
-            
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     LogoView(style: .basic)
@@ -39,7 +38,7 @@ struct AlarmWidget: Widget {
             } minimal: {
                 LogoView(style: .minimal)
             }
-            .keylineTint(.orange)
+            .keylineTint(.white)
         }
     }
 }

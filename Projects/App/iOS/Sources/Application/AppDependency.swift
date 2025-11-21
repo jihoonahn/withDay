@@ -18,8 +18,8 @@ import HomeFeatureInterface
 import HomeFeature
 import AlarmFeatureInterface
 import AlarmFeature
-import WeatherFeatureInterface
-import WeatherFeature
+import RankFeatureInterface
+import RankFeature
 import SettingFeatureInterface
 import SettingFeature
 
@@ -218,7 +218,10 @@ public class AppDependencies {
         // MARK: - AlarmSchedule Service & Repository & UseCase
         container.registerSingleton(
             AlarmScheduleCoreInterface.AlarmScheduleService.self,
-            instance: AlarmScheduleCore.AlarmScheduleServiceImpl()
+            instance: AlarmScheduleCore.AlarmScheduleServiceImpl(
+                alarmExecutionUseCase: container.resolve(AlarmExecutionUseCase.self),
+                userUseCase: container.resolve(UserUseCase.self)
+            )
         )
         container.register(AlarmScheduleRepository.self) {
             AlarmScheduleCore.AlarmScheduleRepositoryImpl(
@@ -252,7 +255,7 @@ public class AppDependencies {
             let userUseCase = container.resolve(UserUseCase.self)
             return RootFactoryImpl.create(userUseCase: userUseCase)
         }
-        
+
         container.register(SplashFactory.self) {
             return SplashFactoryImpl.create()
         }
@@ -281,8 +284,8 @@ public class AppDependencies {
             )
         }
         
-        container.register(WeatherFactory.self) {
-            WeatherFactoryImpl.create()
+        container.register(RankFactory.self) {
+            RankFactoryImpl.create()
         }
         
         container.register(SettingFactory.self) {
@@ -295,7 +298,7 @@ public class AppDependencies {
                 notificationUseCase: notificationUseCase
             )
         }
-        
+
         container.register(MemoFactory.self) {
             let memoUseCase = container.resolve(MemoUseCase.self)
             let userUseCase = container.resolve(UserUseCase.self)
@@ -304,22 +307,22 @@ public class AppDependencies {
                 userUseCase: userUseCase
             )
         }
-        
+
         container.register(MotionFactory.self) {
             let userUseCase = container.resolve(UserUseCase.self)
             let motionUseCase = container.resolve(MotionUseCase.self)
             let motionRawDataUseCase = container.resolve(MotionRawDataUseCase.self)
             let alarmScheduleUseCase = container.resolve(AlarmScheduleUseCase.self)
-            let motionService = container.resolve(MotionCoreInterface.MotionService.self)
+            let alarmExecutionUseCase = container.resolve(AlarmExecutionUseCase.self)
             return MotionFactoryImpl.create(
                 userUseCase: userUseCase,
                 motionUseCase: motionUseCase,
                 motionRawDataUseCase: motionRawDataUseCase,
                 alarmScheduleUseCase: alarmScheduleUseCase,
-                motionService: motionService
+                alarmExecutionUseCase: alarmExecutionUseCase
             )
         }
-        
+
         Task {
             await bootstrapPreferences(container: container)
         }
