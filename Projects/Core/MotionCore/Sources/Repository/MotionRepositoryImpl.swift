@@ -10,12 +10,12 @@ public final class MotionRepositoryImpl: MotionRepository {
         self.service = service
     }
 
-    public func startMonitoring(for executionId: UUID) async throws -> MotionEntity {
-        try await service.startMonitoring(for: executionId)
+    public func startMonitoring(for alarmId: UUID, executionId: UUID, requiredCount: Int) async throws {
+        try await service.startMonitoring(for: alarmId, executionId: executionId, requiredCount: requiredCount)
     }
 
-    public func stopMonitoring(for executionId: UUID) {
-        service.stopMonitoring(for: executionId)
+    public func stopMonitoring(for alarmId: UUID) {
+        service.stopMonitoring(for: alarmId)
     }
 
     public func stopAllMonitoring() {

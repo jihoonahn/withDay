@@ -14,9 +14,14 @@ public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
     }
     
     public func saveExecution(_ execution: AlarmExecutionEntity) async throws {
-        if execution.createdAt == Date() {
+        // createdAt이 현재 시간과 매우 가까우면 (1초 이내) create로 처리
+        // 정확한 시간 비교 대신 시간 차이로 판단
+        let timeDifference = abs(execution.createdAt.timeIntervalSinceNow)
+        if timeDifference < 1.0 {
+            // 새로 생성하는 경우
             try await alarmExecutionRepository.create(execution)
         } else {
+            // 업데이트하는 경우
             try await alarmExecutionRepository.update(execution)
         }
     }

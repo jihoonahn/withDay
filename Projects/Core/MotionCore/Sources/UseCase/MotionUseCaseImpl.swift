@@ -9,12 +9,12 @@ public final class MotionUseCaseImpl: MotionUseCase {
         self.repository = repository
     }
 
-    public func startMonitoring(for executionId: UUID) async throws -> MotionEntity {
-        try await repository.startMonitoring(for: executionId)
+    public func startMonitoring(for alarmId: UUID, executionId: UUID, requiredCount: Int) async throws {
+        try await repository.startMonitoring(for: alarmId, executionId: executionId, requiredCount: requiredCount)
     }
 
-    public func stopMonitoring(for executionId: UUID) {
-        repository.stopMonitoring(for: executionId)
+    public func stopMonitoring(for alarmId: UUID) {
+        repository.stopMonitoring(for: alarmId)
     }
 
     public func stopAllMonitoring() {

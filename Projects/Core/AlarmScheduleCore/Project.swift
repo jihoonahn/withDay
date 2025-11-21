@@ -15,6 +15,7 @@ struct AlarmScheduleCore: Module {
                 dependencies: [
                     .core(target: typeName, type: .interface),
                     .sdk(name: "ActivityKit", type: .framework),
+                    .sdk(name: "AVFoundation", type: .framework),
                     .shared(target: "Dependency"),
                     .feature(target: "BaseFeature", type: .sources)
                 ]
