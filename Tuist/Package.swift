@@ -7,7 +7,6 @@ import PackageDescription
     let packageSettings = PackageSettings(
         productTypes: [
             "Rex": .framework,
-            // 충돌 방지를 위해 SPM 'Network' 제품을 정적 라이브러리로 빌드
             "Network": .staticLibrary
         ],
         baseSettings: .settings(
