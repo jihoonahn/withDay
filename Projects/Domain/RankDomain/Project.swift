@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = WeatherDomain().module()
+let project = RankDomain().module()
 
-struct WeatherDomain: Module {
+struct RankDomain: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,
