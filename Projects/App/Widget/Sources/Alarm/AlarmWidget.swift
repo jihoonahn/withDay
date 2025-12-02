@@ -1,4 +1,5 @@
 import ActivityKit
+import AlarmKit
 import AlarmScheduleCoreInterface
 import AppIntents
 import WidgetKit
@@ -6,10 +7,9 @@ import SwiftUI
 
 struct AlarmWidget: Widget {
     var body: some WidgetConfiguration {
-        return ActivityConfiguration(for: AlarmAttributes.self) { context in
-            return LockScreenView(attributes: context.attributes, state: context.state)
+        return ActivityConfiguration(for: AlarmAttributes<AlarmScheduleAttributes>.self) { context in
+            LockScreenView(attributes: context.attributes, state: context.state)
         } dynamicIsland: { context in
-            let contentState = context.state
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     LogoView(style: .basic)
@@ -19,10 +19,10 @@ struct AlarmWidget: Widget {
 
                 DynamicIslandExpandedRegion(.center) {
                     Group {
-                        if contentState.isAlerting {
+                        if let metadata = context.attributes.metadata, metadata.isAlerting {
                             WakeUpView(attributes: context.attributes)
-                        } else {
-                            TimeCountdownView(nextAlarmTime: context.attributes.scheduledTime)
+                        } else if let metadata = context.attributes.metadata {
+                            TimeCountdownView(nextAlarmTime: metadata.nextAlarmTime)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -30,10 +30,12 @@ struct AlarmWidget: Widget {
             } compactLeading: {
                 LogoView(style: .compact)
             } compactTrailing: {
-                if contentState.isAlerting {
-                    CompactWakeUpView()
-                } else {
-                    CompactTimeView(nextAlarmTime: context.attributes.scheduledTime)
+                if let metadata = context.attributes.metadata {
+                    if metadata.isAlerting {
+                        CompactWakeUpView()
+                    } else {
+                        CompactTimeView(nextAlarmTime: metadata.nextAlarmTime)
+                    }
                 }
             } minimal: {
                 LogoView(style: .minimal)

@@ -36,7 +36,7 @@ public struct MemoView: View {
             Toast(title: state.memoToastMessage)
         }
         .onAppear {
-            interface.send(.loadMemos)
+            interface.send(.loadMemo)
         }
         .task {
             for await newState in interface.stateStream {

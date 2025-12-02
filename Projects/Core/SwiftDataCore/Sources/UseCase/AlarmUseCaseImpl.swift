@@ -2,7 +2,6 @@ import Foundation
 import AlarmDomainInterface
 import Dependency
 
-@MainActor
 public final class AlarmUseCaseImpl: AlarmUseCase {
     private let alarmRepository: AlarmRepository
 

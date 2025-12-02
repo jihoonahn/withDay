@@ -114,8 +114,12 @@ public struct MotionReducer: Reducer {
         return [
             Effect { [self] continuation in
                 print("🛑 [MotionReducer] 모션 감지 완료 - 알람 중지 시작: \(alarmId)")
-                await self.alarmScheduleUseCase.stopAlarm(alarmId)
-                print("✅ [MotionReducer] 알람 중지 완료: \(alarmId)")
+                do {
+                    try await self.alarmScheduleUseCase.stopAlarm(alarmId)
+                    print("✅ [MotionReducer] 알람 중지 완료: \(alarmId)")
+                } catch {
+                    print("⚠️ [MotionReducer] 알람 중지에 실패했습니다.")
+                }
                 continuation.send(.alarmStopped(alarmId: alarmId))
             }
         ]

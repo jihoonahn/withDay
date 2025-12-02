@@ -2,7 +2,6 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-@MainActor
 public final class SwiftDataServiceImpl: SwiftDataService {
     public let container: ModelContainer
     

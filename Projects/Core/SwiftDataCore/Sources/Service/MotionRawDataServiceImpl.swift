@@ -2,7 +2,6 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-@MainActor
 public final class MotionRawDataServiceImpl: MotionRawDataService {
     private let container: ModelContainer
     
@@ -11,7 +10,7 @@ public final class MotionRawDataServiceImpl: MotionRawDataService {
     }
     
     public func fetchMotionData(executionId: UUID) async throws -> [MotionRawDataModel] {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<MotionRawDataModel>(
             predicate: #Predicate { data in
                 data.executionId == executionId
@@ -22,7 +21,7 @@ public final class MotionRawDataServiceImpl: MotionRawDataService {
     }
     
     public func saveMotionData(_ data: MotionRawDataModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         context.insert(data)
         try context.save()
     }

@@ -21,7 +21,7 @@ public struct AlarmView: View {
         NavigationView {
             ZStack {
                 JColor.background.ignoresSafeArea()
-                
+
                 List {
                     Section {
                         HStack {
@@ -169,7 +169,7 @@ public struct AlarmView: View {
                 }
             )
         }
-        .task {
+        .onAppear() {
             interface.send(.loadAlarms)
         }
         .task {
@@ -711,11 +711,5 @@ private func localizedDayName(for day: Int) -> String {
         return "AlarmDaySaturday".localized()
     default:
         return ""
-    }
-}
-
-private extension Locale {
-    static var appLocale: Locale {
-        Locale(identifier: LocalizationController.shared.languageCode)
     }
 }

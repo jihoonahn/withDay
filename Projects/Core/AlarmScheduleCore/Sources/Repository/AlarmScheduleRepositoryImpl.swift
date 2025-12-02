@@ -1,4 +1,5 @@
 import Foundation
+import AlarmKit
 import AlarmScheduleCoreInterface
 import AlarmScheduleDomainInterface
 
@@ -26,8 +27,8 @@ public final class AlarmScheduleRepositoryImpl: AlarmScheduleRepository {
         try await service.toggleAlarm(alarmId, isEnabled: isEnabled)
     }
     
-    public func stopAlarm(_ alarmId: UUID) async {
-        await service.stopAlarm(alarmId)
+    public func stopAlarm(_ alarmId: UUID) async throws {
+        try await service.stopAlarm(alarmId)
     }
 }
 

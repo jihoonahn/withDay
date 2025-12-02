@@ -5,229 +5,200 @@ import MemoDomainInterface
 import UserDomainInterface
 import Localization
 import BaseFeature
+import Utility
 
 public struct MemoReducer: Reducer {
     private let userUseCase: UserUseCase
     private let memoUseCase: MemoUseCase
-    private let dateProvider: () -> Date
-    private let calendar = Calendar.current
 
     public init(
         memoUseCase: MemoUseCase,
         userUseCase: UserUseCase,
-        dateProvider: @escaping () -> Date = Date.init
     ) {
         self.memoUseCase = memoUseCase
         self.userUseCase = userUseCase
-        self.dateProvider = dateProvider
     }
 
     public func reduce(state: inout MemoState, action: MemoAction) -> [Effect<MemoAction>] {
         switch action {
-        case .loadMemos:
+        case .loadMemo:
             return [
                 Effect { emitter in
                     do {
                         guard let user = try await userUseCase.getCurrentUser() else {
-                            throw NSError(domain: "MemoReducer", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+                            emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
+                            return
                         }
+                        
                         let memos = try await memoUseCase.fetchAll(userId: user.id)
                         emitter.send(.setMemos(memos))
                     } catch {
-                        logger.error("MemoReducer load memos failed: \(error)")
+                        emitter.send(.showMemoToast("메모를 불러오는데 실패했습니다: \(error.localizedDescription)"))
                     }
                 }
             ]
-            
         case let .setMemos(memos):
-            state.allMemos = memos.sorted(by: reminderSortPredicate)
-            state.selectedMemoDate = normalizedDate(state.selectedMemoDate)
+            state.memos = memos
             return []
-            
-        case let .selectMemoDate(date):
-            state.selectedMemoDate = normalizedDate(date)
+        case let .setMemoFlow(flow):
+            state.flow = flow
             return []
-            
-        case let .editMemo(memo):
-            state.editingMemoId = memo.id
-            state.memoTitle = memo.title
-            state.memoContent = memo.content
-            state.memoScheduledDate = scheduledDay(for: memo) ?? normalizedDate(dateProvider())
-            state.reminderTime = memo.reminderTime.flatMap { MemoState.reminderTimeFormatter.date(from: $0) }
+        case let .addMemoTitleDidChange(title):
+            state.addMemoTitle = title
             return []
-        case let .memoScheduledDateDidChange(date):
-            state.memoScheduledDate = normalizedDate(date)
-            if state.memoTitle.isEmpty {
-                state.memoTitle = defaultTitle(for: state.memoScheduledDate)
+        case let .addMemoContentDidChange(content):
+            state.addMemoContent = content
+            return []
+        case let .addMemoScheduledDateDidChange(date):
+            state.addMemoScheduledDate = date
+            return []
+        case let .addMemoReminderTimeDidChange(time):
+            state.addMemoReminderTime = time
+            return []
+        case let .addMemoHasReminderDidChange(hasReminder):
+            state.addMemoHasReminder = hasReminder
+            return []
+        case let .addMemo(title, content, scheduledDate, reminderTimeString, hasReminder):
+            let reminderTime: String?
+            if hasReminder, let time = reminderTimeString {
+                let calendar = Calendar.current
+                let hour = calendar.component(.hour, from: time)
+                let minute = calendar.component(.minute, from: time)
+                reminderTime = String(format: "%02d:%02d", hour, minute)
+            } else {
+                reminderTime = nil
             }
-            return []
-            
-        case let .memoTitleDidChange(title):
-            state.memoTitle = title
-            return []
-            
-        case let .memoContentDidChange(content):
-            state.memoContent = content
-            return []
-            
-        case let .memoReminderTimeDidChange(date):
-            state.reminderTime = date
-            return []
-            
-        case .saveMemo:
-            let trimmedContent = state.memoContent.trimmingCharacters(in: .whitespacesAndNewlines)
-            let trimmedTitle = state.memoTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-            let scheduledDate = normalizedDate(state.memoScheduledDate)
-            let combinedReminderDate = combine(date: scheduledDate, with: state.reminderTime)
-            let reminderTime = state.reminderTime
-            let editingId = state.editingMemoId
-            let memoId = editingId ?? UUID()
-            
-            guard !trimmedContent.isEmpty else {
-                return [.just(.showMemoToast("HomeMemoFormToastEmptyContent".localized()))]
-            }
-            
-            state.isSavingMemo = true
             return [
                 Effect { emitter in
                     do {
                         guard let user = try await userUseCase.getCurrentUser() else {
-                            throw NSError(domain: "MemoReducer", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+                            emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
+                            return
                         }
-                        let now = dateProvider()
-                        let reminderString = reminderTime.map(formatReminderTime)
-                        let finalTitle = trimmedTitle.isEmpty ? defaultTitle(for: scheduledDate) : trimmedTitle
+                        
                         let memo = MemoEntity(
-                            id: memoId,
+                            id: UUID(),
                             userId: user.id,
-                            title: finalTitle,
-                            content: trimmedContent,
+                            title: title,
+                            content: content,
                             alarmId: nil,
-                            reminderTime: reminderString,
-                            createdAt: combinedReminderDate,
-                            updatedAt: now
+                            reminderTime: reminderTime,
+                            createdAt: scheduledDate,
+                            updatedAt: Date()
                         )
-                        if editingId != nil {
-                            try await memoUseCase.update(memo)
-                        } else {
-                            try await memoUseCase.create(memo)
-                        }
-                        emitter.send(.saveMemoResult(.success(memo)))
+                        
+                        try await memoUseCase.create(memo)
+                        emitter.send(.showMemoToast("메모를 저장했습니다."))
+                        emitter.send(.setMemoFlow(.all))
+                        
+                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        emitter.send(.setMemos(memos))
                     } catch {
-                        logger.error("MemoReducer save memo failed: \(error)")
-                        emitter.send(.saveMemoResult(.failure(error)))
+                        emitter.send(.showMemoToast("메모를 저장하는데 실패했습니다: \(error.localizedDescription)"))
                     }
                 }
             ]
-            
-        case let .saveMemoResult(result):
-            state.isSavingMemo = false
-            switch result {
-            case let .success(memo):
-                let wasEditing = state.editingMemoId != nil
-                if let editingId = state.editingMemoId,
-                   let index = state.allMemos.firstIndex(where: { $0.id == editingId }) {
-                    state.allMemos[index] = memo
-                } else {
-                    state.allMemos.append(memo)
-                }
-                state.allMemos.sort(by: reminderSortPredicate)
-                if let scheduled = scheduledDay(for: memo) {
-                    state.selectedMemoDate = scheduled
-                }
-                resetMemoDraft(state: &state)
+        case let .editMemoTitleDidChange(title):
+            state.editMemoTitle = title
+            return []
+        case let .editMemoContentDidChange(content):
+            state.editMemoContent = content
+            return []
+        case let .editMemoScheduledDateDidChange(date):
+            state.editMemoScheduledDate = date
+            return []
+        case let .editMemoReminderTimeDidChange(time):
+            state.editMemoReminderTime = time
+            return []
+        case let .editMemoHasReminderDidChange(hasReminder):
+            state.editMemoHasReminder = hasReminder
+            return []
+        case .updateMemo:
+            guard let existingMemo = state.editMemoState else {
                 return [
-                    .just(.showMemoToast(wasEditing ? "HomeMemoFormToastUpdated".localized() : "HomeMemoFormToastSaved".localized())),
-                    .just(.loadMemos)
+                    .just(.showMemoToast("메모를 찾을 수 없습니다."))
                 ]
-            case let .failure(error):
-                let message = String(
-                    format: "HomeMemoFormToastError".localized(),
-                    locale: currentLocale,
-                    error.localizedDescription
-                )
-                return [.just(.showMemoToast(message))]
             }
-            
-        case let .showMemoToast(message):
-            state.memoToastMessage = message
+            let title = state.editMemoTitle
+            let content = state.editMemoContent
+            let scheduledDate = state.editMemoScheduledDate
+            let reminderTimeString: String?
+            if state.editMemoHasReminder, let time = state.editMemoReminderTime {
+                let calendar = Calendar.current
+                let hour = calendar.component(.hour, from: time)
+                let minute = calendar.component(.minute, from: time)
+                reminderTimeString = String(format: "%02d:%02d", hour, minute)
+            } else {
+                reminderTimeString = nil
+            }
             return [
-                .just(.memoToastStatus(false)),
+                Effect { emitter in
+                    do {
+                        guard let user = try await userUseCase.getCurrentUser() else {
+                            emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
+                            return
+                        }
+                        
+                        let updatedMemo = MemoEntity(
+                            id: existingMemo.id,
+                            userId: existingMemo.userId,
+                            title: title,
+                            content: content,
+                            alarmId: existingMemo.alarmId,
+                            reminderTime: reminderTimeString,
+                            createdAt: scheduledDate,
+                            updatedAt: Date()
+                        )
+                        
+                        try await memoUseCase.update(updatedMemo)
+                        emitter.send(.showMemoToast("메모를 수정했습니다."))
+                        
+                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        emitter.send(.setMemos(memos))
+                    } catch {
+                        emitter.send(.showMemoToast("메모를 수정하는데 실패했습니다: \(error.localizedDescription)"))
+                    }
+                }
+            ]
+        case let .deleteMemo(id):
+            return [
+                Effect { emitter in
+                    do {
+                        guard let user = try await userUseCase.getCurrentUser() else {
+                            emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
+                            return
+                        }
+                        try await memoUseCase.delete(id: id)
+                        emitter.send(.showMemoToast("메모를 삭제했습니다."))
+                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        emitter.send(.setMemos(memos))
+                    } catch {
+                        emitter.send(.showMemoToast("메모를 삭제하는데 실패했습니다: \(error.localizedDescription)"))
+                    }
+                }
+            ]
+        case let .showMemoToast(text):
+            state.memoToastMessage = text
+            return [
                 .just(.memoToastStatus(true))
             ]
-            
         case let .memoToastStatus(status):
             state.memoToastIsPresented = status
             return []
+        case let .showEditMemo(item):
+            state.editMemoState = item
+            state.editMemoTitle = item.title
+            state.editMemoContent = item.content
+            state.editMemoScheduledDate = Calendar.current.startOfDay(for: item.createdAt ?? Date())
+            if let reminderTimeString = item.reminderTime,
+               let date = DateFormatter.reminderTimeFormatter.date(from: reminderTimeString) {
+                state.editMemoHasReminder = true
+                state.editMemoReminderTime = date
+            } else {
+                state.editMemoHasReminder = false
+                state.editMemoReminderTime = nil
+            }
+            return []
         }
-    }
-    
-    // MARK: - Helpers
-    private func resetMemoDraft(state: inout MemoState) {
-        state.memoTitle = ""
-        state.memoContent = ""
-        state.memoScheduledDate = defaultMemoScheduledDate(for: state)
-        state.reminderTime = nil
-        state.editingMemoId = nil
-    }
-    
-    private func defaultMemoScheduledDate(for state: MemoState) -> Date {
-        let today = normalizedDate(dateProvider())
-        let selected = normalizedDate(state.selectedMemoDate)
-        if selected >= today {
-            return selected
-        }
-        return normalizedDate(today.addingTimeInterval(86_400))
-    }
-    
-    private func defaultTitle(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = currentLocale
-        formatter.setLocalizedDateFormatFromTemplate("MMM d")
-        return String(
-            format: "HomeMemoFormDefaultTitle".localized(),
-            locale: currentLocale,
-            formatter.string(from: date)
-        )
-    }
-    
-    private func formatReminderTime(_ date: Date) -> String {
-        MemoState.reminderTimeFormatter.string(from: date)
-    }
-    
-    private func combine(date: Date, with time: Date?) -> Date {
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: normalizedDate(date))
-        if let time = time {
-            let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
-            dateComponents.hour = timeComponents.hour
-            dateComponents.minute = timeComponents.minute
-            dateComponents.second = timeComponents.second
-        } else {
-            dateComponents.hour = 0
-            dateComponents.minute = 0
-            dateComponents.second = 0
-        }
-        return calendar.date(from: dateComponents) ?? date
-    }
-    
-    private func normalizedDate(_ date: Date) -> Date {
-        calendar.startOfDay(for: date)
-    }
-    
-    private func reminderSortPredicate(_ lhs: MemoEntity, _ rhs: MemoEntity) -> Bool {
-        let leftDate = lhs.createdAt ?? Date.distantPast
-        let rightDate = rhs.createdAt ?? Date.distantPast
-        if leftDate != rightDate {
-            return leftDate < rightDate
-        }
-        return (lhs.reminderTime ?? "") < (rhs.reminderTime ?? "")
-    }
-    
-    private func scheduledDay(for memo: MemoEntity) -> Date? {
-        memo.createdAt.map(normalizedDate)
-    }
-    
-    private var currentLocale: Locale {
-        Locale(identifier: LocalizationController.shared.languageCode)
     }
 }

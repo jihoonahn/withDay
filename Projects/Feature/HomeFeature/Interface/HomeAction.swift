@@ -7,5 +7,6 @@ public enum HomeAction: ActionType {
     case loadHomeData
     case setHomeData(wakeDuration: Int?, memos: [MemoEntity])
     case showAllMemos(Bool)
-    case showMemoSheet(Bool)
+    case showAddMemos(Bool)
+    case showEditMemos(Bool)
 }

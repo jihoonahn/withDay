@@ -8,7 +8,8 @@ public enum RootEvent: EventType {
 
 public enum MemoEvent: EventType {
     case allMemo
-    case memoAdd
+    case addMemo
+    case editMemo
 }
 
 public enum AlarmEvent: EventType {

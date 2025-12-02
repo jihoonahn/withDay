@@ -3,16 +3,23 @@ import Rex
 import MemoDomainInterface
 
 public enum MemoAction: ActionType {
-    case loadMemos
+    case loadMemo
     case setMemos([MemoEntity])
-    case selectMemoDate(Date)
-    case editMemo(MemoEntity)
-    case memoScheduledDateDidChange(Date)
-    case memoTitleDidChange(String)
-    case memoContentDidChange(String)
-    case memoReminderTimeDidChange(Date?)
-    case saveMemo
-    case saveMemoResult(Result<MemoEntity, Error>)
+    case setMemoFlow(MemoState.Flow)
+    case addMemoTitleDidChange(String)
+    case addMemoContentDidChange(String)
+    case addMemoScheduledDateDidChange(Date)
+    case addMemoReminderTimeDidChange(Date?)
+    case addMemoHasReminderDidChange(Bool)
+    case addMemo(String, String, Date, Date?, Bool)
+    case editMemoTitleDidChange(String)
+    case editMemoContentDidChange(String)
+    case editMemoScheduledDateDidChange(Date)
+    case editMemoReminderTimeDidChange(Date?)
+    case editMemoHasReminderDidChange(Bool)
+    case updateMemo
+    case deleteMemo(UUID)
+    case showEditMemo(MemoEntity)
     case showMemoToast(String)
     case memoToastStatus(Bool)
 }

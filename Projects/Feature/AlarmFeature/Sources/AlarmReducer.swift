@@ -1,4 +1,5 @@
 import Foundation
+import AlarmKit
 import Rex
 import AlarmFeatureInterface
 import AlarmDomainInterface
@@ -433,7 +434,11 @@ public struct AlarmReducer: Reducer {
         case .stopAlarm(let id):
             return [
                 Effect { [self, id] emitter in
-                    await alarmScheduleUseCase.stopAlarm(id)
+                    do  {
+                        try await alarmScheduleUseCase.stopAlarm(id)
+                    } catch {
+                        
+                    }
                 }
             ]
         }

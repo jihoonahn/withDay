@@ -4,8 +4,9 @@ struct CompactTimeView: View {
     let nextAlarmTime: Date
     
     var body: some View {
-        Text(String().timeRemainingString(from: nextAlarmTime))
-            .font(.system(size: 16, weight: .bold, design: .rounded))
+        // 실시간 카운트다운 - Dynamic Island compact trailing에 표시
+        Text(timerInterval: Date()...nextAlarmTime, countsDown: true)
+            .font(.system(size: 14, weight: .bold, design: .rounded))
             .foregroundStyle(
                 LinearGradient(
                     colors: [.white, .gray],
@@ -16,5 +17,6 @@ struct CompactTimeView: View {
             .contentTransition(.numericText())
             .shadow(color: .orange.opacity(0.3), radius: 1, x: 0, y: 1)
             .monospacedDigit()
+            .frame(minWidth: 40)
     }
 }

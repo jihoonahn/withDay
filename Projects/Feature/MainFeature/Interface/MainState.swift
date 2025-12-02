@@ -37,7 +37,7 @@ public struct MainState: StateType {
     }
 
     public var flow: Flow = .home
-    public var isShowingMotion: Bool = false
+    public var isShowingMotion = false
     public var motionAlarmId: UUID?
     public var motionExecutionId: UUID?
 

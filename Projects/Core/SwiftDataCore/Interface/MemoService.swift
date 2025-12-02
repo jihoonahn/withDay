@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol MemoService {
+public protocol MemoService: Sendable {
     func fetchMemos(userId: UUID) async throws -> [MemoModel]
     func saveMemo(_ memo: MemoModel) async throws
     func updateMemo(_ memo: MemoModel) async throws

@@ -2,7 +2,6 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-@MainActor
 public final class MemoServiceImpl: MemoService {
     private let container: ModelContainer
     
@@ -11,7 +10,7 @@ public final class MemoServiceImpl: MemoService {
     }
     
     public func fetchMemos(userId: UUID) async throws -> [MemoModel] {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<MemoModel>(
             predicate: #Predicate { memo in
                 memo.userId == userId
@@ -22,19 +21,19 @@ public final class MemoServiceImpl: MemoService {
     }
     
     public func saveMemo(_ memo: MemoModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         context.insert(memo)
         try context.save()
     }
     
     public func updateMemo(_ memo: MemoModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         memo.updatedAt = Date()
         try context.save()
     }
     
     public func deleteMemo(id: UUID) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<MemoModel>(
             predicate: #Predicate { memo in
                 memo.id == id

@@ -38,6 +38,7 @@ struct WithDay: Module {
                     .shared(target: "Dependency"),
                     .shared(target: "Localization"),
                     .shared(target: "Utility"),
+                    .sdk(name: "AlarmKit", type: .framework),
                     .target(name: "\(typeName)Widget"),
                 ]
             )
@@ -53,7 +54,8 @@ struct WithDay: Module {
                 configuration: .App,
                 dependencies: [
                     .core(target: "AlarmScheduleCore"),
-                    .shared(target: "Utility")
+                    .shared(target: "Utility"),
+                    .sdk(name: "AlarmKit", type: .framework)
                 ]
             )
         }

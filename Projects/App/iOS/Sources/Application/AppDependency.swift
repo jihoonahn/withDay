@@ -36,6 +36,7 @@ import LocalizationDomainInterface
 import NotificationDomainInterface
 
 // Core
+import AlarmKit
 import SupabaseCoreInterface
 import SupabaseCore
 import SwiftDataCoreInterface
@@ -52,8 +53,7 @@ import MotionCore
 import Dependency
 import Localization
 
-@MainActor
-public class AppDependencies {
+public class AppDependencies: Sendable {
     
     public static func setup() {
         let container = DIContainer.shared
@@ -218,10 +218,7 @@ public class AppDependencies {
         // MARK: - AlarmSchedule Service & Repository & UseCase
         container.registerSingleton(
             AlarmScheduleCoreInterface.AlarmScheduleService.self,
-            instance: AlarmScheduleCore.AlarmScheduleServiceImpl(
-                alarmExecutionUseCase: container.resolve(AlarmExecutionUseCase.self),
-                userUseCase: container.resolve(UserUseCase.self)
-            )
+            instance: AlarmScheduleCore.AlarmScheduleServiceImpl()
         )
         container.register(AlarmScheduleRepository.self) {
             AlarmScheduleCore.AlarmScheduleRepositoryImpl(

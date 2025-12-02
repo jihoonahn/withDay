@@ -8,6 +8,7 @@ import Designsystem
 import Dependency
 import Localization
 import MemoDomainInterface
+import Utility
 
 public struct HomeView: View {
     let interface: HomeInterface
@@ -23,7 +24,7 @@ public struct HomeView: View {
     }
     
     public var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 JColor.background.ignoresSafeArea()
                 
@@ -37,11 +38,29 @@ public struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .navigationDestination(
+                isPresented: Binding(get: {
+                    state.navigateToAllMemo
+                }, set: { value in
+                    interface.send(.showAllMemos(value))
+                })
+            ) {
+                memoFactory.makeView()
+            }
             .sheet(isPresented: Binding(
                 get: {
-                    state.sheetAction
+                    state.addMemoSheetIsPresented
                 }, set: { value in
-                    interface.send(.showMemoSheet(value))
+                    interface.send(.showAddMemos(value))
+                })
+            ) {
+                memoFactory.makeView()
+            }
+            .sheet(isPresented: Binding(
+                get: {
+                    state.editMemoSheetIsPresented
+                }, set: { value in
+                    interface.send(.showEditMemos(value))
                 })
             ) {
                 memoFactory.makeView()
@@ -75,7 +94,7 @@ private extension HomeView {
             }
             Spacer()
             Button(action: {
-                interface.send(.showMemoSheet(true))
+                interface.send(.showAddMemos(true))
             }) {
                 Image(refineUIIcon: .note24Regular)
                     .foregroundColor(JColor.textPrimary)
@@ -112,9 +131,10 @@ private extension HomeView {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(JColor.textPrimary)
                 Spacer()
-                Button(action: {
+
+                Button {
                     interface.send(.showAllMemos(true))
-                }) {
+                } label: {
                     Text("HomeMemoShowCalendar".localized())
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(JColor.primaryVariant)
@@ -144,7 +164,7 @@ private extension HomeView {
     
     func memoRow(_ memo: MemoEntity) -> some View {
         Button(action: {
-            interface.send(.showMemoSheet(true))
+            interface.send(.showEditMemos(true))
         }) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -179,7 +199,7 @@ private extension HomeView {
     
     func formattedReminder(from isoString: String?) -> String? {
         guard let isoString,
-              let date = MemoState.reminderTimeFormatter.date(from: isoString) else {
+              let date = DateFormatter.reminderTimeFormatter.date(from: isoString) else {
             return nil
         }
         let components = Calendar.current.dateComponents([.hour, .minute], from: date)

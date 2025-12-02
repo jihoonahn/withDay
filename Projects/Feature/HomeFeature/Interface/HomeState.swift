@@ -5,8 +5,8 @@ import MemoDomainInterface
 
 public struct HomeState: StateType {
     public var homeTitle = Date.now.toString()
-    public var sheetAction = false
-    
+    public var addMemoSheetIsPresented = false
+    public var editMemoSheetIsPresented = false
     // Loaded data
     public var wakeDurationDescription: String?
     public var allMemos: [MemoEntity] = []

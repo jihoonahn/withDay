@@ -62,10 +62,25 @@ public struct HomeReducer: Reducer {
             return []
         case let .showAllMemos(isNavigated):
             state.navigateToAllMemo = isNavigated
-            return []
-        case let .showMemoSheet(isPresented):
-            state.sheetAction = isPresented
-            return []
+            return [
+                Effect { continuation in
+                    await GlobalEventBus.shared.publish(MemoEvent.allMemo)
+                }
+            ]
+        case let .showAddMemos(isPresented):
+            state.addMemoSheetIsPresented = isPresented
+            return [
+                Effect { continuation in
+                    await GlobalEventBus.shared.publish(MemoEvent.addMemo)
+                }
+            ]
+        case let .showEditMemos(isPresented):
+            state.editMemoSheetIsPresented = isPresented
+            return [
+                Effect { continuation in
+                    await GlobalEventBus.shared.publish(MemoEvent.editMemo)
+                }
+            ]
         }
     }
     

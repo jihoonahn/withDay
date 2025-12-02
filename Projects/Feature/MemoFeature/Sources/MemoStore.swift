@@ -37,9 +37,11 @@ public class MemoStore: MemoInterface {
             await GlobalEventBus.shared.subscribe(MemoEvent.self) { event in
                 switch event {
                 case .allMemo:
-                    return
-                case .memoAdd:
-                    return
+                    self.send(.setMemoFlow(.all))
+                case .addMemo:
+                    self.send(.setMemoFlow(.add))
+                case .editMemo:
+                    self.send(.setMemoFlow(.edit))
                 }
             }
         }

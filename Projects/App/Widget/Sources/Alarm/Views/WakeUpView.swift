@@ -1,10 +1,11 @@
 import SwiftUI
 import RefineUIIcons
+import AlarmKit
 import AlarmScheduleCoreInterface
 
 struct WakeUpView: View {
-    let attributes: AlarmAttributes
-    
+    let attributes: AlarmAttributes<AlarmScheduleAttributes>
+
     var body: some View {
         VStack(spacing: 4) {
             Text("Wake Up")
@@ -12,21 +13,23 @@ struct WakeUpView: View {
                 .foregroundColor(.white.opacity(0.8))
                 .textCase(.uppercase)
             
-            if let label = attributes.alarmLabel {
-                Text(label)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-            } else {
-                Text(String().formatTime(attributes.scheduledTime))
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.white, .gray],
-                            startPoint: .leading,
-                            endPoint: .trailing
+            if let metadata = attributes.metadata {
+                if let label = metadata.alarmLabel {
+                    Text(label)
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                } else {
+                    Text(String().formatTime(metadata.nextAlarmTime))
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.white, .gray],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
+                }
             }
         }
         .frame(maxWidth: .infinity)

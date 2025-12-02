@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol AlarmService {
+public protocol AlarmService: Sendable {
     func fetchAlarms(userId: UUID) async throws -> [AlarmModel]
     func saveAlarm(_ alarm: AlarmModel) async throws
     func updateAlarm(_ alarm: AlarmModel) async throws

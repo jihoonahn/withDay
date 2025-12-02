@@ -2,7 +2,6 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-@MainActor
 public final class AchievementServiceImpl: AchievementService {
     private let container: ModelContainer
     
@@ -11,7 +10,7 @@ public final class AchievementServiceImpl: AchievementService {
     }
     
     public func fetchAchievement(userId: UUID) async throws -> AchievementModel? {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<AchievementModel>(
             predicate: #Predicate { achievement in
                 achievement.userId == userId
@@ -21,15 +20,14 @@ public final class AchievementServiceImpl: AchievementService {
     }
     
     public func saveAchievement(_ achievement: AchievementModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         context.insert(achievement)
         try context.save()
     }
     
     public func updateAchievement(_ achievement: AchievementModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         achievement.updatedAt = Date()
         try context.save()
     }
 }
-

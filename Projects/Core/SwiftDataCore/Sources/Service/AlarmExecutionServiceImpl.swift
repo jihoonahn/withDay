@@ -2,7 +2,6 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-@MainActor
 public final class AlarmExecutionServiceImpl: AlarmExecutionService {
 
     private let container: ModelContainer
@@ -12,7 +11,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
     }
     
     public func fetchExecution(userId: UUID) async throws -> AlarmExecutionModel {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
             predicate: #Predicate { execution in
                 execution.userId == userId
@@ -23,7 +22,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
     }
     
     public func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionModel] {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
             predicate: #Predicate { execution in
                 execution.userId == userId
@@ -34,7 +33,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
     }
 
     public func fetchExecutionsByAlarm(alarmId: UUID) async throws -> [AlarmExecutionModel] {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
             predicate: #Predicate { execution in
                 execution.alarmId == alarmId
@@ -45,18 +44,18 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
     }
     
     public func createExecution(_ execution: AlarmExecutionModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         context.insert(execution)
         try context.save()
     }
     
     public func updateExecution(_ execution: AlarmExecutionModel) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         try context.save()
     }
     
     public func updateExecutionStatus(id: UUID, status: String) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
             predicate: #Predicate { execution in
                 execution.id == id
@@ -76,7 +75,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         postureChanges: Int,
         isMoving: Bool
     ) async throws {
-        let context = container.mainContext
+        let context = await container.mainContext
 
         let descriptor = FetchDescriptor<AlarmExecutionModel>(
             predicate: #Predicate { execution in

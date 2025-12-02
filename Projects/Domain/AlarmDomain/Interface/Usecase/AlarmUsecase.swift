@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol AlarmUseCase {
+public protocol AlarmUseCase: Sendable {
     func fetchAll(userId: UUID) async throws -> [AlarmEntity]
     func create(_ alarm: AlarmEntity) async throws
     func update(_ alarm: AlarmEntity) async throws

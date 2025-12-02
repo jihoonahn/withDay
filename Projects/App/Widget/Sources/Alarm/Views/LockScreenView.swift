@@ -1,47 +1,52 @@
 import SwiftUI
+import AlarmKit
 import AlarmScheduleCoreInterface
 import ActivityKit
 
 struct LockScreenView: View {
-    let attributes: AlarmAttributes
-    let state: AlarmAttributes.ContentState
+    let attributes: AlarmAttributes<AlarmScheduleAttributes>
+    let state: AlarmPresentationState
     
     var body: some View {
         VStack(spacing: 16) {
-            if state.isAlerting {
-                VStack(spacing: 12) {
-                    Text("Wake Up")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
-                    
-                    if let label = attributes.alarmLabel {
-                        Text(label)
-                            .font(.system(size: 24, weight: .semibold, design: .rounded))
-                            .foregroundColor(.secondary)
+            if let metadata = attributes.metadata {
+                if metadata.isAlerting {
+                    VStack(spacing: 12) {
+                        Text("Wake Up")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        
+                        if let label = metadata.alarmLabel {
+                            Text(label)
+                                .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-                .padding()
-            } else {
-                // Alarm is scheduled - show time remaining
-                VStack(spacing: 12) {
-                    Text(String().formatTime(attributes.scheduledTime))
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
-                    
-                    Text(String().timeRemainingString(from: attributes.scheduledTime))
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.white, .gray],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                    .padding()
+                } else {
+                    // Alarm is scheduled - show time remaining with real-time countdown
+                    VStack(spacing: 12) {
+                        // 알람 시간 표시
+                        Text(metadata.nextAlarmTime, style: .time)
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                        
+                        // 실시간 카운트다운 타이머
+                        Text(timerInterval: Date()...metadata.nextAlarmTime, countsDown: true)
+                            .font(.system(size: 24, weight: .semibold, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.white, .gray],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                        .contentTransition(.numericText())
-                        .padding(.top, 4)
-                        .monospacedDigit()
+                            .contentTransition(.numericText())
+                            .padding(.top, 4)
+                            .monospacedDigit()
+                    }
+                    .padding()
                 }
-                .padding()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

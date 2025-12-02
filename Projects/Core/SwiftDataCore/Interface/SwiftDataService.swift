@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
 
-public protocol SwiftDataService {
+public protocol SwiftDataService: Sendable {
     var container: ModelContainer { get }
 }
