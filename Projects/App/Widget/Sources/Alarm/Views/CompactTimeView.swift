@@ -4,7 +4,6 @@ struct CompactTimeView: View {
     let nextAlarmTime: Date
     
     var body: some View {
-        // 실시간 카운트다운 - Dynamic Island compact trailing에 표시
         Text(timerInterval: Date()...nextAlarmTime, countsDown: true)
             .font(.system(size: 14, weight: .bold, design: .rounded))
             .foregroundStyle(

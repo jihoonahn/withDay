@@ -3,40 +3,26 @@ import RefineUIIcons
 import Foundation
 
 public struct MainState: StateType {
-    public enum Flow: Sendable, Codable, CaseIterable {
-        case home
+    public enum SheetFlow: Sendable, Codable, CaseIterable, Identifiable {
         case alarm
-        case rank
-        case setting
-
-        public var displayName: String {
-            switch self {
-            case .home:
-                return "Home"
-            case .alarm:
-                return "Alarm"
-            case .rank:
-                return "Rank"
-            case .setting:
-                return "Setting"
-            }
-        }
-        
+        case schedule
+        case settings
+    
+        public var id: Self { self }
+    
         public var icon: RefineUIIcons {
             switch self {
-            case .home:
-                return .home32Regular
             case .alarm:
                 return .clockAlarm32Regular
-            case .rank:
-                return .trophy32Regular
-            case .setting:
+            case .schedule:
+                return .calendar32Regular
+            case .settings:
                 return .settings32Regular
             }
         }
     }
-
-    public var flow: Flow = .home
+    
+    public var sheetFlow: MainState.SheetFlow? = nil
     public var isShowingMotion = false
     public var motionAlarmId: UUID?
     public var motionExecutionId: UUID?

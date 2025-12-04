@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = SupabaseCore().module()
+let project = AlarmSchedulesCore().module()
 
-struct SupabaseCore: Module {
+struct AlarmSchedulesCore: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,
@@ -14,20 +14,19 @@ struct SupabaseCore: Module {
                 name: typeName,
                 dependencies: [
                     .core(target: typeName, type: .interface),
-                    .shared(target: "Utility"),
+                    .sdk(name: "AlarmKit", type: .framework),
+                    .sdk(name: "ActivityKit", type: .framework),
+                    .sdk(name: "AVFoundation", type: .framework),
+                    .shared(target: "Dependency"),
+                    .feature(target: "BaseFeature", type: .sources)
                 ]
             )
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "AlarmsDomain", type: .interface),
-                    .domain(target: "AlarmMissionsDomain", type: .interface),
-                    .domain(target: "AlarmExecutionsDomain", type: .interface),
-                    .domain(target: "UsersDomain", type: .interface),
-                    .domain(target: "UserSettingsDomain", type: .interface),
-                    .domain(target: "SchedulesDomain", type: .interface),
-                    .domain(target: "MemosDomain", type: .interface),
-                    .external(name: "Supabase")
+                    .domain(target: "AlarmSchedulesDomain", type: .interface),
+                    .sdk(name: "AlarmKit", type: .framework),
+                    .sdk(name: "ActivityKit", type: .framework),
                 ]
             )
             Testing(

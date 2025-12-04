@@ -25,11 +25,11 @@ struct WithDay: Module {
                     .feature(target: "MainFeature"),
                     .feature(target: "HomeFeature"),
                     .feature(target: "MotionFeature"),
-                    .feature(target: "MemoFeature"),
-                    .feature(target: "AlarmFeature"),
-                    .feature(target: "RankFeature"),
-                    .feature(target: "SettingFeature"),
-                    .core(target: "AlarmScheduleCore"),
+                    .feature(target: "MemosFeature"),
+                    .feature(target: "AlarmsFeature"),
+                    .feature(target: "SchedulesFeature"),
+                    .feature(target: "SettingsFeature"),
+                    .core(target: "AlarmSchedulesCore"),
                     .core(target: "MotionCore"),
                     .core(target: "NotificationCore"),
                     .core(target: "SupabaseCore"),
@@ -53,7 +53,7 @@ struct WithDay: Module {
                 ],
                 configuration: .App,
                 dependencies: [
-                    .core(target: "AlarmScheduleCore"),
+                    .core(target: "AlarmSchedulesCore"),
                     .shared(target: "Utility"),
                     .sdk(name: "AlarmKit", type: .framework)
                 ]

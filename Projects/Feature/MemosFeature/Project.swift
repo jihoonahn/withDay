@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = MainFeature().module()
+let project = MemosFeature().module()
 
-struct MainFeature: Module {
+struct MemosFeature: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,
@@ -15,17 +15,15 @@ struct MainFeature: Module {
                 dependencies: [
                     .feature(target: "BaseFeature", type: .sources),
                     .feature(target: typeName, type: .interface),
+                    .shared(target: "Localization"),
+                    .shared(target: "Designsystem"),
                 ]
             )
             Interface(
                 name: typeName,
                 dependencies: [
-                    .external(name: "RefineUIIcons"),
-                    .feature(target: "HomeFeature", type: .interface),
-                    .feature(target: "AlarmsFeature", type: .interface),
-                    .feature(target: "SchedulesFeature", type: .interface),
-                    .feature(target: "SettingsFeature", type: .interface),
-                    .feature(target: "MotionFeature", type: .interface)
+                    .domain(target: "UsersDomain", type: .interface),
+                    .domain(target: "MemosDomain", type: .interface)
                 ]
             )
             Example(

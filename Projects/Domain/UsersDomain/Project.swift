@@ -2,9 +2,9 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import TuistUI
 
-let project = NotificationDomain().module()
+let project = UsersDomain().module()
 
-struct NotificationDomain: Module {
+struct UsersDomain: Module {
     var body: some Module {
         ProjectContainer(
             name: typeName,

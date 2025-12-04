@@ -19,13 +19,13 @@ struct SwiftDataCore: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "AlarmDomain", type: .interface),
-                    .domain(target: "AlarmExecutionDomain", type: .interface),
-                    .domain(target: "AchievementDomain", type: .interface),
-                    .domain(target: "SleepPatternDomain", type: .interface),
-                    .domain(target: "UserDomain", type: .interface),
-                    .domain(target: "MemoDomain", type: .interface),
-                    .domain(target: "MotionRawDataDomain", type: .interface),
+                    .domain(target: "AlarmsDomain", type: .interface),
+                    .domain(target: "AlarmMissionsDomain", type: .interface),
+                    .domain(target: "AlarmExecutionsDomain", type: .interface),
+                    .domain(target: "UsersDomain", type: .interface),
+                    .domain(target: "UserSettingsDomain", type: .interface),
+                    .domain(target: "SchedulesDomain", type: .interface),
+                    .domain(target: "MemosDomain", type: .interface),
                 ]
             )
             Testing(

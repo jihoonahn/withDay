@@ -32,18 +32,28 @@ struct LockScreenView: View {
                             .foregroundColor(.primary)
                         
                         // 실시간 카운트다운 타이머
-                        Text(timerInterval: Date()...metadata.nextAlarmTime, countsDown: true)
-                            .font(.system(size: 24, weight: .semibold, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.white, .gray],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                        // nextAlarmTime이 미래 시간인지 확인하여 렌더링 에러 방지
+                        if metadata.nextAlarmTime > Date() {
+                            Text(timerInterval: Date()...metadata.nextAlarmTime, countsDown: true)
+                                .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.white, .gray],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                            .contentTransition(.numericText())
-                            .padding(.top, 4)
-                            .monospacedDigit()
+                                .contentTransition(.numericText())
+                                .padding(.top, 4)
+                                .monospacedDigit()
+                        } else {
+                            // 과거 시간인 경우 fallback 표시
+                            Text("--:--:--")
+                                .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                .foregroundColor(.secondary)
+                                .padding(.top, 4)
+                                .monospacedDigit()
+                        }
                     }
                     .padding()
                 }

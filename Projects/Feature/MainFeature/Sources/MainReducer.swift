@@ -8,8 +8,8 @@ public struct MainReducer: Reducer {
     
     public func reduce(state: inout MainState, action: MainAction) -> [Effect<MainAction>] {
         switch action {
-        case .changeTab(let flow):
-            state.flow = flow
+        case .showSheetFlow(let flow):
+            state.sheetFlow = flow
             return []
         case let .showMotion(id, executionId):
             state.isShowingMotion = true

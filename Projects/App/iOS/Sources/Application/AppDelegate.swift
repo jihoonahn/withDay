@@ -6,7 +6,6 @@ import Dependency
 import SupabaseCoreInterface
 import AlarmDomainInterface
 import AlarmScheduleCoreInterface
-import AlarmExecutionDomainInterface
 import UserDomainInterface
 import NotificationDomainInterface
 import BaseFeature
@@ -30,100 +29,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         )
         UNUserNotificationCenter.current().setNotificationCategories([alarmCategory])
         
-        // AlarmAlerting 이벤트 수신하여 execution 생성 및 AlarmTriggered 발행
-        setupAlarmAlertingObserver()
-        
         Task {
             let container = DIContainer.shared
             let notificationUseCase = container.resolve(NotificationUseCase.self)
             await notificationUseCase.clearFallbackNotifications()
         }
         return true
-    }
-    
-    /// AlarmAlerting 이벤트를 받아서 execution을 생성하고 AlarmTriggered를 발행
-    private func setupAlarmAlertingObserver() {
-        NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("AlarmAlerting"),
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let self = self else { return }
-            
-            guard let userInfo = notification.userInfo else {
-                print("❌ [AppDelegate] AlarmAlerting: userInfo가 nil")
-                return
-            }
-            
-            guard let alarmIdString = userInfo["alarmId"] as? String,
-                  let alarmId = UUID(uuidString: alarmIdString) else {
-                print("❌ [AppDelegate] AlarmAlerting: alarmId를 찾을 수 없음")
-                return
-            }
-            
-            guard let userIdString = userInfo["userId"] as? String,
-                  let userId = UUID(uuidString: userIdString) else {
-                print("❌ [AppDelegate] AlarmAlerting: userId를 찾을 수 없음")
-                return
-            }
-            
-            let scheduledTime = userInfo["scheduledTime"] as? Date ?? Date()
-            
-            print("✅ [AppDelegate] AlarmAlerting 수신: alarmId=\(alarmId), userId=\(userId)")
-            
-            Task {
-                await self.createExecutionAndTriggerMotion(alarmId: alarmId, userId: userId, scheduledTime: scheduledTime)
-            }
-        }
-    }
-    
-    /// Execution 생성하고 AlarmTriggered 이벤트 발행
-    private func createExecutionAndTriggerMotion(alarmId: UUID, userId: UUID, scheduledTime: Date) async {
-        let container = DIContainer.shared
-        
-        let alarmExecutionUseCase = container.resolve(AlarmExecutionUseCase.self)
-
-        let executionId = UUID()
-        let now = Date()
-        
-        let execution = AlarmExecutionEntity(
-            id: executionId,
-            userId: userId,
-            alarmId: alarmId,
-            scheduledTime: scheduledTime,
-            triggeredTime: now,
-            motionDetectedTime: nil,
-            completedTime: nil,
-            motionCompleted: false,
-            motionAttempts: 0,
-            motionData: Data(),
-            wakeConfidence: nil,
-            postureChanges: nil,
-            snoozeCount: 0,
-            totalWakeDuration: nil,
-            status: "triggered",
-            viewedMemoIds: [],
-            createdAt: now,
-            isMoving: false
-        )
-        
-        do {
-            try await alarmExecutionUseCase.saveExecution(execution)
-            print("✅ [AppDelegate] Execution 생성 완료: \(executionId)")
-            
-            // AlarmTriggered 이벤트 발행 (executionId 포함)
-            NotificationCenter.default.post(
-                name: NSNotification.Name("AlarmTriggered"),
-                object: nil,
-                userInfo: [
-                    "alarmId": alarmId.uuidString,
-                    "executionId": executionId.uuidString
-                ]
-            )
-            print("📢 [AppDelegate] AlarmTriggered 이벤트 발행: alarmId=\(alarmId), executionId=\(executionId)")
-        } catch {
-            print("❌ [AppDelegate] Execution 생성 실패: \(error)")
-        }
     }
     
     // MARK: - UNUserNotificationCenterDelegate

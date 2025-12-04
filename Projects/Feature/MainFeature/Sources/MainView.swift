@@ -33,29 +33,30 @@ public struct MainView: View {
     
     public var body: some View {
         ZStack {
-            switch state.flow {
-            case .home:
-                homeFactory.makeView()
-            case .alarm:
-                alarmFactory.makeView()
-            case .rank:
-                rankFactory.makeView()
-            case .setting:
-                settingFactory.makeView()
-            }
-            
+            homeFactory.makeView()
             VStack(spacing: 0) {
                 Spacer()
                 TabBar(
-                    selected: Binding(
-                        get: { state.flow },
-                        set: { newFlow in
-                            interface.send(.changeTab(to: newFlow))
-                        }
-                    ),
                     items: tabBarItems,
                     haptic: true
                 )
+            }
+        }
+        .sheet(item: Binding(
+            get: { state.sheetFlow },
+            set: { newFlow in
+                interface.send(.showSheetFlow(newFlow))
+            }
+        )) { _ in
+            switch state.sheetFlow {
+            case .alarm:
+                alarmFactory.makeView()
+            case .schedule:
+                rankFactory.makeView()
+            case .settings:
+                settingFactory.makeView()
+            case .none:
+                EmptyView()
             }
         }
         .fullScreenCover(isPresented: Binding(
@@ -78,9 +79,20 @@ public struct MainView: View {
         }
     }
     
-    private var tabBarItems: [TabBarItem<MainState.Flow>] {
-        MainState.Flow.allCases.map { flow in
-            TabBarItem(identifier: flow, icon: flow.icon)
+    private var tabBarItems: [TabBarItem<MainState.SheetFlow>] {
+        MainState.SheetFlow.allCases.map { flow in
+            TabBarItem(
+                identifier: flow,
+                icon: flow.icon,
+                action: {
+                    // 같은 버튼을 다시 누르면 sheet 닫기, 아니면 열기
+                    if state.sheetFlow == flow {
+                        interface.send(.showSheetFlow(nil))
+                    } else {
+                        interface.send(.showSheetFlow(flow))
+                    }
+                }
+            )
         }
     }
 }

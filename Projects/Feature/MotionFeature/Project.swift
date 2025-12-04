@@ -24,7 +24,7 @@ struct MotionFeature: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "UserDomain", type: .interface),
+                    .domain(target: "UsersDomain", type: .interface),
                     .domain(target: "MotionDomain", type: .interface),
                 ]
             )
