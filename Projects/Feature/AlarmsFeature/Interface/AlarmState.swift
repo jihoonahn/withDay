@@ -1,6 +1,6 @@
 import Foundation
 import Rex
-import AlarmDomainInterface
+import AlarmsDomainInterface
 
 public struct AlarmState: StateType {
     public var alarms: [AlarmEntity] = []

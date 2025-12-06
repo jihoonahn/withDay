@@ -18,6 +18,26 @@ public struct AlarmEntity: Identifiable, Codable, Equatable, Sendable {
     public var isEnabled: Bool
     public let createdAt: Date
     public let updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case label
+        case time
+        case repeatDays
+        case snoozeEnabled = "snooze_enabled"
+        case snoozeInterval = "snooze_interval"
+        case snoozeLimit = "snooze_limit"
+        case soundName = "sound_name"
+        case soundURL = "sound_url"
+        case vibrationPattern = "vibration_pattern"
+        case volumeOverride = "volume_override"
+        case linkedMemoIds = "linked_memo_ids"
+        case showMemosOnAlarm = "show_memos_on_alarm"
+        case isEnabled
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
     
     public init(
         id: UUID,

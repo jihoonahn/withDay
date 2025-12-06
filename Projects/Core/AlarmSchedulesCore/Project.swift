@@ -24,7 +24,7 @@ struct AlarmSchedulesCore: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "AlarmSchedulesDomain", type: .interface),
+                    .domain(target: "AlarmsDomain", type: .interface),
                     .sdk(name: "AlarmKit", type: .framework),
                     .sdk(name: "ActivityKit", type: .framework),
                 ]

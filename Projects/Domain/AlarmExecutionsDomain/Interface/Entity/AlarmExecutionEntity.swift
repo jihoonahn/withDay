@@ -20,6 +20,27 @@ public struct AlarmExecutionEntity: Identifiable, Codable, Equatable {
     public let createdAt: Date
     public var isMoving: Bool
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case alarmId = "alarm_id"
+        case scheduledTime = "scheduled_time"
+        case triggeredTime = "triggered_time"
+        case motionDetectedTime = "motion_detected_time"
+        case completedTime = "completed_time"
+        case motionCompleted = "motion_completed"
+        case motionAttempts = "motion_attempts"
+        case motionData = "motion_data"
+        case wakeConfidence = "wake_confidence"
+        case postureChanges = "posture_changes"
+        case snoozeCount = "snooze_count"
+        case totalWakeDuration = "total_wake_duration"
+        case status
+        case viewedMemoIds = "viewed_memo_ids"
+        case createdAt = "created_at"
+        case isMoving = "is_moving"
+    }
+    
     public init(
         id: UUID,
         userId: UUID,
