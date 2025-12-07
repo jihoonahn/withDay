@@ -10,8 +10,9 @@ public final class SwiftDataServiceImpl: SwiftDataService {
             AlarmModel.self,
             MemoModel.self,
             AlarmExecutionModel.self,
-            MotionRawDataModel.self,
-            AchievementModel.self
+            ScheduleModel.self,
+            AlarmMissionModel.self,
+            UserSettingsModel.self
         ])
         
         let modelConfiguration = ModelConfiguration(
@@ -34,8 +35,9 @@ public final class SwiftDataServiceImpl: SwiftDataService {
             AlarmModel.self,
             MemoModel.self,
             AlarmExecutionModel.self,
-            MotionRawDataModel.self,
-            AchievementModel.self
+            ScheduleModel.self,
+            AlarmMissionModel.self,
+            UserSettingsModel.self
         ])
         
         let modelConfiguration = ModelConfiguration(

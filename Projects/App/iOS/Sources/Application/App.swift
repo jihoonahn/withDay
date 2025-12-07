@@ -24,8 +24,9 @@ struct WithDayApp: App {
                     AlarmModel.self,
                     MemoModel.self,
                     AlarmExecutionModel.self,
-                    MotionRawDataModel.self,
-                    AchievementModel.self
+                    ScheduleModel.self,
+                    AlarmMissionModel.self,
+                    UserSettingsModel.self
                 ])
         }
     }
