@@ -1,31 +1,34 @@
 import Foundation
-import AlarmDomainInterface
+import Supabase
+import AlarmsDomainInterface
 import SupabaseCoreInterface
 
-public final class AlarmRepositoryImpl: AlarmRepository {
-    private let alarmDataService: SupabaseCoreInterface.AlarmService
+// MARK: - Repository Implementation
+public final class AlarmsRepositoryImpl: AlarmsRepository {
+
+    private let alarmsService: AlarmsService
     
-    public init(alarmDataService: SupabaseCoreInterface.AlarmService) {
-        self.alarmDataService = alarmDataService
+    public init(alarmsService: AlarmsService) {
+        self.alarmsService = alarmsService
     }
     
-    public func fetchAlarms(userId: UUID) async throws -> [AlarmEntity] {
-        return try await alarmDataService.fetchAlarms(for: userId)
+    public func fetchAlarms() async throws -> [AlarmsEntity] {
+        try await alarmsService.getAlarms()
     }
     
-    public func createAlarm(_ alarm: AlarmEntity) async throws {
-        try await alarmDataService.createAlarm(alarm)
+    public func createAlarm(_ alarm: AlarmsEntity) async throws {
+        try await alarmsService.createAlarm(alarm)
     }
     
-    public func updateAlarm(_ alarm: AlarmEntity) async throws {
-        try await alarmDataService.updateAlarm(alarm)
+    public func updateAlarm(_ alarm: AlarmsEntity) async throws {
+        try await alarmsService.updateAlarm(alarm)
     }
     
     public func deleteAlarm(alarmId: UUID) async throws {
-        try await alarmDataService.deleteAlarm(id: alarmId)
+        try await alarmsService.deleteAlarm(alarmId)
     }
     
     public func toggleAlarm(alarmId: UUID, isEnabled: Bool) async throws {
-        try await alarmDataService.toggleAlarm(id: alarmId, isEnabled: isEnabled)
+        try await alarmsService.toggleAlarm(alarmId, isEnabled: isEnabled)
     }
 }

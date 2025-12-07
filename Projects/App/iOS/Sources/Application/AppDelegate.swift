@@ -6,7 +6,7 @@ import Dependency
 import SupabaseCoreInterface
 import AlarmDomainInterface
 import AlarmScheduleCoreInterface
-import UserDomainInterface
+import UsersDomainInterface
 import NotificationDomainInterface
 import BaseFeature
 import WidgetKit
@@ -144,7 +144,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
     func applicationWillTerminate(_ application: UIApplication) {
         Task {
             let container = DIContainer.shared
-            let userUseCase = container.resolve(UserUseCase.self)
+            let userUseCase = container.resolve(UsersUseCase.self)
             guard let user = try? await userUseCase.getCurrentUser() else { return }
             
             let notificationUseCase = container.resolve(NotificationUseCase.self)

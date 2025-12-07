@@ -24,16 +24,17 @@ import SettingFeatureInterface
 import SettingFeature
 
 // Domain
-import UserDomainInterface
-import AlarmDomainInterface
-import AlarmScheduleDomainInterface
-import MemoDomainInterface
-import AlarmExecutionDomainInterface
-import MotionRawDataDomainInterface
+import AlarmsDomainInterface
+import AlarmMissionsDomainInterface
+import AlarmExecutionsDomainInterface
 import MotionDomainInterface
-import AchievementDomainInterface
+import MemosDomainInterface
+import UsersDomainInterface
+import UserSettingsDomainInterface
 import LocalizationDomainInterface
 import NotificationDomainInterface
+import SchedulesDomainInterface
+import SupabaseCoreInterface
 
 // Core
 import AlarmKit
@@ -61,115 +62,65 @@ public class AppDependencies: Sendable {
         // MARK: - Supabase Service
         let supabaseService = SupabaseServiceImpl()
         container.registerSingleton(SupabaseService.self, instance: supabaseService)
-        let client = supabaseService.client
         
-        // MARK: - Supabase Services
-        container.registerSingleton(
-            SupabaseCoreInterface.UserService.self,
-            instance: UserServiceImpl(client: client)
-        )
-        container.registerSingleton(
-            SupabaseCoreInterface.AlarmService.self,
-            instance: SupabaseCore.AlarmServiceImpl(client: client)
-        )
-        container.registerSingleton(
-            SupabaseCoreInterface.MemoService.self,
-            instance: MemoServiceImpl(client: client)
-        )
-        container.registerSingleton(
-            SupabaseCoreInterface.AlarmExecutionService.self,
-            instance: AlarmExecutionServiceImpl(client: client)
-        )
-        container.registerSingleton(
-            SupabaseCoreInterface.MotionRawDataService.self,
-            instance: MotionRawDataServiceImpl(client: client)
-        )
-        container.registerSingleton(
-            SupabaseCoreInterface.AchievementService.self,
-            instance: AchievementServiceImpl(client: client)
-        )
+        // MARK: - Services
+        
         
         // MARK: - Repositories
-        container.register(UserRepository.self) {
-            UserRepositoryImpl(
-                userService: container.resolve(SupabaseCoreInterface.UserService.self),
+        container.register(UsersRepository.self) {
+            SupabaseCore.UsersRepositoryImpl(
                 supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(AlarmRepository.self) {
-            let alarmService = container.resolve(SupabaseCoreInterface.AlarmService.self)
-            typealias SupabaseAlarmRepository = SupabaseCore.AlarmRepositoryImpl
-            return SupabaseAlarmRepository(alarmDataService: alarmService)
-        }
-        container.register(MemoRepository.self) {
-            MemoRepositoryImpl(
-                memoService: container.resolve(SupabaseCoreInterface.MemoService.self)
+        container.register(UserSettingsRepository.self) {
+            SupabaseCore.UserSettingsRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(AlarmExecutionRepository.self) {
-            AlarmExecutionRepositoryImpl(
-                alarmExecutionService: container.resolve(SupabaseCoreInterface.AlarmExecutionService.self)
+        container.register(AlarmsRepository.self) {
+            SupabaseCore.AlarmsRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(MotionRawDataRepository.self) {
-            MotionRawDataRepositoryImpl(
-                motionRawDataService: container.resolve(SupabaseCoreInterface.MotionRawDataService.self)
+        container.register(AlarmMissionsRepository.self) {
+            SupabaseCore.AlarmMissionsRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(AchievementRepository.self) {
-            AchievementRepositoryImpl(
-                achievementService: container.resolve(SupabaseCoreInterface.AchievementService.self)
+        container.register(AlarmExecutionsRepository.self) {
+            SupabaseCore.AlarmExecutionRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        
-        // MARK: - UseCases
-        container.register(UserUseCase.self) {
-            SupabaseCore.UserUseCaseImpl(
-                userRepository: container.resolve(UserRepository.self)
+        container.register(MemosRepository.self) {
+            SupabaseCore.MemosRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(AlarmUseCase.self) {
-            SwiftDataCore.AlarmUseCaseImpl(
-                alarmRepository: container.resolve(AlarmRepository.self)
+        container.register(SchedulesRepository.self) {
+            SupabaseCore.SchedulesRepositoryImpl(
+                supabaseService: container.resolve(SupabaseService.self)
             )
         }
-        container.register(MemoUseCase.self) {
-            SupabaseCore.MemoUseCaseImpl(
-                memoRepository: container.resolve(MemoRepository.self)
-            )
-        }
-        container.register(AlarmExecutionUseCase.self) {
-            SupabaseCore.AlarmExecutionUseCaseImpl(
-                alarmExecutionRepository: container.resolve(AlarmExecutionRepository.self)
-            )
-        }
-        container.register(MotionRawDataUseCase.self) {
-            SupabaseCore.MotionRawDataUseCaseImpl(
-                motionRawDataRepository: container.resolve(MotionRawDataRepository.self)
-            )
-        }
-        container.register(AchievementUseCase.self) {
-            SupabaseCore.AchievementUseCaseImpl(
-                achievementRepository: container.resolve(AchievementRepository.self)
-            )
-        }
-        
-        // MARK: - Localization Repository & UseCase
         container.register(LocalizationRepository.self) {
             LocalizationCore.LocalizationRepositoryImpl(
                 service: container.resolve(LocalizationCoreInterface.LocalizationService.self)
             )
         }
-        container.register(LocalizationUseCase.self) {
-            LocalizationCore.LocalizationUseCaseImpl(
-                repository: container.resolve(LocalizationRepository.self)
-            )
-        }
-        
-        // MARK: - Notification Repository & UseCase
         container.register(NotificationRepository.self) {
             NotificationCore.NotificationRepositoryImpl(
                 service: container.resolve(NotificationCoreInterface.NotificationService.self)
+            )
+        }
+
+        // MARK: - UseCases
+
+        
+        
+        
+        container.register(LocalizationUseCase.self) {
+            LocalizationCore.LocalizationUseCaseImpl(
+                repository: container.resolve(LocalizationRepository.self)
             )
         }
         container.register(NotificationUseCase.self) {

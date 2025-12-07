@@ -1,7 +1,8 @@
 import Foundation
-import AlarmDomainInterface
+import AlarmsDomainInterface
 
-struct AlarmDTO: Codable {
+// MARK: - DTO
+struct AlarmsDTO: Codable {
     let id: UUID
     let userId: UUID
     let label: String?
@@ -40,7 +41,7 @@ struct AlarmDTO: Codable {
         case updatedAt = "updated_at"
     }
     
-    init(from entity: AlarmEntity) {
+    init(from entity: AlarmsEntity) {
         self.id = entity.id
         self.userId = entity.userId
         self.label = entity.label
@@ -60,11 +61,11 @@ struct AlarmDTO: Codable {
         self.updatedAt = entity.updatedAt
     }
     
-    func toEntity() -> AlarmEntity {
+    func toEntity() -> AlarmsEntity {
         // Supabase에서 가져온 시간 형식 정규화 (HH:mm:ss -> HH:mm)
         let normalizedTime = normalizeTime(time)
         
-        return AlarmEntity(
+        return AlarmsEntity(
             id: id,
             userId: userId,
             label: label,
@@ -112,4 +113,3 @@ struct AlarmDTO: Codable {
         return timeString
     }
 }
-

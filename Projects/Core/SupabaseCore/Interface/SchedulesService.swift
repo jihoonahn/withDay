@@ -1,8 +1,9 @@
 import Foundation
+import SchedulesDomainInterface
 
-public protocol SchedulesRepository: Sendable {
-    func fetchSchedules() async throws -> [SchedulesEntity]
-    func fetchSchedule(id: UUID) async throws -> SchedulesEntity
+public protocol SchedulesService: Sendable {
+    func getSchedules() async throws -> [SchedulesEntity]
+    func getSchedule(id: UUID) async throws -> SchedulesEntity
     func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity
     func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity
     func deleteSchedule(id: UUID) async throws

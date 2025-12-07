@@ -1,12 +1,12 @@
 import Rex
 import LoginFeatureInterface
-import UserDomainInterface
+import UsersDomainInterface
 
 public struct LoginReducer: Reducer {
-    private let userUseCase: UserUseCase
+    private let usersUseCase: UsersUseCase
     
-    public init(userUseCase: UserUseCase) {
-        self.userUseCase = userUseCase
+    public init(usersUseCase: UsersUseCase) {
+        self.usersUseCase = usersUseCase
     }
     
     public func reduce(state: inout LoginState, action: LoginAction) -> [Effect<LoginAction>] {
@@ -16,7 +16,7 @@ public struct LoginReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        let _ = try await userUseCase.login(
+                        let _ = try await usersUseCase.login(
                             provider: "apple",
                             email: nil,
                             displayName: nil
@@ -33,7 +33,7 @@ public struct LoginReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        let _ = try await userUseCase.login(
+                        let _ = try await usersUseCase.login(
                             provider: "google",
                             email: nil,
                             displayName: nil

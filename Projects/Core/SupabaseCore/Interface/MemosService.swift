@@ -1,6 +1,7 @@
 import Foundation
+import MemosDomainInterface
 
-public protocol MemosUseCase: Sendable {
+public protocol MemosService: Sendable {
     func createMemo(_ memo: MemosEntity) async throws
     func updateMemo(_ memo: MemosEntity) async throws
     func deleteMemo(id: UUID) async throws

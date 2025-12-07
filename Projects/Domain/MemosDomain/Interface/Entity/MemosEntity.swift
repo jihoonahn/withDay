@@ -72,4 +72,3 @@ public struct MemoBlockEntity: Equatable, Sendable, Codable {
         self.children = children
     }
 }
-
