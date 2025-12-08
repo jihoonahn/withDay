@@ -6,9 +6,13 @@ import AlarmMissionsDomainInterface
 public final class AlarmMissionsServiceImpl: AlarmMissionsService {
 
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
 
-    public init(client: SupabaseClient) {
-        self.client = client
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func getMissions(alarmId: UUID) async throws -> [AlarmMissionsEntity] {

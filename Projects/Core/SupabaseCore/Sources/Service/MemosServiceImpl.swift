@@ -6,9 +6,13 @@ import MemosDomainInterface
 public final class MemosServiceImpl: MemosService {
 
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
 
-    public init(client: SupabaseClient) {
-        self.client = client
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func createMemo(_ memo: MemosEntity) async throws {

@@ -20,7 +20,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
     public init() {}
     // MARK: - Public Methods
 
-    public func scheduleAlarm(_ alarm: AlarmScheduleDomainInterface.AlarmScheduleEntity) async throws {
+    public func scheduleAlarm(_ alarm: AlarmScheduleEntity) async throws {
         // 권한 확인
         guard await checkAuthorization() else {
             throw AlarmServiceError.notificationAuthorizationDenied

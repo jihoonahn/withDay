@@ -1,12 +1,12 @@
 import Foundation
 import SwiftDataCoreInterface
-import AlarmDomainInterface
+import AlarmsDomainInterface
 
 /// AlarmModel <-> AlarmEntity 변환을 담당하는 DTO
-public enum AlarmDTO {
+public enum AlarmsDTO {
     /// AlarmEntity -> AlarmModel 변환
-    public static func toModel(from entity: AlarmEntity) -> AlarmModel {
-        AlarmModel(
+    public static func toModel(from entity: AlarmsEntity) -> AlarmsModel {
+        AlarmsModel(
             id: entity.id,
             userId: entity.userId,
             label: entity.label ?? "",
@@ -28,8 +28,8 @@ public enum AlarmDTO {
     }
     
     /// AlarmModel -> AlarmEntity 변환
-    public static func toEntity(from model: AlarmModel) -> AlarmEntity {
-        AlarmEntity(
+    public static func toEntity(from model: AlarmsModel) -> AlarmsEntity {
+        AlarmsEntity(
             id: model.id,
             userId: model.userId,
             label: model.label.isEmpty ? nil : model.label,

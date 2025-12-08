@@ -9,10 +9,9 @@ public final class UsersServiceImpl: UsersService {
     private let supabaseService: SupabaseService
 
     public init(
-        client: SupabaseClient,
         supabaseService: SupabaseService
     ) {
-        self.client = client
+        self.client = supabaseService.client
         self.supabaseService = supabaseService
     }
 

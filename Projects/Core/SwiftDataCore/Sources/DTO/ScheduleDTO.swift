@@ -5,12 +5,12 @@ import SchedulesDomainInterface
 /// ScheduleModel <-> SchedulesEntity 변환을 담당하는 DTO
 public enum ScheduleDTO {
     /// SchedulesEntity -> ScheduleModel 변환
-    public static func toModel(from entity: SchedulesEntity) -> ScheduleModel {
-        ScheduleModel(
+    public static func toModel(from entity: SchedulesEntity) -> SchedulesModel {
+        SchedulesModel(
             id: entity.id,
             userId: entity.userId,
             title: entity.title,
-            description: entity.description,
+            content: entity.description,
             date: entity.date,
             startTime: entity.startTime,
             endTime: entity.endTime,
@@ -21,12 +21,12 @@ public enum ScheduleDTO {
     }
     
     /// ScheduleModel -> SchedulesEntity 변환
-    public static func toEntity(from model: ScheduleModel) -> SchedulesEntity {
+    public static func toEntity(from model: SchedulesModel) -> SchedulesEntity {
         SchedulesEntity(
             id: model.id,
             userId: model.userId,
             title: model.title,
-            description: model.description,
+            description: model.content,
             date: model.date,
             startTime: model.startTime,
             endTime: model.endTime,
@@ -36,4 +36,3 @@ public enum ScheduleDTO {
         )
     }
 }
-

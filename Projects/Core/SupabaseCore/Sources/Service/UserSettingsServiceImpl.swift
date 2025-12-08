@@ -6,9 +6,13 @@ import UserSettingsDomainInterface
 public final class UserSettingsServiceImpl: UserSettingsService {
 
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
 
-    public init(client: SupabaseClient) {
-        self.client = client
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func fetchSettings() async throws -> UserSettingsEntity? {

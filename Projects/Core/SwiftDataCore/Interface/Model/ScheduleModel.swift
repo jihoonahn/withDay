@@ -2,11 +2,11 @@ import Foundation
 import SwiftData
 
 @Model
-public final class ScheduleModel {
+public final class SchedulesModel {
     @Attribute(.unique) public var id: UUID
     public var userId: UUID
     public var title: String
-    public var description: String
+    public var content: String
     public var date: String
     public var startTime: String
     public var endTime: String
@@ -18,7 +18,7 @@ public final class ScheduleModel {
         id: UUID,
         userId: UUID,
         title: String,
-        description: String,
+        content: String,
         date: String,
         startTime: String,
         endTime: String,
@@ -29,7 +29,7 @@ public final class ScheduleModel {
         self.id = id
         self.userId = userId
         self.title = title
-        self.description = description
+        self.content = content
         self.date = date
         self.startTime = startTime
         self.endTime = endTime
@@ -38,4 +38,3 @@ public final class ScheduleModel {
         self.updatedAt = updatedAt
     }
 }
-

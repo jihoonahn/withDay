@@ -1,17 +1,30 @@
 import Foundation
-import AlarmExecutionDomainInterface
+import AlarmExecutionsDomainInterface
 import SwiftDataCoreInterface
 
-@MainActor
-public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
-    
+public final class AlarmExecutionRepositoryImpl: AlarmExecutionsRepository {
+
     private let alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionService
     
     public init(alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionService) {
         self.alarmExecutionService = alarmExecutionService
     }
+
+    public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {
+        let models = try await alarmExecutionService.fetchExecutions(userId: userId)
+        
+        ㅣ
+    }
     
-    public func fetchAll(userId: UUID, date: Date) async throws -> [AlarmExecutionEntity] {
+    public func updateExecution(_ execution: AlarmExecutionsEntity) async throws {
+        <#code#>
+    }
+    
+    public func completeExecution(id: UUID) async throws {
+        <#code#>
+    }
+    
+    public func fetchAll(userId: UUID, date: Date) async throws -> [AlarmExecutionsEntity] {
         let models = try await alarmExecutionService.fetchExecutions(userId: userId)
         
         let calendar = Calendar.current
@@ -20,17 +33,17 @@ public final class AlarmExecutionRepositoryImpl: AlarmExecutionRepository {
             .map { AlarmExecutionDTO.toEntity(from: $0) }
     }
 
-    public func fetch(id: UUID) async throws -> AlarmExecutionEntity? {
+    public func fetch(id: UUID) async throws -> AlarmExecutionsEntity? {
         let model = try await alarmExecutionService.fetchExecution(userId: id)
         return AlarmExecutionDTO.toEntity(from: model)
     }
 
-    public func create(_ execution: AlarmExecutionEntity) async throws {
+    public func create(_ execution: AlarmExecutionsEntity) async throws {
         let model = AlarmExecutionDTO.toModel(from: execution)
         try await alarmExecutionService.createExecution(model)
     }
     
-    public func update(_ execution: AlarmExecutionEntity) async throws {
+    public func update(_ execution: AlarmExecutionsEntity) async throws {
         let model = AlarmExecutionDTO.toModel(from: execution)
         try await alarmExecutionService.updateExecution(model)
     }

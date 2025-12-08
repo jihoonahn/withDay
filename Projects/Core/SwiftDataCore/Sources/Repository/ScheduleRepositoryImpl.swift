@@ -2,36 +2,29 @@ import Foundation
 import SchedulesDomainInterface
 import SwiftDataCoreInterface
 
-@MainActor
+// MARK: - Repository Implementation
 public final class ScheduleRepositoryImpl: SchedulesRepository {
-    private let scheduleService: SwiftDataCoreInterface.ScheduleService
-    
-    public init(scheduleService: SwiftDataCoreInterface.ScheduleService) {
+
+    private let scheduleService: ScheduleService
+
+    public init(scheduleService: ScheduleService) {
         self.scheduleService = scheduleService
     }
-    
+
     public func fetchSchedules() async throws -> [SchedulesEntity] {
-        let models = try await scheduleService.fetchAllSchedules()
-        return models.map { ScheduleDTO.toEntity(from: $0) }
+        try await scheduleService.getSchedules()
     }
     
     public func fetchSchedule(id: UUID) async throws -> SchedulesEntity {
-        guard let model = try await scheduleService.fetchSchedule(id: id) else {
-            throw NSError(domain: "ScheduleRepository", code: 404, userInfo: [NSLocalizedDescriptionKey: "Schedule not found"])
-        }
-        return ScheduleDTO.toEntity(from: model)
+        return try await scheduleService.getSchedule(id: id)
     }
     
     public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
-        let model = ScheduleDTO.toModel(from: schedule)
-        try await scheduleService.saveSchedule(model)
-        return schedule
+        return try await scheduleService.createSchedule(schedule)
     }
     
     public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
-        let model = ScheduleDTO.toModel(from: schedule)
-        try await scheduleService.updateSchedule(model)
-        return schedule
+        return try await scheduleService.updateSchedule(schedule)
     }
     
     public func deleteSchedule(id: UUID) async throws {

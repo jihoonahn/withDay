@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class AlarmMissionModel {
+public final class AlarmMissionsModel {
     @Attribute(.unique) public var id: UUID
     public var alarmId: UUID
     public var missionType: String

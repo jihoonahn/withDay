@@ -1,11 +1,11 @@
 import Foundation
+import SchedulesDomainInterface
 
 public protocol ScheduleService: Sendable {
-    func fetchSchedules(userId: UUID) async throws -> [ScheduleModel]
-    func fetchAllSchedules() async throws -> [ScheduleModel]
-    func fetchSchedule(id: UUID) async throws -> ScheduleModel?
-    func saveSchedule(_ schedule: ScheduleModel) async throws
-    func updateSchedule(_ schedule: ScheduleModel) async throws
+    func getSchedules() async throws -> [SchedulesEntity]
+    func getSchedule(id: UUID) async throws -> SchedulesEntity
+    func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity
+    func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity
     func deleteSchedule(id: UUID) async throws
 }
 

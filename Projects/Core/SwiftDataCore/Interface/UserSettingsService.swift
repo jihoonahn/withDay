@@ -6,4 +6,3 @@ public protocol UserSettingsService: Sendable {
     func saveSettings(_ settings: UserSettingsModel) async throws
     func updateSettings(_ settings: UserSettingsModel) async throws
 }
-

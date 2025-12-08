@@ -3,12 +3,16 @@ import Supabase
 import SupabaseCoreInterface
 import SchedulesDomainInterface
 
-public final class ScheduleServiceImpl: SchedulesService {
+public final class SchedulesServiceImpl: SchedulesService {
 
     private let client: SupabaseClient
-    
-    public init(client: SupabaseClient) {
-        self.client = client
+    private let supabaseService: SupabaseService
+
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func getSchedules() async throws -> [SchedulesEntity] {

@@ -3,9 +3,9 @@ import SwiftDataCoreInterface
 import AlarmMissionsDomainInterface
 
 /// AlarmMissionModel <-> AlarmMissionsEntity 변환을 담당하는 DTO
-public enum AlarmMissionDTO {
+public enum AlarmMissionsDTO {
     /// AlarmMissionsEntity -> AlarmMissionModel 변환
-    public static func toModel(from entity: AlarmMissionsEntity) -> AlarmMissionModel {
+    public static func toModel(from entity: AlarmMissionsEntity) -> AlarmMissionsModel {
         let configData: Data?
         if let config = entity.config {
             configData = try? JSONEncoder().encode(config)
@@ -13,7 +13,7 @@ public enum AlarmMissionDTO {
             configData = nil
         }
         
-        return AlarmMissionModel(
+        return AlarmMissionsModel(
             id: entity.id,
             alarmId: entity.alarmId,
             missionType: entity.missionType,
@@ -25,7 +25,7 @@ public enum AlarmMissionDTO {
     }
     
     /// AlarmMissionModel -> AlarmMissionsEntity 변환
-    public static func toEntity(from model: AlarmMissionModel) -> AlarmMissionsEntity {
+    public static func toEntity(from model: AlarmMissionsModel) -> AlarmMissionsEntity {
         let config: MissionConfig?
         if let configData = model.configData {
             config = try? JSONDecoder().decode(MissionConfig.self, from: configData)
@@ -44,4 +44,3 @@ public enum AlarmMissionDTO {
         )
     }
 }
-

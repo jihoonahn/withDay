@@ -54,7 +54,7 @@ import MotionCore
 import Dependency
 import Localization
 
-public class AppDependencies: Sendable {
+public class AppDependencies {
     
     public static func setup() {
         let container = DIContainer.shared
@@ -64,42 +64,75 @@ public class AppDependencies: Sendable {
         container.registerSingleton(SupabaseService.self, instance: supabaseService)
         
         // MARK: - Services
-        
-        
+        container.register(UsersService.self) {
+            SupabaseCore.UsersServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(UserSettingsService.self) {
+            SupabaseCore.UserSettingsServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(AlarmsService.self) {
+            SupabaseCore.AlarmsServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(AlarmMissionsService.self) {
+            SupabaseCore.AlarmMissionsServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(AlarmExecutionsService.self) {
+            SupabaseCore.AlarmExecutionsServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(MemosService.self) {
+            SupabaseCore.MemosServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
+        container.register(SchedulesService.self) {
+            SupabaseCore.SchedulesServiceImpl(
+                supabaseService: container.resolve(SupabaseService.self)
+            )
+        }
         // MARK: - Repositories
         container.register(UsersRepository.self) {
             SupabaseCore.UsersRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                usersService: container.resolve(UsersService.self)
             )
         }
         container.register(UserSettingsRepository.self) {
             SupabaseCore.UserSettingsRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                userSettingsService: container.resolve(UserSettingsService.self)
             )
         }
         container.register(AlarmsRepository.self) {
             SupabaseCore.AlarmsRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                alarmsService: container.resolve(AlarmsService.self)
             )
         }
         container.register(AlarmMissionsRepository.self) {
             SupabaseCore.AlarmMissionsRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                alarmMissionsService: container.resolve(AlarmMissionsService.self)
             )
         }
         container.register(AlarmExecutionsRepository.self) {
             SupabaseCore.AlarmExecutionRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                alarmExecutionsService: container.resolve(AlarmExecutionsService.self)
             )
         }
         container.register(MemosRepository.self) {
             SupabaseCore.MemosRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                memosService: container.resolve(MemosService.self)
             )
         }
         container.register(SchedulesRepository.self) {
             SupabaseCore.SchedulesRepositoryImpl(
-                supabaseService: container.resolve(SupabaseService.self)
+                schedulesService: container.resolve(SchedulesService.self)
             )
         }
         container.register(LocalizationRepository.self) {
@@ -147,15 +180,6 @@ public class AppDependencies: Sendable {
             SwiftDataCoreInterface.AlarmExecutionService.self,
             instance: SwiftDataCore.AlarmExecutionServiceImpl(container: modelContainer)
         )
-        container.registerSingleton(
-            SwiftDataCoreInterface.MotionRawDataService.self,
-            instance: SwiftDataCore.MotionRawDataServiceImpl(container: modelContainer)
-        )
-        container.registerSingleton(
-            SwiftDataCoreInterface.AchievementService.self,
-            instance: SwiftDataCore.AchievementServiceImpl(container: modelContainer)
-        )
-        
         // MARK: - Core Services
         container.registerSingleton(
             LocalizationCoreInterface.LocalizationService.self,

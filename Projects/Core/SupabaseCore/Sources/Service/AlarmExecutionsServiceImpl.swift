@@ -6,9 +6,13 @@ import AlarmExecutionsDomainInterface
 public final class AlarmExecutionsServiceImpl: AlarmExecutionsService {
 
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
 
-    public init(client: SupabaseClient) {
-        self.client = client
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {

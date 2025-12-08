@@ -6,9 +6,13 @@ import AlarmsDomainInterface
 public final class AlarmsServiceImpl: AlarmsService {
 
     private let client: SupabaseClient
+    private let supabaseService: SupabaseService
 
-    public init(client: SupabaseClient) {
-        self.client = client
+    public init(
+        supabaseService: SupabaseService
+    ) {
+        self.client = supabaseService.client
+        self.supabaseService = supabaseService
     }
 
     public func getAlarms() async throws -> [AlarmsEntity]{

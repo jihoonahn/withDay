@@ -1,12 +1,12 @@
 import Foundation
 import SwiftDataCoreInterface
-import AlarmExecutionDomainInterface
+import AlarmExecutionsDomainInterface
 
 /// AlarmExecutionModel <-> AlarmExecutionEntity 변환을 담당하는 DTO
-public enum AlarmExecutionDTO {
+public enum AlarmExecutionsDTO {
     /// AlarmExecutionEntity -> AlarmExecutionModel 변환
-    public static func toModel(from entity: AlarmExecutionEntity) -> AlarmExecutionModel {
-        AlarmExecutionModel(
+    public static func toModel(from entity: AlarmExecutionsEntity) -> AlarmExecutionsModel {
+        AlarmExecutionsModel(
             id: entity.id,
             userId: entity.userId,
             alarmId: entity.alarmId,
@@ -29,8 +29,8 @@ public enum AlarmExecutionDTO {
     }
     
     /// AlarmExecutionModel -> AlarmExecutionEntity 변환
-    public static func toEntity(from model: AlarmExecutionModel) -> AlarmExecutionEntity {
-        AlarmExecutionEntity(
+    public static func toEntity(from model: AlarmExecutionsModel) -> AlarmExecutionsEntity {
+        AlarmExecutionsEntity(
             id: model.id,
             userId: model.userId,
             alarmId: model.alarmId,
@@ -52,4 +52,3 @@ public enum AlarmExecutionDTO {
         )
     }
 }
-

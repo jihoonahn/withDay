@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftDataCoreInterface
+import SchedulesDomainInterface
 
 public final class ScheduleServiceImpl: ScheduleService {
     private let container: ModelContainer
@@ -9,21 +10,7 @@ public final class ScheduleServiceImpl: ScheduleService {
         self.container = container
     }
     
-    public func fetchSchedules(userId: UUID) async throws -> [ScheduleModel] {
-        let context = await container.mainContext
-        let descriptor = FetchDescriptor<ScheduleModel>(
-            predicate: #Predicate { schedule in
-                schedule.userId == userId
-            },
-            sortBy: [
-                SortDescriptor(\.date),
-                SortDescriptor(\.startTime)
-            ]
-        )
-        return try context.fetch(descriptor)
-    }
-    
-    public func fetchAllSchedules() async throws -> [ScheduleModel] {
+    public func getSchedules() async throws -> [SchedulesEntity] {
         let context = await container.mainContext
         let descriptor = FetchDescriptor<ScheduleModel>(
             sortBy: [
@@ -31,26 +18,32 @@ public final class ScheduleServiceImpl: ScheduleService {
                 SortDescriptor(\.startTime)
             ]
         )
-        return try context.fetch(descriptor)
+        let models = try context.fetch(descriptor)
+        return models.map { ScheduleDTO.toEntity(from: $0) }
     }
     
-    public func fetchSchedule(id: UUID) async throws -> ScheduleModel? {
+    public func getSchedule(id: UUID) async throws -> SchedulesEntity {
         let context = await container.mainContext
         let descriptor = FetchDescriptor<ScheduleModel>(
             predicate: #Predicate { schedule in
                 schedule.id == id
             }
         )
-        return try context.fetch(descriptor).first
+        guard let model = try context.fetch(descriptor).first else {
+            throw NSError(domain: "ScheduleService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Schedule not found"])
+        }
+        return ScheduleDTO.toEntity(from: model)
     }
     
-    public func saveSchedule(_ schedule: ScheduleModel) async throws {
+    public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
         let context = await container.mainContext
-        context.insert(schedule)
+        let model = ScheduleDTO.toModel(from: schedule)
+        context.insert(model)
         try context.save()
+        return schedule
     }
     
-    public func updateSchedule(_ schedule: ScheduleModel) async throws {
+    public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
         let context = await container.mainContext
         let scheduleId = schedule.id
         let descriptor = FetchDescriptor<ScheduleModel>(
@@ -60,16 +53,18 @@ public final class ScheduleServiceImpl: ScheduleService {
         )
         
         if let existingModel = try context.fetch(descriptor).first {
-            existingModel.userId = schedule.userId
-            existingModel.title = schedule.title
-            existingModel.description = schedule.description
-            existingModel.date = schedule.date
-            existingModel.startTime = schedule.startTime
-            existingModel.endTime = schedule.endTime
-            existingModel.memoIds = schedule.memoIds
+            let updatedModel = ScheduleDTO.toModel(from: schedule)
+            existingModel.userId = updatedModel.userId
+            existingModel.title = updatedModel.title
+            existingModel.content = updatedModel.content
+            existingModel.date = updatedModel.date
+            existingModel.startTime = updatedModel.startTime
+            existingModel.endTime = updatedModel.endTime
+            existingModel.memoIds = updatedModel.memoIds
             existingModel.updatedAt = Date()
             try context.save()
         }
+        return schedule
     }
     
     public func deleteSchedule(id: UUID) async throws {

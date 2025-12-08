@@ -16,7 +16,7 @@ public final class AlarmMissionsUseCaseImpl: AlarmMissionsUseCase {
         return try await alarmMissionsRepository.createMission(mission)
     }
     
-    public func updateMission(_ mission: AlarmMissionsEntity) async throws -> AlarmMissionsEntity {
+    public func updateMission(_ mission: AlarmMissionsEntity) async throws {
         return try await alarmMissionsRepository.updateMission(mission)
     }
     

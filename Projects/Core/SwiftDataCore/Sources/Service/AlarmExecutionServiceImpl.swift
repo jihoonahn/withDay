@@ -10,9 +10,9 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         self.container = container
     }
     
-    public func fetchExecution(userId: UUID) async throws -> AlarmExecutionModel {
+    public func fetchExecution(userId: UUID) async throws -> AlarmExecutionsModel {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+        let descriptor = FetchDescriptor<AlarmExecutionsModel>(
             predicate: #Predicate { execution in
                 execution.userId == userId
             },
@@ -21,9 +21,9 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         return try context.fetch(descriptor).first!
     }
     
-    public func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionModel] {
+    public func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionsModel] {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+        let descriptor = FetchDescriptor<AlarmExecutionsModel>(
             predicate: #Predicate { execution in
                 execution.userId == userId
             },
@@ -32,9 +32,9 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         return try context.fetch(descriptor)
     }
 
-    public func fetchExecutionsByAlarm(alarmId: UUID) async throws -> [AlarmExecutionModel] {
+    public func fetchExecutionsByAlarm(alarmId: UUID) async throws -> [AlarmExecutionsModel] {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+        let descriptor = FetchDescriptor<AlarmExecutionsModel>(
             predicate: #Predicate { execution in
                 execution.alarmId == alarmId
             },
@@ -43,20 +43,20 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         return try context.fetch(descriptor)
     }
     
-    public func createExecution(_ execution: AlarmExecutionModel) async throws {
+    public func createExecution(_ execution: AlarmExecutionsModel) async throws {
         let context = await container.mainContext
         context.insert(execution)
         try context.save()
     }
     
-    public func updateExecution(_ execution: AlarmExecutionModel) async throws {
+    public func updateExecution(_ execution: AlarmExecutionsModel) async throws {
         let context = await container.mainContext
         try context.save()
     }
     
     public func updateExecutionStatus(id: UUID, status: String) async throws {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+        let descriptor = FetchDescriptor<AlarmExecutionsModel>(
             predicate: #Predicate { execution in
                 execution.id == id
             }
@@ -77,7 +77,7 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
     ) async throws {
         let context = await container.mainContext
 
-        let descriptor = FetchDescriptor<AlarmExecutionModel>(
+        let descriptor = FetchDescriptor<AlarmExecutionsModel>(
             predicate: #Predicate { execution in
                 execution.id == id
             }

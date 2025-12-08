@@ -19,8 +19,8 @@ public final class AlarmMissionsRepositoryImpl: AlarmMissionsRepository {
         return try await alarmMissionsService.createMission(mission)
     }
     
-    public func updateMission(_ mission: AlarmMissionsEntity) async throws -> AlarmMissionsEntity {
-        return try await alarmMissionsService.updateMission(mission)
+    public func updateMission(_ mission: AlarmMissionsEntity) async throws {
+        try await alarmMissionsService.updateMission(mission)
     }
     
     public func deleteMission(id: UUID) async throws {
