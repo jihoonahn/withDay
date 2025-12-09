@@ -30,29 +30,6 @@ public struct AlarmReducer: Reducer {
         return user.id
     }
     
-    // MARK: - Entity Conversion
-    private func toScheduleEntity(_ alarm: AlarmsEntity) -> AlarmsEntity {
-        AlarmsEntity(
-            id: alarm.id,
-            userId: alarm.userId,
-            label: alarm.label,
-            time: alarm.time,
-            repeatDays: alarm.repeatDays,
-            snoozeEnabled: alarm.snoozeEnabled,
-            snoozeInterval: alarm.snoozeInterval,
-            snoozeLimit: alarm.snoozeLimit,
-            soundName: alarm.soundName,
-            soundURL: alarm.soundURL,
-            vibrationPattern: alarm.vibrationPattern,
-            volumeOverride: alarm.volumeOverride,
-            linkedMemoIds: alarm.linkedMemoIds,
-            showMemosOnAlarm: alarm.showMemosOnAlarm,
-            isEnabled: alarm.isEnabled,
-            createdAt: alarm.createdAt,
-            updatedAt: alarm.updatedAt
-        )
-    }
-    
     // MARK: - Error Handling
     private func handleError(_ error: Error) -> String {
         if let alarmError = error as? AlarmError {
@@ -160,14 +137,13 @@ public struct AlarmReducer: Reducer {
                         // 2. 알람 스케줄링
                         if alarm.isEnabled {
                             print("🔔 [AlarmReducer] 알람 스케줄링 시작: \(alarm.id)")
-                            let scheduleEntity = toScheduleEntity(alarm)
-                            try await alarmSchedulesUseCase.scheduleAlarm(scheduleEntity)
+                            try await alarmSchedulesUseCase.scheduleAlarm(alarm)
                         }
                         
                         print("✅ [AlarmReducer] 알람 추가 완료: \(alarm.id)")
                         
                         // 3. 최신 상태 다시 로드하여 UI 동기화
-                            let userId = try await getCurrentUserId()
+                        let userId = try await getCurrentUserId()
                         let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                         emitter.send(.setAlarms(alarms))
                         
@@ -210,14 +186,13 @@ public struct AlarmReducer: Reducer {
                         try await alarmsUseCase.update(alarm)
                         
                         // 2. 알람 스케줄링 업데이트
-                        let scheduleEntity = toScheduleEntity(alarm)
                         print("🔔 [AlarmReducer] 알람 스케줄링 업데이트: \(alarm.id)")
-                        try await alarmSchedulesUseCase.updateAlarm(scheduleEntity)
+                        try await alarmSchedulesUseCase.updateAlarm(alarm)
                         
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
                         
                         // 3. 최신 상태 다시 로드하여 UI 동기화
-                            let userId = try await getCurrentUserId()
+                        let userId = try await getCurrentUserId()
                         let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                         emitter.send(.setAlarms(alarms))
                         
@@ -305,12 +280,10 @@ public struct AlarmReducer: Reducer {
                             throw AlarmServiceError.entityNotFound
                         }
                         
-                        // 3. AlarmScheduleEntity로 변환하여 스케줄링
-                        let scheduleEntity = toScheduleEntity(alarm)
                         print("🔔 [AlarmReducer] 알람 스케줄링 토글: \(id) -> \(newIsEnabled)")
                         
                         if newIsEnabled {
-                            try await alarmSchedulesUseCase.scheduleAlarm(scheduleEntity)
+                            try await alarmSchedulesUseCase.scheduleAlarm(alarm)
                         } else {
                             try await alarmSchedulesUseCase.cancelAlarm(id)
                         }
@@ -433,7 +406,11 @@ public struct AlarmReducer: Reducer {
         case .stopAlarm(let id):
             return [
                 Effect { [self, id] emitter in
-                    await alarmSchedulesUseCase.stopAlarm(id)
+                    do {
+                        try await alarmSchedulesUseCase.stopAlarm(id)
+                    } catch {
+                        print("Failed To Stop Alarm: \(error.localizedDescription)")
+                    }
                 }
             ]
         }
