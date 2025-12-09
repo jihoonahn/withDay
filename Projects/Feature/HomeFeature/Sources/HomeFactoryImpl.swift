@@ -1,10 +1,10 @@
 import SwiftUI
 import Rex
 import HomeFeatureInterface
-import MemoFeatureInterface
-import MemoDomainInterface
-import UserDomainInterface
-import AlarmExecutionDomainInterface
+import MemosFeatureInterface
+import MemosDomainInterface
+import UsersDomainInterface
+import AlarmExecutionsDomainInterface
 import Dependency
 
 public struct HomeFactoryImpl: HomeFactory {
@@ -30,9 +30,9 @@ public extension HomeFactoryImpl {
     static func create() -> HomeFactoryImpl {
         let container = DIContainer.shared
         let reducer = HomeReducer(
-            memoUseCase: container.resolve(MemoUseCase.self),
-            userUseCase: container.resolve(UserUseCase.self),
-            alarmExecutionUseCase: container.resolve(AlarmExecutionUseCase.self)
+            memosUseCase: container.resolve(MemosUseCase.self),
+            usersUseCase: container.resolve(UsersUseCase.self),
+            alarmExecutionsUseCase: container.resolve(AlarmExecutionsUseCase.self)
         )
         let store = Store<HomeReducer>(
             initialState: HomeState(),
@@ -45,9 +45,9 @@ public extension HomeFactoryImpl {
     static func create(initialState: HomeState) -> HomeFactoryImpl {
         let container = DIContainer.shared
         let reducer = HomeReducer(
-            memoUseCase: container.resolve(MemoUseCase.self),
-            userUseCase: container.resolve(UserUseCase.self),
-            alarmExecutionUseCase: container.resolve(AlarmExecutionUseCase.self)
+            memosUseCase: container.resolve(MemosUseCase.self),
+            usersUseCase: container.resolve(UsersUseCase.self),
+            alarmExecutionsUseCase: container.resolve(AlarmExecutionsUseCase.self)
         )
         let store = Store<HomeReducer>(
             initialState: initialState,

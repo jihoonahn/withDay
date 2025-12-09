@@ -1,5 +1,5 @@
 import Rex
-import SettingFeatureInterface
+import SettingsFeatureInterface
 import BaseFeature
 
 public class SettingStore: SettingInterface {

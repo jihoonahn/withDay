@@ -1,5 +1,5 @@
 import Rex
-import MemoFeatureInterface
+import MemosFeatureInterface
 import BaseFeature
 
 public class MemoStore: MemoInterface {

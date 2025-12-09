@@ -1,7 +1,7 @@
 import Foundation
 import Rex
 import Utility
-import MemoDomainInterface
+import MemosDomainInterface
 
 public struct HomeState: StateType {
     public var homeTitle = Date.now.toString()
@@ -9,7 +9,7 @@ public struct HomeState: StateType {
     public var editMemoSheetIsPresented = false
     // Loaded data
     public var wakeDurationDescription: String?
-    public var allMemos: [MemoEntity] = []
+    public var allMemos: [MemosEntity] = []
     public var navigateToAllMemo: Bool = false
     public var presentedAddMemo: Bool = false
     public init() {}
@@ -17,11 +17,11 @@ public struct HomeState: StateType {
 
 // MARK: - Derived Data
 public extension HomeState {
-    var todayMemos: [MemoEntity] {
+    var todayMemos: [MemosEntity] {
         memos(on: Date())
     }
     
-    func memos(on date: Date) -> [MemoEntity] {
+    func memos(on date: Date) -> [MemosEntity] {
         let calendar = Calendar.current
         let target = calendar.startOfDay(for: date)
         return allMemos.filter { memo in
@@ -31,7 +31,7 @@ public extension HomeState {
         .sorted(by: reminderSortPredicate)
     }
     
-    private func reminderSortPredicate(_ lhs: MemoEntity, _ rhs: MemoEntity) -> Bool {
+    private func reminderSortPredicate(_ lhs: MemosEntity, _ rhs: MemosEntity) -> Bool {
         let calendar = Calendar.current
         let leftDate = lhs.createdAt ?? Date.distantPast
         let rightDate = rhs.createdAt ?? Date.distantPast

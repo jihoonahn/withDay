@@ -24,11 +24,11 @@ public final class MemosUseCaseImpl: MemosUseCase {
         return try await memosRepository.fetchMemo(id: id)
     }
     
-    public func getMemos() async throws -> [MemosEntity] {
-        return try await memosRepository.fetchMemos()
+    public func getMemos(userId: UUID) async throws -> [MemosEntity] {
+        return try await memosRepository.fetchMemos(userId: userId)
     }
     
-    public func searchMemos(keyword: String) async throws -> [MemosEntity] {
-        return try await memosRepository.searchMemos(keyword: keyword)
+    public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
+        return try await memosRepository.searchMemos(userId: userId, keyword: keyword)
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-public final class AlarmExecutionServiceImpl: AlarmExecutionService {
+public final class AlarmExecutionServiceImpl: AlarmExecutionsService {
 
     private let container: ModelContainer
     
@@ -64,6 +64,10 @@ public final class AlarmExecutionServiceImpl: AlarmExecutionService {
         
         if let execution = try context.fetch(descriptor).first {
             execution.status = status
+            // status가 "completed"인 경우 completedTime도 설정
+            if status == "completed" {
+                execution.completedTime = Date()
+            }
             try context.save()
         }
     }

@@ -1,22 +1,23 @@
 import Foundation
 import UserNotifications
 import NotificationCoreInterface
-import AlarmDomainInterface
+import AlarmsDomainInterface
 
 public final class NotificationServiceImpl: NotificationService {
+
     private let userDefaults: UserDefaults
     private let isEnabledKey = "com.withday.notification.isEnabled"
     private let fallbackPrefix = "fallback-alarm-"
-    
+
     public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
     }
-    
+
     public func saveIsEnabled(_ isEnabled: Bool) async throws {
         userDefaults.set(isEnabled, forKey: isEnabledKey)
         userDefaults.synchronize()
     }
-    
+
     public func loadIsEnabled() async throws -> Bool? {
         guard userDefaults.object(forKey: isEnabledKey) != nil else {
             return nil
@@ -31,7 +32,7 @@ public final class NotificationServiceImpl: NotificationService {
         }
     }
     
-    public func scheduleFallbackNotifications(for alarms: [AlarmEntity]) async {
+    public func scheduleFallbackNotifications(for alarms: [AlarmsEntity]) async {
         let center = UNUserNotificationCenter.current()
         await clearFallbackNotificationsInternal(center: center)
         
@@ -96,7 +97,7 @@ public final class NotificationServiceImpl: NotificationService {
         }
     }
     
-    private func nextTriggerDate(for alarm: AlarmEntity) -> Date? {
+    private func nextTriggerDate(for alarm: AlarmsEntity) -> Date? {
         let components = alarm.time.split(separator: ":").compactMap { Int($0) }
         guard components.count == 2 else { return nil }
         let hour = components[0]

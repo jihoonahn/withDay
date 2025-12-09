@@ -1,7 +1,7 @@
 import SwiftUI
 import Rex
-import SettingFeatureInterface
-import UserDomainInterface
+import SettingsFeatureInterface
+import UsersDomainInterface
 import LocalizationDomainInterface
 import NotificationDomainInterface
 
@@ -24,14 +24,14 @@ public struct SettingFactoryImpl: SettingFactory {
 
 public extension SettingFactoryImpl {
     static func create(
-        userUseCase: UserUseCase,
+        usersUseCase: UsersUseCase,
         localizationUseCase: LocalizationUseCase,
         notificationUseCase: NotificationUseCase
     ) -> SettingFactoryImpl {
         let store = Store<SettingReducer>(
             initialState: SettingState(),
             reducer: SettingReducer(
-                userUseCase: userUseCase,
+                usersUseCase: usersUseCase,
                 localizationUseCase: localizationUseCase,
                 notificationUseCase: notificationUseCase
             )
@@ -41,14 +41,14 @@ public extension SettingFactoryImpl {
     
     static func create(
         initialState: SettingState,
-        userUseCase: UserUseCase,
+        usersUseCase: UsersUseCase,
         localizationUseCase: LocalizationUseCase,
         notificationUseCase: NotificationUseCase
     ) -> SettingFactoryImpl {
         let store = Store<SettingReducer>(
             initialState: initialState,
             reducer: SettingReducer(
-                userUseCase: userUseCase,
+                usersUseCase: usersUseCase,
                 localizationUseCase: localizationUseCase,
                 notificationUseCase: notificationUseCase,
             )

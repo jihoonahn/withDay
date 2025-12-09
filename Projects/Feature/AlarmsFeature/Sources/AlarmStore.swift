@@ -1,6 +1,6 @@
 import Rex
-import AlarmFeatureInterface
-import AlarmDomainInterface
+import AlarmsFeatureInterface
+import AlarmsDomainInterface
 import BaseFeature
 
 public class AlarmStore: AlarmInterface {

@@ -4,8 +4,8 @@ import AlarmKit
 import UserNotifications
 import Dependency
 import SupabaseCoreInterface
-import AlarmDomainInterface
-import AlarmScheduleCoreInterface
+import AlarmsDomainInterface
+import AlarmSchedulesCoreInterface
 import UsersDomainInterface
 import NotificationDomainInterface
 import BaseFeature
@@ -154,8 +154,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
                 return
             }
             
-            let alarmUseCase = container.resolve(AlarmUseCase.self)
-            guard let alarms = try? await alarmUseCase.fetchAll(userId: user.id) else { return }
+            let alarmsUseCase = container.resolve(AlarmsUseCase.self)
+            guard let alarms = try? await alarmsUseCase.fetchAll(userId: user.id) else { return }
             await notificationUseCase.scheduleFallbackNotifications(for: alarms)
         }
     }

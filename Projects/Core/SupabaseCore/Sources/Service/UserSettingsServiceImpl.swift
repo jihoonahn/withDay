@@ -15,9 +15,7 @@ public final class UserSettingsServiceImpl: UserSettingsService {
         self.supabaseService = supabaseService
     }
 
-    public func fetchSettings() async throws -> UserSettingsEntity? {
-        let session = try await client.auth.session
-        let userId = session.user.id
+    public func fetchSettings(userId: UUID) async throws -> UserSettingsEntity? {
         let settings: UserSettingsDTO = try await client
             .from("user_settings")
             .select()

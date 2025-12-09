@@ -15,9 +15,7 @@ public final class SchedulesServiceImpl: SchedulesService {
         self.supabaseService = supabaseService
     }
 
-    public func getSchedules() async throws -> [SchedulesEntity] {
-        let sessions = try await client.auth.session
-        let userId = sessions.user.id
+    public func getSchedules(userId: UUID) async throws -> [SchedulesEntity] {
         let schedules: [SchedulesDTO] = try await client
             .from("schedules")
             .select()

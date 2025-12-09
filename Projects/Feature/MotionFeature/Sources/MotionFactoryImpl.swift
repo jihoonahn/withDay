@@ -1,12 +1,11 @@
 import SwiftUI
 import Rex
 import MotionFeatureInterface
-import UserDomainInterface
-import MotionRawDataDomainInterface
 import MotionDomainInterface
-import AlarmScheduleDomainInterface
-import AlarmExecutionDomainInterface
 import MotionCoreInterface
+import UsersDomainInterface
+import AlarmsDomainInterface
+import AlarmExecutionsDomainInterface
 import Dependency
 
 public struct MotionFactoryImpl: MotionFactory {
@@ -28,20 +27,18 @@ public struct MotionFactoryImpl: MotionFactory {
 
 public extension MotionFactoryImpl {
     static func create(
-        userUseCase: UserUseCase,
+        usersUseCase: UsersUseCase,
         motionUseCase: MotionUseCase,
-        motionRawDataUseCase: MotionRawDataUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        alarmExecutionUseCase: AlarmExecutionUseCase
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        alarmExecutionsUseCase: AlarmExecutionsUseCase
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: MotionState(),
             reducer: MotionReducer(
-                userUseCase: userUseCase,
-                motionRawDataUseCase: motionRawDataUseCase,
-                alarmScheduleUseCase: alarmScheduleUseCase,
-                motionUseCase: motionUseCase,
-                alarmExecutionUseCase: alarmExecutionUseCase
+                usersUseCase: usersUseCase,
+                alarmSchedulesUseCase: alarmSchedulesUseCase,
+                alarmExecutionsUseCase: alarmExecutionsUseCase,
+                motionUseCase: motionUseCase
             )
         )
         return MotionFactoryImpl(store: store)
@@ -49,20 +46,18 @@ public extension MotionFactoryImpl {
     
     static func create(
         initialState: MotionState,
-        userUseCase: UserUseCase,
+        usersUseCase: UsersUseCase,
         motionUseCase: MotionUseCase,
-        motionRawDataUseCase: MotionRawDataUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        alarmExecutionUseCase: AlarmExecutionUseCase
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        alarmExecutionsUseCase: AlarmExecutionsUseCase
     ) -> MotionFactoryImpl {
         let store = Store<MotionReducer>(
             initialState: initialState,
             reducer: MotionReducer(
-                userUseCase: userUseCase,
-                motionRawDataUseCase: motionRawDataUseCase,
-                alarmScheduleUseCase: alarmScheduleUseCase,
-                motionUseCase: motionUseCase,
-                alarmExecutionUseCase: alarmExecutionUseCase
+                usersUseCase: usersUseCase,
+                alarmSchedulesUseCase: alarmSchedulesUseCase,
+                alarmExecutionsUseCase: alarmExecutionsUseCase,
+                motionUseCase: motionUseCase
             )
         )
         return MotionFactoryImpl(store: store)

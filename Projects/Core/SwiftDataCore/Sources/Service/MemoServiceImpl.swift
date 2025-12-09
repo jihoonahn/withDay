@@ -2,16 +2,52 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-public final class MemoServiceImpl: MemoService {
+public final class MemoServiceImpl: MemosService {
+
     private let container: ModelContainer
     
     public init(container: ModelContainer) {
         self.container = container
     }
-    
-    public func fetchMemos(userId: UUID) async throws -> [MemoModel] {
+
+    public func createMemo(_ memo: MemosModel) async throws {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<MemoModel>(
+        context.insert(memo)
+        try context.save()
+    }
+    
+    public func updateMemo(_ memo: MemosModel) async throws {
+        let context = await container.mainContext
+        memo.updatedAt = Date()
+        try context.save()
+    }
+    
+    public func deleteMemo(id: UUID) async throws {
+        let context = await container.mainContext
+        let descriptor = FetchDescriptor<MemosModel>(
+            predicate: #Predicate { memo in
+                memo.id == id
+            }
+        )
+        if let memo = try context.fetch(descriptor).first {
+            context.delete(memo)
+            try context.save()
+        }
+    }
+    
+    public func getMemo(id: UUID) async throws -> MemosModel {
+        let context = await container.mainContext
+        let descriptor = FetchDescriptor<MemosModel>(
+            predicate: #Predicate { memo in
+                memo.id == id
+            }
+        )
+        return try context.fetch(descriptor).first!
+    }
+    
+    public func getMemos(userId: UUID) async throws -> [MemosModel] {
+        let context = await container.mainContext
+        let descriptor = FetchDescriptor<MemosModel>(
             predicate: #Predicate { memo in
                 memo.userId == userId
             },
@@ -20,30 +56,14 @@ public final class MemoServiceImpl: MemoService {
         return try context.fetch(descriptor)
     }
     
-    public func saveMemo(_ memo: MemoModel) async throws {
+    public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosModel] {
         let context = await container.mainContext
-        context.insert(memo)
-        try context.save()
-    }
-    
-    public func updateMemo(_ memo: MemoModel) async throws {
-        let context = await container.mainContext
-        memo.updatedAt = Date()
-        try context.save()
-    }
-    
-    public func deleteMemo(id: UUID) async throws {
-        let context = await container.mainContext
-        let descriptor = FetchDescriptor<MemoModel>(
+        let descriptor = FetchDescriptor<MemosModel>(
             predicate: #Predicate { memo in
-                memo.id == id
-            }
+                (memo.content.contains(keyword) == true) && memo.userId == userId
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
-        
-        if let memo = try context.fetch(descriptor).first {
-            context.delete(memo)
-            try context.save()
-        }
+        return try context.fetch(descriptor)
     }
 }
-

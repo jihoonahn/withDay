@@ -8,8 +8,8 @@ public final class UserSettingsUseCaseImpl: UserSettingsUseCase {
         self.userSettingsRepository = userSettingsRepository
     }
     
-    public func getSettings() async throws -> UserSettingsEntity? {
-        return try await userSettingsRepository.fetchSettings()
+    public func getSettings(userId: UUID) async throws -> UserSettingsEntity? {
+        return try await userSettingsRepository.fetchSettings(userId: userId)
     }
     
     public func updateSettings(_ settings: UserSettingsEntity) async throws {

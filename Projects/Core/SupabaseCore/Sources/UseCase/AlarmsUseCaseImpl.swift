@@ -8,8 +8,8 @@ public final class AlarmsUseCaseImpl: AlarmsUseCase {
         self.alarmsRepository = alarmsRepository
     }
     
-    public func fetchAll() async throws -> [AlarmsEntity] {
-        return try await alarmsRepository.fetchAlarms()
+    public func fetchAll(userId: UUID) async throws -> [AlarmsEntity] {
+        return try await alarmsRepository.fetchAlarms(userId: userId)
     }
     
     public func create(_ alarm: AlarmsEntity) async throws {

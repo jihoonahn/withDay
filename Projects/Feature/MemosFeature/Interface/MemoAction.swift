@@ -1,10 +1,10 @@
 import Foundation
 import Rex
-import MemoDomainInterface
+import MemosDomainInterface
 
 public enum MemoAction: ActionType {
     case loadMemo
-    case setMemos([MemoEntity])
+    case setMemos([MemosEntity])
     case setMemoFlow(MemoState.Flow)
     case addMemoTitleDidChange(String)
     case addMemoContentDidChange(String)
@@ -19,7 +19,7 @@ public enum MemoAction: ActionType {
     case editMemoHasReminderDidChange(Bool)
     case updateMemo
     case deleteMemo(UUID)
-    case showEditMemo(MemoEntity)
+    case showEditMemo(MemosEntity)
     case showMemoToast(String)
     case memoToastStatus(Bool)
 }

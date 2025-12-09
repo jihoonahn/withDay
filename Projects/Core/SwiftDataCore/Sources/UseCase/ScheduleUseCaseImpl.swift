@@ -8,8 +8,8 @@ public final class ScheduleUseCaseImpl: SchedulesUseCase {
         self.schedulesRepository = schedulesRepository
     }
     
-    public func getSchedules() async throws -> [SchedulesEntity] {
-        return try await schedulesRepository.fetchSchedules()
+    public func getSchedules(userId: UUID) async throws -> [SchedulesEntity] {
+        return try await schedulesRepository.fetchSchedules(userId: userId)
     }
     
     public func getSchedule(id: UUID) async throws -> SchedulesEntity {
@@ -28,4 +28,3 @@ public final class ScheduleUseCaseImpl: SchedulesUseCase {
         try await schedulesRepository.deleteSchedule(id: id)
     }
 }
-

@@ -1,7 +1,7 @@
 import SwiftUI
 import Rex
 import Designsystem
-import SettingFeatureInterface
+import SettingsFeatureInterface
 import LocalizationDomainInterface
 
 struct LanguageView: View {

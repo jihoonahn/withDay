@@ -1,12 +1,12 @@
 import Rex
 import RootFeatureInterface
-import UserDomainInterface
+import UsersDomainInterface
 
 public struct RootReducer: Reducer {
-    private let userUseCase: UserUseCase
+    private let usersUseCase: UsersUseCase
 
-    public init(userUseCase: UserUseCase) {
-        self.userUseCase = userUseCase
+    public init(usersUseCase: UsersUseCase) {
+        self.usersUseCase = usersUseCase
     }
 
     public func reduce(state: inout RootState, action: RootAction) -> [Effect<RootAction>] {
@@ -15,7 +15,7 @@ public struct RootReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        if let _ = try await userUseCase.getCurrentUser() {
+                        if let _ = try await usersUseCase.getCurrentUser() {
                             emitter.send(.switchToMain)
                         } else {
                             emitter.send(.switchToLogin)

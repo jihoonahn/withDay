@@ -7,11 +7,11 @@ public final class SwiftDataServiceImpl: SwiftDataService {
     
     public init() {
         let schema = Schema([
-            AlarmModel.self,
-            MemoModel.self,
+            AlarmsModel.self,
+            MemosModel.self,
             AlarmExecutionsModel.self,
-            ScheduleModel.self,
-            AlarmMissionModel.self,
+            SchedulesModel.self,
+            AlarmMissionsModel.self,
             UserSettingsModel.self
         ])
         
@@ -32,11 +32,11 @@ public final class SwiftDataServiceImpl: SwiftDataService {
     
     public init(isStoredInMemoryOnly: Bool) {
         let schema = Schema([
-            AlarmModel.self,
-            MemoModel.self,
+            AlarmsModel.self,
+            MemosModel.self,
             AlarmExecutionsModel.self,
-            ScheduleModel.self,
-            AlarmMissionModel.self,
+            SchedulesModel.self,
+            AlarmMissionsModel.self,
             UserSettingsModel.self
         ])
         

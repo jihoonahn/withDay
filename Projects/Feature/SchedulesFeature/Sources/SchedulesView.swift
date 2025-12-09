@@ -1,14 +1,14 @@
 import SwiftUI
 import Rex
-import RankFeatureInterface
+import SchedulesFeatureInterface
 import Designsystem
 
-public struct RankView: View {
-    let interface: RankInterface
-    @State private var state = RankState()
+public struct SchedulesView: View {
+    let interface: SchedulesInterface
+    @State private var state = SchedulesState()
 
     public init(
-        interface: RankInterface
+        interface: SchedulesInterface
     ) {
         self.interface = interface
     }

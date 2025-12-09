@@ -1,28 +1,28 @@
 import Foundation
 import Rex
 import HomeFeatureInterface
-import MemoDomainInterface
-import UserDomainInterface
-import AlarmExecutionDomainInterface
+import MemosDomainInterface
+import UsersDomainInterface
+import AlarmExecutionsDomainInterface
 import Localization
 import BaseFeature
 
 public struct HomeReducer: Reducer {
-    private let memoUseCase: MemoUseCase
-    private let userUseCase: UserUseCase
-    private let alarmExecutionUseCase: AlarmExecutionUseCase
+    private let memosUseCase: MemosUseCase
+    private let usersUseCase: UsersUseCase
+    private let alarmExecutionsUseCase: AlarmExecutionsUseCase
     private let dateProvider: () -> Date
     private let calendar = Calendar.current
     
     public init(
-        memoUseCase: MemoUseCase,
-        userUseCase: UserUseCase,
-        alarmExecutionUseCase: AlarmExecutionUseCase,
+        memosUseCase: MemosUseCase,
+        usersUseCase: UsersUseCase,
+        alarmExecutionsUseCase: AlarmExecutionsUseCase,
         dateProvider: @escaping () -> Date = Date.init
     ) {
-        self.memoUseCase = memoUseCase
-        self.userUseCase = userUseCase
-        self.alarmExecutionUseCase = alarmExecutionUseCase
+        self.memosUseCase = memosUseCase
+        self.usersUseCase = usersUseCase
+        self.alarmExecutionsUseCase = alarmExecutionsUseCase
         self.dateProvider = dateProvider
     }
     
@@ -36,20 +36,8 @@ public struct HomeReducer: Reducer {
         case .loadHomeData:
             return [
                 Effect { emitter in
-                    do {
-                        guard let user = try await userUseCase.getCurrentUser() else {
-                            throw NSError(domain: "HomeReducer", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])
-                        }
-                        let today = dateProvider()
-                        async let memosTask = memoUseCase.fetchAll(userId: user.id)
-                        async let executionsTask = alarmExecutionUseCase.getExecutions(userId: user.id, date: today)
-                        let memos = try await memosTask
-                        let executions = try await executionsTask
-                        logger.debug("[HomeReducer] Executions count: \(executions.count)")
-                        emitter.send(.setHomeData(wakeDuration: Self.bestWakeDuration(from: executions), memos: memos))
-                    } catch {
-                        logger.error("HomeReducer load data failed: \(error)")
-                    }
+                        
+    
                 }
             ]
             
@@ -114,7 +102,7 @@ public struct HomeReducer: Reducer {
         calendar.startOfDay(for: date)
     }
     
-    private func reminderSortPredicate(_ lhs: MemoEntity, _ rhs: MemoEntity) -> Bool {
+    private func reminderSortPredicate(_ lhs: MemosEntity, _ rhs: MemosEntity) -> Bool {
         let leftDate = lhs.createdAt ?? Date.distantPast
         let rightDate = rhs.createdAt ?? Date.distantPast
         if leftDate != rightDate {
@@ -127,7 +115,7 @@ public struct HomeReducer: Reducer {
         Locale(identifier: LocalizationController.shared.languageCode)
     }
     
-    private static func bestWakeDuration(from executions: [AlarmExecutionEntity]) -> Int? {
+    private static func bestWakeDuration(from executions: [AlarmExecutionsEntity]) -> Int? {
         executions.compactMap(\.totalWakeDuration).min()
     }
 }

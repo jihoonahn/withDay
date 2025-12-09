@@ -1,15 +1,15 @@
 import Foundation
 import AlarmExecutionsDomainInterface
 
-public final class AlarmExecutionUseCaseImpl: AlarmExecutionsUseCase {
+public final class AlarmExecutionsUseCaseImpl: AlarmExecutionsUseCase {
     private let alarmExecutionRepository: AlarmExecutionsRepository
     
     public init(alarmExecutionRepository: AlarmExecutionsRepository) {
         self.alarmExecutionRepository = alarmExecutionRepository
     }
     
-    public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {
-        return try await alarmExecutionRepository.startExecution(alarmId: alarmId)
+    public func startExecution(userId: UUID, alarmId: UUID) async throws -> AlarmExecutionsEntity {
+        return try await alarmExecutionRepository.startExecution(userId: userId, alarmId: alarmId)
     }
     
     public func updateExecution(_ execution: AlarmExecutionsEntity) async throws {

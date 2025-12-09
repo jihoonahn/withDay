@@ -1,7 +1,7 @@
 import Foundation
 import Rex
 import Utility
-import MemoDomainInterface
+import MemosDomainInterface
 
 public struct MemoState: StateType {
     public enum Flow: Sendable, Codable, CaseIterable {
@@ -11,7 +11,7 @@ public struct MemoState: StateType {
     }
 
     public var flow: Flow = .all
-    public var memos: [MemoEntity] = []
+    public var memos: [MemosEntity] = []
 
     public var addMemoTitle = ""
     public var addMemoContent = ""
@@ -19,7 +19,7 @@ public struct MemoState: StateType {
     public var addMemoReminderTime: Date? = nil
     public var addMemoHasReminder = false
     
-    public var editMemoState: MemoEntity? = nil
+    public var editMemoState: MemosEntity? = nil
     
     public var editMemoTitle = ""
     public var editMemoContent = ""

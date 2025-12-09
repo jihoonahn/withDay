@@ -12,8 +12,8 @@ public final class AlarmsRepositoryImpl: AlarmsRepository {
         self.alarmsService = alarmsService
     }
     
-    public func fetchAlarms() async throws -> [AlarmsEntity] {
-        try await alarmsService.getAlarms()
+    public func fetchAlarms(userId: UUID) async throws -> [AlarmsEntity] {
+        try await alarmsService.getAlarms(userId: userId)
     }
     
     public func createAlarm(_ alarm: AlarmsEntity) async throws {

@@ -13,8 +13,8 @@ public final class AlarmExecutionRepositoryImpl: AlarmExecutionsRepository {
         self.alarmExecutionsService = alarmExecutionsService
     }
 
-    public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {
-        return try await alarmExecutionsService.startExecution(alarmId: alarmId)
+    public func startExecution(userId: UUID, alarmId: UUID) async throws -> AlarmExecutionsEntity {
+        return try await alarmExecutionsService.startExecution(userId: userId, alarmId: alarmId)
     }
     
     public func updateExecution(_ execution: AlarmExecutionsEntity) async throws {

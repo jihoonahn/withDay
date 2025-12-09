@@ -2,9 +2,9 @@ import SwiftUI
 import Rex
 import MainFeatureInterface
 import HomeFeatureInterface
-import AlarmFeatureInterface
-import RankFeatureInterface
-import SettingFeatureInterface
+import AlarmsFeatureInterface
+import SchedulesFeatureInterface
+import SettingsFeatureInterface
 import MotionFeatureInterface
 import Dependency
 import RefineUIIcons
@@ -15,9 +15,9 @@ public struct MainView: View {
     @State private var state = MainState()
 
     private let homeFactory: HomeFactory
-    private let alarmFactory: AlarmFactory
-    private let rankFactory: RankFactory
-    private let settingFactory: SettingFactory
+    private let alarmsFactory: AlarmFactory
+    private let schedulesFactory: SchedulesFactory
+    private let settingsFactory: SettingFactory
     private let motionFactory: MotionFactory
 
     public init(
@@ -25,9 +25,9 @@ public struct MainView: View {
     ) {
         self.interface = interface
         self.homeFactory = DIContainer.shared.resolve(HomeFactory.self)
-        self.alarmFactory = DIContainer.shared.resolve(AlarmFactory.self)
-        self.rankFactory = DIContainer.shared.resolve(RankFactory.self)
-        self.settingFactory = DIContainer.shared.resolve(SettingFactory.self)
+        self.alarmsFactory = DIContainer.shared.resolve(AlarmFactory.self)
+        self.schedulesFactory = DIContainer.shared.resolve(SchedulesFactory.self)
+        self.settingsFactory = DIContainer.shared.resolve(SettingFactory.self)
         self.motionFactory = DIContainer.shared.resolve(MotionFactory.self)
     }
     
@@ -50,11 +50,11 @@ public struct MainView: View {
         )) { _ in
             switch state.sheetFlow {
             case .alarm:
-                alarmFactory.makeView()
+                alarmsFactory.makeView()
             case .schedule:
-                rankFactory.makeView()
+                schedulesFactory.makeView()
             case .settings:
-                settingFactory.makeView()
+                settingsFactory.makeView()
             case .none:
                 EmptyView()
             }

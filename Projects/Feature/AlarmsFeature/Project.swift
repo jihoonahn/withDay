@@ -20,7 +20,7 @@ struct AlarmsFeature: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "AlarmsDomain", type: .interface)
+                    .domain(target: "AlarmsDomain", type: .interface),
                 ]
             )
             Example(

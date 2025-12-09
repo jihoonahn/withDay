@@ -1,31 +1,30 @@
 import Foundation
 import AlarmKit
-import AlarmScheduleDomainInterface
+import AlarmsDomainInterface
 
-public final class AlarmScheduleUseCaseImpl: AlarmScheduleUseCase {
+public final class AlarmScheduleUseCaseImpl: AlarmSchedulesUseCase {
+    private let repository: AlarmSchedulesRepository
 
-    private let repository: AlarmScheduleRepository
-    
-    public init(repository: AlarmScheduleRepository) {
+    public init(repository: AlarmSchedulesRepository) {
         self.repository = repository
     }
 
-    public func scheduleAlarm(_ alarm: AlarmScheduleEntity) async throws {
+    public func scheduleAlarm(_ alarm: AlarmsEntity) async throws {
         try await repository.scheduleAlarm(alarm)
     }
-    
+
     public func cancelAlarm(_ alarmId: UUID) async throws {
         try await repository.cancelAlarm(alarmId)
     }
-    
-    public func updateAlarm(_ alarm: AlarmScheduleEntity) async throws {
+
+    public func updateAlarm(_ alarm: AlarmsEntity) async throws {
         try await repository.updateAlarm(alarm)
     }
-    
+
     public func toggleAlarm(_ alarmId: UUID, isEnabled: Bool) async throws {
         try await repository.toggleAlarm(alarmId, isEnabled: isEnabled)
     }
-    
+
     public func stopAlarm(_ alarmId: UUID) async throws {
         try await repository.stopAlarm(alarmId)
     }

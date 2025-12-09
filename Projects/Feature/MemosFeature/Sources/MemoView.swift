@@ -1,10 +1,10 @@
 import Foundation
 import SwiftUI
 import Rex
-import MemoFeatureInterface
+import MemosFeatureInterface
+import MemosDomainInterface
 import Designsystem
 import Localization
-import MemoDomainInterface
 
 public struct MemoView: View {
     let interface: MemoInterface

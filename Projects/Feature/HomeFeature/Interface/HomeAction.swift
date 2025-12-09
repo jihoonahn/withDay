@@ -1,11 +1,11 @@
 import Foundation
 import Rex
-import MemoDomainInterface
+import MemosDomainInterface
 
 public enum HomeAction: ActionType {
     case viewAppear
     case loadHomeData
-    case setHomeData(wakeDuration: Int?, memos: [MemoEntity])
+    case setHomeData(wakeDuration: Int?, memos: [MemosEntity])
     case showAllMemos(Bool)
     case showAddMemos(Bool)
     case showEditMemos(Bool)

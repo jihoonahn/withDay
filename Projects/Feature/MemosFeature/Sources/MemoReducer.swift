@@ -1,22 +1,22 @@
 import Foundation
 import Rex
-import MemoFeatureInterface
-import MemoDomainInterface
-import UserDomainInterface
+import MemosFeatureInterface
+import MemosDomainInterface
+import UsersDomainInterface
 import Localization
 import BaseFeature
 import Utility
 
 public struct MemoReducer: Reducer {
-    private let userUseCase: UserUseCase
-    private let memoUseCase: MemoUseCase
+    private let usersUseCase: UsersUseCase
+    private let memosUseCase: MemosUseCase
 
     public init(
-        memoUseCase: MemoUseCase,
-        userUseCase: UserUseCase,
+        memosUseCase: MemosUseCase,
+        usersUseCase: UsersUseCase,
     ) {
-        self.memoUseCase = memoUseCase
-        self.userUseCase = userUseCase
+        self.memosUseCase = memosUseCase
+        self.usersUseCase = usersUseCase
     }
 
     public func reduce(state: inout MemoState, action: MemoAction) -> [Effect<MemoAction>] {
@@ -25,12 +25,12 @@ public struct MemoReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        guard let user = try await userUseCase.getCurrentUser() else {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
                             emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
                             return
                         }
                         
-                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        let memos = try await memosUseCase.getMemos(userId: user.id)
                         emitter.send(.setMemos(memos))
                     } catch {
                         emitter.send(.showMemoToast("메모를 불러오는데 실패했습니다: \(error.localizedDescription)"))
@@ -58,7 +58,7 @@ public struct MemoReducer: Reducer {
         case let .addMemoHasReminderDidChange(hasReminder):
             state.addMemoHasReminder = hasReminder
             return []
-        case let .addMemo(title, content, scheduledDate, reminderTimeString, hasReminder):
+        case let .addMemo(title, description, scheduledDate, reminderTimeString, hasReminder):
             let reminderTime: String?
             if hasReminder, let time = reminderTimeString {
                 let calendar = Calendar.current
@@ -71,27 +71,28 @@ public struct MemoReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        guard let user = try await userUseCase.getCurrentUser() else {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
                             emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
                             return
                         }
                         
-                        let memo = MemoEntity(
+                        let memo = MemosEntity(
                             id: UUID(),
                             userId: user.id,
                             title: title,
-                            content: content,
+                            description: description,
+                            blocks: [],
                             alarmId: nil,
                             reminderTime: reminderTime,
                             createdAt: scheduledDate,
                             updatedAt: Date()
                         )
                         
-                        try await memoUseCase.create(memo)
+                        try await memosUseCase.createMemo(memo)
                         emitter.send(.showMemoToast("메모를 저장했습니다."))
                         emitter.send(.setMemoFlow(.all))
                         
-                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        let memos = try await memosUseCase.getMemos(userId: user.id)
                         emitter.send(.setMemos(memos))
                     } catch {
                         emitter.send(.showMemoToast("메모를 저장하는데 실패했습니다: \(error.localizedDescription)"))
@@ -134,26 +135,27 @@ public struct MemoReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        guard let user = try await userUseCase.getCurrentUser() else {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
                             emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
                             return
                         }
                         
-                        let updatedMemo = MemoEntity(
+                        let updatedMemo = MemosEntity(
                             id: existingMemo.id,
                             userId: existingMemo.userId,
                             title: title,
-                            content: content,
+                            description: content,
+                            blocks: [],
                             alarmId: existingMemo.alarmId,
                             reminderTime: reminderTimeString,
                             createdAt: scheduledDate,
                             updatedAt: Date()
                         )
                         
-                        try await memoUseCase.update(updatedMemo)
+                        try await memosUseCase.updateMemo(updatedMemo)
                         emitter.send(.showMemoToast("메모를 수정했습니다."))
                         
-                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        let memos = try await memosUseCase.getMemos(userId: user.id)
                         emitter.send(.setMemos(memos))
                     } catch {
                         emitter.send(.showMemoToast("메모를 수정하는데 실패했습니다: \(error.localizedDescription)"))
@@ -164,13 +166,13 @@ public struct MemoReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        guard let user = try await userUseCase.getCurrentUser() else {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
                             emitter.send(.showMemoToast("사용자 정보를 찾을 수 없습니다."))
                             return
                         }
-                        try await memoUseCase.delete(id: id)
+                        try await memosUseCase.deleteMemo(id: id)
                         emitter.send(.showMemoToast("메모를 삭제했습니다."))
-                        let memos = try await memoUseCase.fetchAll(userId: user.id)
+                        let memos = try await memosUseCase.getMemos(userId: user.id)
                         emitter.send(.setMemos(memos))
                     } catch {
                         emitter.send(.showMemoToast("메모를 삭제하는데 실패했습니다: \(error.localizedDescription)"))
@@ -188,7 +190,7 @@ public struct MemoReducer: Reducer {
         case let .showEditMemo(item):
             state.editMemoState = item
             state.editMemoTitle = item.title
-            state.editMemoContent = item.content
+            state.editMemoContent = item.description
             state.editMemoScheduledDate = Calendar.current.startOfDay(for: item.createdAt ?? Date())
             if let reminderTimeString = item.reminderTime,
                let date = DateFormatter.reminderTimeFormatter.date(from: reminderTimeString) {

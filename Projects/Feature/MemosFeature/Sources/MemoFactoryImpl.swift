@@ -1,9 +1,9 @@
 import SwiftUI
 import Rex
-import MemoFeatureInterface
-import MemoDomainInterface
-import UserDomainInterface
-import AlarmExecutionDomainInterface
+import MemosFeatureInterface
+import MemosDomainInterface
+import UsersDomainInterface
+import AlarmExecutionsDomainInterface
 import Dependency
 
 public struct MemoFactoryImpl: MemoFactory {
@@ -25,14 +25,14 @@ public struct MemoFactoryImpl: MemoFactory {
 
 public extension MemoFactoryImpl {
     static func create(
-        memoUseCase: MemoUseCase,
-        userUseCase: UserUseCase
+        memosUseCase: MemosUseCase,
+        usersUseCase: UsersUseCase
     ) -> MemoFactoryImpl {
         let store = Store<MemoReducer>(
             initialState: MemoState(),
             reducer: MemoReducer(
-                memoUseCase: memoUseCase,
-                userUseCase: userUseCase
+                memosUseCase: memosUseCase,
+                usersUseCase: usersUseCase
             )
         )
         return MemoFactoryImpl(store: store)
@@ -40,14 +40,14 @@ public extension MemoFactoryImpl {
     
     static func create(
         initialState: MemoState,
-        memoUseCase: MemoUseCase,
-        userUseCase: UserUseCase
+        memosUseCase: MemosUseCase,
+        usersUseCase: UsersUseCase
     ) -> MemoFactoryImpl {
         let store = Store<MemoReducer>(
             initialState: initialState,
             reducer: MemoReducer(
-                memoUseCase: memoUseCase,
-                userUseCase: userUseCase
+                memosUseCase: memosUseCase,
+                usersUseCase: usersUseCase
             )
         )
         return MemoFactoryImpl(store: store)

@@ -7,7 +7,20 @@ public final class MemosModel {
     public var userId: UUID
     public var title: String
     public var content: String
-    public var blocks: [MemoBlockModel]
+    public var blocksData: Data?
+    @Transient public var blocks: [MemoBlockModel] {
+        get {
+            guard let blocksData = blocksData else { return [] }
+            guard let decoded = try? JSONDecoder().decode([MemoBlockModel].self, from: blocksData) else {
+                return []
+            }
+            return decoded
+        }
+        set {
+            blocksData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
     public var alarmId: UUID
     public var reminderTime: String?
     public var createdAt: Date
@@ -28,7 +41,8 @@ public final class MemosModel {
         self.userId = userId
         self.title = title
         self.content = content
-        self.blocks = blocks
+        // blocksData를 직접 설정 (blocks setter를 통해 설정하면 SwiftData 매크로가 감지함)
+        self.blocksData = try? JSONEncoder().encode(blocks)
         self.reminderTime = reminderTime
         self.alarmId = alarmId
         self.createdAt = createdAt
@@ -36,8 +50,8 @@ public final class MemosModel {
     }
 }
 
-public struct MemoBlockModel {
-    public enum BlockType {
+public struct MemoBlockModel: Codable {
+    public enum BlockType: String, Codable {
         case text
         case heading
         case checklist

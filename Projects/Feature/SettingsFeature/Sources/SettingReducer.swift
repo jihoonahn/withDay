@@ -1,7 +1,7 @@
 import Foundation
 import Rex
-import SettingFeatureInterface
-import UserDomainInterface
+import SettingsFeatureInterface
+import UsersDomainInterface
 import LocalizationDomainInterface
 import NotificationDomainInterface
 import Dependency
@@ -9,22 +9,22 @@ import BaseFeature
 import Localization
 
 public struct SettingReducer: Reducer {
-    private let userUseCase: UserUseCase
+    private let usersUseCase: UsersUseCase
     private let localizationUseCase: LocalizationUseCase
     private let notificationUseCase: NotificationUseCase
     
     public init(
-        userUseCase: UserUseCase,
+        usersUseCase: UsersUseCase,
         localizationUseCase: LocalizationUseCase,
         notificationUseCase: NotificationUseCase
     ) {
-        self.userUseCase = userUseCase
+        self.usersUseCase = usersUseCase
         self.localizationUseCase = localizationUseCase
         self.notificationUseCase = notificationUseCase
     }
     
     private func getCurrentUserId() async throws -> UUID {
-        guard let user = try await userUseCase.getCurrentUser() else {
+        guard let user = try await usersUseCase.getCurrentUser() else {
             throw NSError(domain: "SettingReducer", code: 404, userInfo: [NSLocalizedDescriptionKey: "User not found"])
         }
         return user.id
@@ -36,7 +36,7 @@ public struct SettingReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        let user = try await userUseCase.getCurrentUser()
+                        let user = try await usersUseCase.getCurrentUser()
                         let name = user?.displayName ?? ""
                         let email = user?.email ?? ""
                         emitter.send(.setUserInformation(name: name, email: email))
@@ -64,14 +64,14 @@ public struct SettingReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        guard var currentUser = try await userUseCase.getCurrentUser() else {
+                        guard var currentUser = try await usersUseCase.getCurrentUser() else {
                             logger.error("Save User failed: Current user not found")
                             emitter.send(.showToast("SettingToastUserNotFound".localized()))
                             return
                         }
                         print(currentUser)
                         currentUser.displayName = trimmedName.isEmpty ? nil : trimmedName
-                        try await userUseCase.updateUser(currentUser)
+                        try await usersUseCase.updateUser(currentUser)
                         emitter.send(.setUserInformation(name: currentUser.displayName ?? "", email: currentUser.email ?? ""))
                         emitter.send(.showToast("SettingToastProfileSaved".localized()))
                     } catch {
@@ -89,7 +89,7 @@ public struct SettingReducer: Reducer {
             return [
                 Effect { emitter in
                     do {
-                        try await userUseCase.logout()
+                        try await usersUseCase.logout()
                         await GlobalEventBus.shared.publish(RootEvent.logout)
                         try? await Task.sleep(nanoseconds: 100_000_000)
                     } catch {

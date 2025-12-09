@@ -12,8 +12,8 @@ public final class SchedulesRepositoryImpl: SchedulesRepository {
         self.schedulesService = schedulesService
     }
 
-    public func fetchSchedules() async throws -> [SchedulesEntity] {
-        try await schedulesService.getSchedules()
+    public func fetchSchedules(userId: UUID) async throws -> [SchedulesEntity] {
+        try await schedulesService.getSchedules(userId: userId)
     }
     
     public func fetchSchedule(id: UUID) async throws -> SchedulesEntity {

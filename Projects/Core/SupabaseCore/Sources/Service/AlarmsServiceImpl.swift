@@ -15,13 +15,11 @@ public final class AlarmsServiceImpl: AlarmsService {
         self.supabaseService = supabaseService
     }
 
-    public func getAlarms() async throws -> [AlarmsEntity]{
-        let session = try await client.auth.session
-        let user = session.user.id
+    public func getAlarms(userId: UUID) async throws -> [AlarmsEntity]{
         let alarms: [AlarmsDTO] = try await client
             .from("alarms")
             .select()
-            .eq("user_id", value: user.uuidString)
+            .eq("user_id", value: userId.uuidString)
             .order("created_at")
             .execute()
             .value
@@ -29,7 +27,7 @@ public final class AlarmsServiceImpl: AlarmsService {
         return alarms.map { $0.toEntity() }
     }
     
-    public func createAlarm(_ alarm: AlarmsDomainInterface.AlarmsEntity) async throws {
+    public func createAlarm(_ alarm: AlarmsEntity) async throws {
         let dto = AlarmsDTO(from: alarm)
 
         try await client
@@ -38,7 +36,7 @@ public final class AlarmsServiceImpl: AlarmsService {
             .execute()
     }
     
-    public func updateAlarm(_ alarm: AlarmsDomainInterface.AlarmsEntity) async throws {
+    public func updateAlarm(_ alarm: AlarmsEntity) async throws {
         let dto = AlarmsDTO(from: alarm)
 
         try await client

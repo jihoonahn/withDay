@@ -1,38 +1,23 @@
 import Foundation
-import AlarmExecutionDomainInterface
+import AlarmExecutionsDomainInterface
 
-@MainActor
-public final class AlarmExecutionUseCaseImpl: AlarmExecutionUseCase {
+public final class AlarmExecutionsUseCaseImpl: AlarmExecutionsUseCase {
 
-    private let alarmExecutionRepository: AlarmExecutionRepository
+    private let alarmExecutionRepository: AlarmExecutionsRepository
     
-    public init(alarmExecutionRepository: AlarmExecutionRepository) {
+    public init(alarmExecutionRepository: AlarmExecutionsRepository) {
         self.alarmExecutionRepository = alarmExecutionRepository
     }
-    
-    public func getExecutions(userId: UUID, date: Date) async throws -> [AlarmExecutionEntity] {
-        return try await alarmExecutionRepository.fetchAll(userId: userId, date: date)
+
+    public func startExecution(userId: UUID, alarmId: UUID) async throws -> AlarmExecutionsEntity {
+        try await alarmExecutionRepository.startExecution(userId: userId, alarmId: alarmId)
     }
     
-    public func saveExecution(_ execution: AlarmExecutionEntity) async throws {
-        if execution.createdAt == Date() {
-            try await alarmExecutionRepository.create(execution)
-        } else {
-            try await alarmExecutionRepository.update(execution)
-        }
-    }
-    
-    public func markMotionDetected(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
-        try await alarmExecutionRepository.updateMotion(
-            id: id,
-            motionData: motionData,
-            wakeConfidence: wakeConfidence,
-            postureChanges: postureChanges,
-            isMoving: isMoving
-        )
+    public func updateExecution(_ execution: AlarmExecutionsEntity) async throws {
+        try await alarmExecutionRepository.updateExecution(execution)
     }
     
     public func completeExecution(id: UUID) async throws {
-        try await alarmExecutionRepository.updateExecutionStatus(id: id, status: "completed")
+        try await alarmExecutionRepository.completeExecution(id: id)
     }
 }

@@ -2,16 +2,16 @@ import Foundation
 import SwiftData
 import SwiftDataCoreInterface
 
-public final class AlarmMissionServiceImpl: AlarmMissionService {
+public final class AlarmMissionServiceImpl: AlarmMissionsService {
     private let container: ModelContainer
     
     public init(container: ModelContainer) {
         self.container = container
     }
     
-    public func fetchMissions(alarmId: UUID) async throws -> [AlarmMissionModel] {
+    public func fetchMissions(alarmId: UUID) async throws -> [AlarmMissionsModel] {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmMissionModel>(
+        let descriptor = FetchDescriptor<AlarmMissionsModel>(
             predicate: #Predicate { mission in
                 mission.alarmId == alarmId
             },
@@ -20,16 +20,16 @@ public final class AlarmMissionServiceImpl: AlarmMissionService {
         return try context.fetch(descriptor)
     }
     
-    public func saveMission(_ mission: AlarmMissionModel) async throws {
+    public func saveMission(_ mission: AlarmMissionsModel) async throws {
         let context = await container.mainContext
         context.insert(mission)
         try context.save()
     }
     
-    public func updateMission(_ mission: AlarmMissionModel) async throws {
+    public func updateMission(_ mission: AlarmMissionsModel) async throws {
         let context = await container.mainContext
         let missionId = mission.id
-        let descriptor = FetchDescriptor<AlarmMissionModel>(
+        let descriptor = FetchDescriptor<AlarmMissionsModel>(
             predicate: #Predicate { model in
                 model.id == missionId
             }
@@ -47,7 +47,7 @@ public final class AlarmMissionServiceImpl: AlarmMissionService {
     
     public func deleteMission(id: UUID) async throws {
         let context = await container.mainContext
-        let descriptor = FetchDescriptor<AlarmMissionModel>(
+        let descriptor = FetchDescriptor<AlarmMissionsModel>(
             predicate: #Predicate { mission in
                 mission.id == id
             }

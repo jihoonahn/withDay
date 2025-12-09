@@ -1,8 +1,7 @@
 import SwiftUI
 import Rex
-import MemoFeatureInterface
+import MemosFeatureInterface
 import Designsystem
-import MemoDomainInterface
 import Utility
 
 struct MemoEditView: View {

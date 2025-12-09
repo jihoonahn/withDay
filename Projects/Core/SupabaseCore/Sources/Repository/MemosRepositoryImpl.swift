@@ -28,11 +28,11 @@ public final class MemosRepositoryImpl: MemosRepository {
         try await memosService.getMemo(id: id)
     }
     
-    public func fetchMemos() async throws -> [MemosEntity] {
-        try await memosService.getMemos()
+    public func fetchMemos(userId: UUID) async throws -> [MemosEntity] {
+        try await memosService.getMemos(userId: userId)
     }
     
-    public func searchMemos(keyword: String) async throws -> [MemosEntity] {
-        try await memosService.searchMemos(keyword: keyword)
+    public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
+        try await memosService.searchMemos(userId: userId, keyword: keyword)
     }
 }

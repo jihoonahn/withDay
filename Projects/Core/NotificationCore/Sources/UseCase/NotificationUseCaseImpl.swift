@@ -1,8 +1,9 @@
 import Foundation
 import NotificationDomainInterface
-import AlarmDomainInterface
+import AlarmsDomainInterface
 
 public final class NotificationUseCaseImpl: NotificationUseCase {
+    
     private let repository: NotificationRepository
     
     public init(repository: NotificationRepository) {
@@ -25,7 +26,7 @@ public final class NotificationUseCaseImpl: NotificationUseCase {
         }
     }
     
-    public func scheduleFallbackNotifications(for alarms: [AlarmEntity]) async {
+    public func scheduleFallbackNotifications(for alarms: [AlarmsEntity]) async {
         await repository.scheduleFallbackNotifications(for: alarms)
     }
     

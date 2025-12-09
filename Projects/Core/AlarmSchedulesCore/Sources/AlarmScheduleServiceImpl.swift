@@ -1,26 +1,26 @@
 import Foundation
 import SwiftUI
 import AlarmKit
-import AlarmScheduleCoreInterface
-import AlarmScheduleDomainInterface
+import AlarmSchedulesCoreInterface
+import AlarmsDomainInterface
 import Utility
 import AppIntents
 
 // MARK: - AlarmScheduleServiceImpl
 
-public final class AlarmScheduleServiceImpl: AlarmScheduleService {
+public final class AlarmSchedulesServiceImpl: AlarmSchedulesService {
 
     // MARK: - Properties
     private let alarmManager = AlarmManager.shared
     private let calendar = Calendar.current
-    private var cachedEntities: [UUID: AlarmScheduleEntity] = [:]
+    private var cachedEntities: [UUID: AlarmsEntity] = [:]
     private var cachedAlarms: [UUID: Alarm] = [:]
     private var cachedSchedules: [UUID: Alarm.Schedule] = [:]
 
     public init() {}
     // MARK: - Public Methods
 
-    public func scheduleAlarm(_ alarm: AlarmScheduleEntity) async throws {
+    public func scheduleAlarm(_ alarm: AlarmsEntity) async throws {
         // 권한 확인
         guard await checkAuthorization() else {
             throw AlarmServiceError.notificationAuthorizationDenied
@@ -157,7 +157,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
         cachedAlarms.removeValue(forKey: alarmId)
     }
     
-    public func updateAlarm(_ alarm: AlarmScheduleDomainInterface.AlarmScheduleEntity) async throws {
+    public func updateAlarm(_ alarm: AlarmsEntity) async throws {
         try await cancelAlarm(alarm.id)
         try await scheduleAlarm(alarm)
     }
@@ -179,7 +179,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
         try alarmManager.stop(id: alarmId)
     }
 
-    public func getAlarmStatus(alarmId: UUID) async throws -> AlarmScheduleCoreInterface.AlarmStatus? {
+    public func getAlarmStatus(alarmId: UUID) async throws -> AlarmSchedulesCoreInterface.AlarmStatus? {
         let alarms = try alarmManager.alarms
         guard let alarm = alarms.first(where: { $0.id == alarmId }) else {
             return nil
@@ -219,7 +219,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
     }
     
     /// 알람 엔티티로부터 다음 알람 시간 계산
-    private func calculateNextAlarmTime(from alarm: AlarmScheduleEntity) -> Date? {
+    private func calculateNextAlarmTime(from alarm: AlarmsEntity) -> Date? {
         // 시간 파싱
         let comps = alarm.time.split(separator: ":").compactMap { Int($0) }
         guard comps.count == 2 else {
@@ -294,7 +294,7 @@ public final class AlarmScheduleServiceImpl: AlarmScheduleService {
     
     /// Supabase에서 알람 목록을 가져와서 AlarmKit에 동기화
     /// - Parameter alarms: 동기화할 알람 엔티티 목록
-    public func syncAlarms(_ alarms: [AlarmScheduleEntity]) async throws {
+    public func syncAlarms(_ alarms: [AlarmsEntity]) async throws {
         // 권한 확인
         guard await checkAuthorization() else {
             throw AlarmServiceError.notificationAuthorizationDenied

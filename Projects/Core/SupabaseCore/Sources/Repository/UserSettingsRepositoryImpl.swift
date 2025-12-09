@@ -11,8 +11,8 @@ public final class UserSettingsRepositoryImpl: UserSettingsRepository {
         self.userSettingsService = userSettingsService
     }
 
-    public func fetchSettings() async throws -> UserSettingsEntity? {
-        return try await userSettingsService.fetchSettings()
+    public func fetchSettings(userId: UUID) async throws -> UserSettingsEntity? {
+        return try await userSettingsService.fetchSettings(userId: userId)
     }
 
     public func updateSettings(_ settings: UserSettingsEntity) async throws {

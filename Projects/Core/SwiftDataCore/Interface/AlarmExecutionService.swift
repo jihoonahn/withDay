@@ -11,7 +11,7 @@ public enum AlarmExecutionServiceError: Error, LocalizedError {
     }
 }
 
-public protocol AlarmExecutionService: Sendable {
+public protocol AlarmExecutionsService: Sendable {
     func fetchExecution(userId: UUID) async throws -> AlarmExecutionsModel
     func fetchExecutions(userId: UUID) async throws -> [AlarmExecutionsModel]
     func fetchExecutionsByAlarm(alarmId: UUID) async throws -> [AlarmExecutionsModel]

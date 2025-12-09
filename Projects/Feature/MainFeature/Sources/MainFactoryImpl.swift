@@ -36,4 +36,3 @@ public extension MainFactoryImpl {
         return MainFactoryImpl(store: store)
     }
 }
-

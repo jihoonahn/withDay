@@ -3,11 +3,11 @@ import SwiftUI
 import RefineUIIcons
 import Rex
 import HomeFeatureInterface
-import MemoFeatureInterface
+import MemosFeatureInterface
 import Designsystem
 import Dependency
 import Localization
-import MemoDomainInterface
+import MemosDomainInterface
 import Utility
 
 public struct HomeView: View {

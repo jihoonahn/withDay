@@ -1,6 +1,6 @@
 import SwiftUI
 import Rex
-import MemoFeatureInterface
+import MemosFeatureInterface
 import Designsystem
 import Utility
 

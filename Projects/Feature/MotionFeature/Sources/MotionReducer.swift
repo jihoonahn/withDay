@@ -1,38 +1,34 @@
 import Foundation
 import Rex
 import MotionFeatureInterface
-import UserDomainInterface
-import MotionRawDataDomainInterface
-import AlarmScheduleDomainInterface
+import UsersDomainInterface
+import AlarmsDomainInterface
+import AlarmExecutionsDomainInterface
 import MotionDomainInterface
-import AlarmExecutionDomainInterface
 import Localization
 import BaseFeature
 import Dependency
 
 public struct MotionReducer: Reducer {
-    private let userUseCase: UserUseCase
-    private let motionRawDataUseCase: MotionRawDataUseCase
-    private let alarmScheduleUseCase: AlarmScheduleUseCase
+    private let usersUseCase: UsersUseCase
+    private let alarmSchedulesUseCase: AlarmSchedulesUseCase
+    private let alarmExecutionsUseCase: AlarmExecutionsUseCase
     private let motionUseCase: MotionUseCase
-    private let alarmExecutionUseCase: AlarmExecutionUseCase
     
     public init(
-        userUseCase: UserUseCase,
-        motionRawDataUseCase: MotionRawDataUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        motionUseCase: MotionUseCase,
-        alarmExecutionUseCase: AlarmExecutionUseCase
+        usersUseCase: UsersUseCase,
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        alarmExecutionsUseCase: AlarmExecutionsUseCase,
+        motionUseCase: MotionUseCase
     ) {
-        self.userUseCase = userUseCase
-        self.motionRawDataUseCase = motionRawDataUseCase
-        self.alarmScheduleUseCase = alarmScheduleUseCase
+        self.usersUseCase = usersUseCase
+        self.alarmSchedulesUseCase = alarmSchedulesUseCase
+        self.alarmExecutionsUseCase = alarmExecutionsUseCase
         self.motionUseCase = motionUseCase
-        self.alarmExecutionUseCase = alarmExecutionUseCase
     }
     
     private func getCurrentUserId() async throws -> UUID {
-        guard let user = try await userUseCase.getCurrentUser() else {
+        guard let user = try await usersUseCase.getCurrentUser() else {
             throw NSError(domain: "MotionReducer", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not found"])
         }
         return user.id
@@ -48,25 +44,15 @@ public struct MotionReducer: Reducer {
     /// - Returns: 실행할 Effect 배열
     private func handleMotionDetected(
         count: Int,
-        motionData: MotionRawDataEntity?,
         state: inout MotionState
     ) -> [Effect<MotionAction>] {
-        print("📲 [MotionReducer] motionDetected 액션 수신: count=\(count), motionData=\(motionData != nil ? "있음" : "없음")")
-        
         // 상태 업데이트
         let previousCount = state.motionCount
         state.motionCount = count
         print("📊 [MotionReducer] 모션 카운트 업데이트: \(previousCount) -> \(count)/\(state.requiredCount)")
         
         var effects: [Effect<MotionAction>] = []
-        
-        // 1. 모션 데이터 저장 (있는 경우)
-        if let motionData = motionData {
-            effects.append(createSaveMotionDataEffect(motionData: motionData))
-        } else {
-            print("⚠️ [MotionReducer] motionData가 nil입니다")
-        }
-        
+
         // 2. 필요한 카운트 도달 여부 확인
         if count >= state.requiredCount {
             effects.append(contentsOf: handleMotionCountReached(state: &state))
@@ -76,26 +62,6 @@ public struct MotionReducer: Reducer {
         
         return effects
     }
-    
-    /// 모션 데이터 저장 Effect 생성
-    private func createSaveMotionDataEffect(motionData: MotionRawDataEntity) -> Effect<MotionAction> {
-        Effect { [self] continuation in
-            do {
-                print("💾 [MotionReducer] 모션 데이터 저장 시작... executionId=\(motionData.executionId)")
-                try await self.motionRawDataUseCase.create(motionData)
-                print("✅ [MotionReducer] 모션 데이터 저장 완료")
-            } catch {
-                let errorString = String(describing: error)
-                // FK 제약 위반 (23503)인 경우에도 재시도하지 않고 로그만 출력
-                if errorString.contains("23503") || errorString.contains("motion_raw_data_execution_id_fkey") {
-                    print("❌ [MotionReducer] execution FK 제약 위반: \(errorString)")
-                } else {
-                    print("❌ [MotionReducer] 모션 데이터 저장 실패: \(error)")
-                }
-            }
-        }
-    }
-    
     /// 필요한 모션 카운트 도달 시 처리
     /// - Parameter state: 현재 상태 (inout)
     /// - Returns: 실행할 Effect 배열
@@ -115,10 +81,9 @@ public struct MotionReducer: Reducer {
             Effect { [self] continuation in
                 print("🛑 [MotionReducer] 모션 감지 완료 - 알람 중지 시작: \(alarmId)")
                 do {
-                    try await self.alarmScheduleUseCase.stopAlarm(alarmId)
-                    print("✅ [MotionReducer] 알람 중지 완료: \(alarmId)")
+                    try await self.alarmSchedulesUseCase.stopAlarm(alarmId)
                 } catch {
-                    print("⚠️ [MotionReducer] 알람 중지에 실패했습니다.")
+                    print("Failed to Motion Reducer: stopAlarm(\(alarmId))")
                 }
                 continuation.send(.alarmStopped(alarmId: alarmId))
             }
@@ -157,7 +122,6 @@ public struct MotionReducer: Reducer {
         case .motionDetected(let count, let motionData):
             return handleMotionDetected(
                 count: count,
-                motionData: motionData,
                 state: &state
             )
         case .stopMonitoring:

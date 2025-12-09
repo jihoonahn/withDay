@@ -54,9 +54,7 @@ public final class MemosServiceImpl: MemosService {
         return memo.toEntity()
     }
     
-    public func getMemos() async throws -> [MemosEntity] {
-        let session = try await client.auth.session
-        let userId = session.user.id
+    public func getMemos(userId: UUID) async throws -> [MemosEntity] {
         let memos: [MemosDTO] = try await client
             .from("memos")
             .select()
@@ -68,9 +66,7 @@ public final class MemosServiceImpl: MemosService {
         return memos.map { $0.toEntity() }
     }
     
-    public func searchMemos(keyword: String) async throws -> [MemosEntity] {
-        let session = try await client.auth.session
-        let userId = session.user.id
+    public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
         let memos: [MemosDTO] = try await client
             .from("memos")
             .select()

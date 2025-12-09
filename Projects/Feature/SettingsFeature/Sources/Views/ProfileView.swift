@@ -1,6 +1,6 @@
 import SwiftUI
 import Designsystem
-import SettingFeatureInterface
+import SettingsFeatureInterface
 import Localization
 
 struct ProfileView: View {

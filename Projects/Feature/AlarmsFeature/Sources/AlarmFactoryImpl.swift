@@ -1,9 +1,9 @@
 import SwiftUI
 import Rex
-import AlarmFeatureInterface
-import AlarmDomainInterface
-import AlarmScheduleDomainInterface
-import UserDomainInterface
+import AlarmsFeatureInterface
+import AlarmsDomainInterface
+import AlarmSchedulesDomainInterface
+import UsersDomainInterface
 
 public struct AlarmFactoryImpl: AlarmFactory {
     private let store: Store<AlarmReducer>
@@ -25,16 +25,16 @@ public struct AlarmFactoryImpl: AlarmFactory {
 
 public extension AlarmFactoryImpl {
     static func create(
-        alarmUseCase: AlarmUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        userUseCase: UserUseCase
+        alarmsUseCase: AlarmsUseCase,
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        usersUseCase: UsersUseCase
     ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: AlarmState(),
             reducer: AlarmReducer(
-                alarmUseCase: alarmUseCase,
-                alarmScheduleUseCase: alarmScheduleUseCase,
-                userUseCase: userUseCase
+                alarmsUseCase: alarmsUseCase,
+                alarmSchedulesUseCase: alarmSchedulesUseCase,
+                usersUseCase: usersUseCase
             )
         )
         return AlarmFactoryImpl(store: store)
@@ -42,16 +42,16 @@ public extension AlarmFactoryImpl {
     
     static func create(
         initialState: AlarmState,
-        alarmUseCase: AlarmUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        userUseCase: UserUseCase
+        alarmsUseCase: AlarmsUseCase,
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        usersUseCase: UsersUseCase
     ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: initialState,
             reducer: AlarmReducer(
-                alarmUseCase: alarmUseCase,
-                alarmScheduleUseCase: alarmScheduleUseCase,
-                userUseCase: userUseCase
+                alarmsUseCase: alarmsUseCase,
+                alarmSchedulesUseCase: alarmSchedulesUseCase,
+                usersUseCase: usersUseCase
             )
         )
         return AlarmFactoryImpl(store: store)

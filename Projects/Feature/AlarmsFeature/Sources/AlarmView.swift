@@ -1,8 +1,8 @@
 import SwiftUI
 import Rex
-import AlarmFeatureInterface
-import AlarmDomainInterface
-import UserDomainInterface
+import AlarmsFeatureInterface
+import AlarmsDomainInterface
+import UsersDomainInterface
 import Designsystem
 import Dependency
 import Localization
@@ -184,7 +184,7 @@ public struct AlarmView: View {
 
 // MARK: - AlarmRow
 private struct AlarmRow: View {
-    let alarm: AlarmEntity
+    let alarm: AlarmsEntity
     let onToggle: () -> Void
     let onTap: () -> Void
     
@@ -443,7 +443,7 @@ private struct AddAlarmSheet: View {
 
 // MARK: - EditAlarmSheet
 private struct EditAlarmSheet: View {
-    let alarm: AlarmEntity
+    let alarm: AlarmsEntity
     @Binding var isPresented: Bool
     let onSave: (UUID, String, String?, [Int]) -> Void
     
@@ -452,7 +452,7 @@ private struct EditAlarmSheet: View {
     @State private var selectedDays: Set<Int>
     @State private var isRepeating: Bool
     
-    init(alarm: AlarmEntity, isPresented: Binding<Bool>, onSave: @escaping (UUID, String, String?, [Int]) -> Void) {
+    init(alarm: AlarmsEntity, isPresented: Binding<Bool>, onSave: @escaping (UUID, String, String?, [Int]) -> Void) {
         self.alarm = alarm
         self._isPresented = isPresented
         self.onSave = onSave

@@ -1,32 +1,41 @@
 import Foundation
-import MemoDomainInterface
+import MemosDomainInterface
 import SwiftDataCoreInterface
 
-@MainActor
-public final class MemoRepositoryImpl: MemoRepository {
-    private let memoService: SwiftDataCoreInterface.MemoService
+public final class MemoRepositoryImpl: MemosRepository {
     
-    public init(memoService: SwiftDataCoreInterface.MemoService) {
+    private let memoService: SwiftDataCoreInterface.MemosService
+    
+    public init(memoService: SwiftDataCoreInterface.MemosService) {
         self.memoService = memoService
     }
-    
-    public func fetchAll(userId: UUID) async throws -> [MemoEntity] {
-        let models = try await memoService.fetchMemos(userId: userId)
-        return models.map { MemoDTO.toEntity(from: $0) }
+
+    public func createMemo(_ memo: MemosEntity) async throws {
+        let model = MemosDTO.toModel(from: memo)
+        try await memoService.createMemo(model)
     }
     
-    public func create(_ memo: MemoEntity) async throws {
-        let model = MemoDTO.toModel(from: memo)
-        try await memoService.saveMemo(model)
-    }
-    
-    public func update(_ memo: MemoEntity) async throws {
-        let model = MemoDTO.toModel(from: memo)
+    public func updateMemo(_ memo: MemosEntity) async throws {
+        let model = MemosDTO.toModel(from: memo)
         try await memoService.updateMemo(model)
     }
     
-    public func delete(id: UUID) async throws {
+    public func deleteMemo(id: UUID) async throws {
         try await memoService.deleteMemo(id: id)
     }
+    
+    public func fetchMemo(id: UUID) async throws -> MemosEntity {
+        let model = try await memoService.getMemo(id: id)
+        return MemosDTO.toEntity(from: model)
+    }
+    
+    public func fetchMemos(userId: UUID) async throws -> [MemosEntity] {
+        let models = try await memoService.getMemos(userId: userId)
+        return models.map { MemosDTO.toEntity(from: $0) }
+    }
+    
+    public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
+        let models = try await memoService.searchMemos(userId: userId, keyword: keyword)
+        return models.map { MemosDTO.toEntity(from: $0) }
+    }
 }
-

@@ -1,12 +1,12 @@
 import Rex
-import RankFeatureInterface
+import SchedulesFeatureInterface
 import BaseFeature
 
-public class RankStore: RankInterface {
-    private let store: Store<RankReducer>
-    private var continuation: AsyncStream<RankState>.Continuation?
+public class SchedulesStore: SchedulesInterface {
+    private let store: Store<SchedulesReducer>
+    private var continuation: AsyncStream<SchedulesState>.Continuation?
 
-    public var stateStream: AsyncStream<RankState> {
+    public var stateStream: AsyncStream<SchedulesState> {
         AsyncStream { continuation in
             self.continuation = continuation
             continuation.yield(store.getInitialState())
@@ -19,15 +19,15 @@ public class RankStore: RankInterface {
         }
     }
 
-    public init(store: Store<RankReducer>) {
+    public init(store: Store<SchedulesReducer>) {
         self.store = store
     }
 
-    public func send(_ action: RankAction) {
+    public func send(_ action: SchedulesAction) {
         store.dispatch(action)
     }
 
-    public func getCurrentState() -> RankState {
+    public func getCurrentState() -> SchedulesState {
         return store.getInitialState()
     }
 }

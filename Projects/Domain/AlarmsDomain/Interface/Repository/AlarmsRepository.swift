@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol AlarmsRepository: Sendable {
-    func fetchAlarms() async throws -> [AlarmsEntity]
+    func fetchAlarms(userId: UUID) async throws -> [AlarmsEntity]
     func createAlarm(_ alarm: AlarmsEntity) async throws
     func updateAlarm(_ alarm: AlarmsEntity) async throws
     func deleteAlarm(alarmId: UUID) async throws

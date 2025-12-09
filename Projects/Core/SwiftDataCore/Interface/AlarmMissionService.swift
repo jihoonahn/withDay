@@ -1,9 +1,8 @@
 import Foundation
 
-public protocol AlarmMissionService: Sendable {
-    func fetchMissions(alarmId: UUID) async throws -> [AlarmMissionModel]
-    func saveMission(_ mission: AlarmMissionModel) async throws
-    func updateMission(_ mission: AlarmMissionModel) async throws
+public protocol AlarmMissionsService: Sendable {
+    func fetchMissions(alarmId: UUID) async throws -> [AlarmMissionsModel]
+    func saveMission(_ mission: AlarmMissionsModel) async throws
+    func updateMission(_ mission: AlarmMissionsModel) async throws
     func deleteMission(id: UUID) async throws
 }
-

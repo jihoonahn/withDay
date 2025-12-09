@@ -2,61 +2,49 @@ import Foundation
 import AlarmExecutionsDomainInterface
 import SwiftDataCoreInterface
 
+// MARK: - Repository Implementation
 public final class AlarmExecutionRepositoryImpl: AlarmExecutionsRepository {
 
-    private let alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionService
-    
-    public init(alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionService) {
+    private let alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionsService
+
+    public init(alarmExecutionService: SwiftDataCoreInterface.AlarmExecutionsService) {
         self.alarmExecutionService = alarmExecutionService
     }
 
-    public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {
-        let models = try await alarmExecutionService.fetchExecutions(userId: userId)
+    public func startExecution(userId: UUID, alarmId: UUID) async throws -> AlarmExecutionsEntity {
+        let execution = AlarmExecutionsEntity(
+            id: UUID(),
+            userId: userId,
+            alarmId: alarmId,
+            scheduledTime: Date(),
+            triggeredTime: nil,
+            motionDetectedTime: nil,
+            completedTime: nil,
+            motionCompleted: false,
+            motionAttempts: 0,
+            motionData: Data(),
+            wakeConfidence: nil,
+            postureChanges: nil,
+            snoozeCount: 0,
+            totalWakeDuration: nil,
+            status: "scheduled",
+            viewedMemoIds: [],
+            createdAt: Date(),
+            isMoving: false
+        )
         
-        ㅣ
+        let model = AlarmExecutionsDTO.toModel(from: execution)
+        try await alarmExecutionService.createExecution(model)
+        
+        return execution
     }
     
     public func updateExecution(_ execution: AlarmExecutionsEntity) async throws {
-        <#code#>
-    }
-    
-    public func completeExecution(id: UUID) async throws {
-        <#code#>
-    }
-    
-    public func fetchAll(userId: UUID, date: Date) async throws -> [AlarmExecutionsEntity] {
-        let models = try await alarmExecutionService.fetchExecutions(userId: userId)
-        
-        let calendar = Calendar.current
-        return models
-            .filter { calendar.isDate($0.scheduledTime, inSameDayAs: date) }
-            .map { AlarmExecutionDTO.toEntity(from: $0) }
-    }
-
-    public func fetch(id: UUID) async throws -> AlarmExecutionsEntity? {
-        let model = try await alarmExecutionService.fetchExecution(userId: id)
-        return AlarmExecutionDTO.toEntity(from: model)
-    }
-
-    public func create(_ execution: AlarmExecutionsEntity) async throws {
-        let model = AlarmExecutionDTO.toModel(from: execution)
-        try await alarmExecutionService.createExecution(model)
-    }
-    
-    public func update(_ execution: AlarmExecutionsEntity) async throws {
-        let model = AlarmExecutionDTO.toModel(from: execution)
+        let model = AlarmExecutionsDTO.toModel(from: execution)
         try await alarmExecutionService.updateExecution(model)
     }
     
-    public func updateStatus(id: UUID, status: String) async throws {
-        try await alarmExecutionService.updateExecutionStatus(id: id, status: status)
-    }
-
-    public func updateMotion(id: UUID, motionData: Data, wakeConfidence: Double, postureChanges: Int, isMoving: Bool) async throws {
-        try await alarmExecutionService.updateMotion(id: id, motionData: motionData, wakeConfidence: wakeConfidence, postureChanges: postureChanges, isMoving: isMoving)
-    }
-
-    public func updateExecutionStatus(id: UUID, status: String) async throws {
-        try await alarmExecutionService.updateExecutionStatus(id: id, status: status)
+    public func completeExecution(id: UUID) async throws {
+        try await alarmExecutionService.updateExecutionStatus(id: id, status: "completed")
     }
 }

@@ -1,39 +1,38 @@
 import Foundation
 import AlarmKit
 import Rex
-import AlarmFeatureInterface
-import AlarmDomainInterface
-import AlarmScheduleDomainInterface
-import AlarmScheduleCoreInterface
-import UserDomainInterface
+import AlarmsFeatureInterface
+import AlarmsDomainInterface
+import AlarmSchedulesCoreInterface
+import UsersDomainInterface
 import Dependency
 import Localization
 
 public struct AlarmReducer: Reducer {
-    private let alarmUseCase: AlarmUseCase
-    private let alarmScheduleUseCase: AlarmScheduleUseCase
-    private let userUseCase: UserUseCase
+    private let alarmsUseCase: AlarmsUseCase
+    private let alarmSchedulesUseCase: AlarmSchedulesUseCase
+    private let usersUseCase: UsersUseCase
     
     public init(
-        alarmUseCase: AlarmUseCase,
-        alarmScheduleUseCase: AlarmScheduleUseCase,
-        userUseCase: UserUseCase
+        alarmsUseCase: AlarmsUseCase,
+        alarmSchedulesUseCase: AlarmSchedulesUseCase,
+        usersUseCase: UsersUseCase
     ) {
-        self.alarmUseCase = alarmUseCase
-        self.alarmScheduleUseCase = alarmScheduleUseCase
-        self.userUseCase = userUseCase
+        self.alarmsUseCase = alarmsUseCase
+        self.alarmSchedulesUseCase = alarmSchedulesUseCase
+        self.usersUseCase = usersUseCase
     }
     
     private func getCurrentUserId() async throws -> UUID {
-        guard let user = try await userUseCase.getCurrentUser() else {
+        guard let user = try await usersUseCase.getCurrentUser() else {
             throw AlarmError.userNotFound
         }
         return user.id
     }
     
     // MARK: - Entity Conversion
-    private func toScheduleEntity(_ alarm: AlarmEntity) -> AlarmScheduleEntity {
-        AlarmScheduleEntity(
+    private func toScheduleEntity(_ alarm: AlarmsEntity) -> AlarmsEntity {
+        AlarmsEntity(
             id: alarm.id,
             userId: alarm.userId,
             label: alarm.label,
@@ -80,7 +79,7 @@ public struct AlarmReducer: Reducer {
                 Effect { [self] emitter in
                     do {
                         let userId = try await getCurrentUserId()
-                        let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             emitter.send(.setAlarms(alarms))
                     } catch {
                         emitter.send(.setError(
@@ -107,7 +106,7 @@ public struct AlarmReducer: Reducer {
                     do {
                         let userId = try await getCurrentUserId()
                         
-                        let newAlarm = AlarmEntity(
+                        let newAlarm = AlarmsEntity(
                             id: UUID(),
                             userId: userId,
                             label: label?.isEmpty == false ? label : nil,
@@ -156,20 +155,20 @@ public struct AlarmReducer: Reducer {
                 Effect { [self, alarm] emitter in
                     do {
                         // 1. 알람 저장 (UseCase가 로컬/원격 모두 처리)
-                        try await alarmUseCase.create(alarm)
+                        try await alarmsUseCase.create(alarm)
                         
                         // 2. 알람 스케줄링
                         if alarm.isEnabled {
                             print("🔔 [AlarmReducer] 알람 스케줄링 시작: \(alarm.id)")
                             let scheduleEntity = toScheduleEntity(alarm)
-                            try await alarmScheduleUseCase.scheduleAlarm(scheduleEntity)
+                            try await alarmSchedulesUseCase.scheduleAlarm(scheduleEntity)
                         }
                         
                         print("✅ [AlarmReducer] 알람 추가 완료: \(alarm.id)")
                         
                         // 3. 최신 상태 다시 로드하여 UI 동기화
                             let userId = try await getCurrentUserId()
-                        let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                         emitter.send(.setAlarms(alarms))
                         
                         // 4. 알람 추가 시트 닫기
@@ -187,7 +186,7 @@ public struct AlarmReducer: Reducer {
                         // 실패 시 목록 다시 로드하여 복구
                         do {
                             let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             emitter.send(.setAlarms(alarms))
                         } catch {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패")
@@ -208,18 +207,18 @@ public struct AlarmReducer: Reducer {
                 Effect { [self, alarm] emitter in
                     do {
                         // 1. 알람 업데이트 (UseCase가 로컬/원격 모두 처리)
-                        try await alarmUseCase.update(alarm)
+                        try await alarmsUseCase.update(alarm)
                         
                         // 2. 알람 스케줄링 업데이트
                         let scheduleEntity = toScheduleEntity(alarm)
                         print("🔔 [AlarmReducer] 알람 스케줄링 업데이트: \(alarm.id)")
-                        try await alarmScheduleUseCase.updateAlarm(scheduleEntity)
+                        try await alarmSchedulesUseCase.updateAlarm(scheduleEntity)
                         
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
                         
                         // 3. 최신 상태 다시 로드하여 UI 동기화
                             let userId = try await getCurrentUserId()
-                        let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                         emitter.send(.setAlarms(alarms))
                         
                         // 4. 편집 시트 닫기
@@ -237,7 +236,7 @@ public struct AlarmReducer: Reducer {
                         // 실패 시 목록 다시 로드하여 복구
                         do {
                             let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             emitter.send(.setAlarms(alarms))
                         } catch {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패")
@@ -254,11 +253,11 @@ public struct AlarmReducer: Reducer {
                 Effect { [self, id] emitter in
                     do {
                         // 1. 알람 삭제 (UseCase가 로컬/원격 모두 처리)
-                        try await alarmUseCase.delete(id: id)
+                        try await alarmsUseCase.delete(id: id)
                         
                         // 2. 알람 스케줄링 취소
                         print("🔕 [AlarmReducer] 알람 스케줄링 취소: \(id)")
-                        try await alarmScheduleUseCase.cancelAlarm(id)
+                        try await alarmSchedulesUseCase.cancelAlarm(id)
                         
                         print("✅ [AlarmReducer] 알람 삭제 완료: \(id)")
                     } catch {
@@ -274,7 +273,7 @@ public struct AlarmReducer: Reducer {
                         // 실패 시 목록 다시 로드하여 복구
                         do {
                             let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             emitter.send(.setAlarms(alarms))
                         } catch {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패")
@@ -297,11 +296,11 @@ public struct AlarmReducer: Reducer {
                 Effect { [self, id, newIsEnabled] emitter in
                     do {
                         // 1. 알람 토글 (UseCase가 로컬/원격 모두 처리)
-                        try await alarmUseCase.toggle(id: id, isEnabled: newIsEnabled)
+                        try await alarmsUseCase.toggle(id: id, isEnabled: newIsEnabled)
                         
                         // 2. 알람 엔티티를 가져와서 스케줄링 토글
                         let userId = try await getCurrentUserId()
-                        let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                         guard let alarm = alarms.first(where: { $0.id == id }) else {
                             throw AlarmServiceError.entityNotFound
                         }
@@ -311,9 +310,9 @@ public struct AlarmReducer: Reducer {
                         print("🔔 [AlarmReducer] 알람 스케줄링 토글: \(id) -> \(newIsEnabled)")
                         
                         if newIsEnabled {
-                            try await alarmScheduleUseCase.scheduleAlarm(scheduleEntity)
+                            try await alarmSchedulesUseCase.scheduleAlarm(scheduleEntity)
                         } else {
-                            try await alarmScheduleUseCase.cancelAlarm(id)
+                            try await alarmSchedulesUseCase.cancelAlarm(id)
                         }
                         
                         print("✅ [AlarmReducer] 알람 토글 완료: \(id) -> \(newIsEnabled)")
@@ -330,7 +329,7 @@ public struct AlarmReducer: Reducer {
                         // 실패 시 목록 다시 로드하여 복구
                         do {
                             let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             emitter.send(.setAlarms(alarms))
                         } catch {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패")
@@ -349,14 +348,14 @@ public struct AlarmReducer: Reducer {
                     Effect { [self, id, time, label, repeatDays] emitter in
                         do {
                             let userId = try await getCurrentUserId()
-                            let alarms = try await alarmUseCase.fetchAll(userId: userId)
+                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
                             guard let existingAlarm = alarms.first(where: { $0.id == id }) else {
                                 emitter.send(.setError("AlarmErrorEntityNotFound".localized()))
                                 return
                             }
                             
                             // 업데이트된 알람 엔티티 생성
-                            let updatedAlarm = AlarmEntity(
+                            let updatedAlarm = AlarmsEntity(
                                 id: existingAlarm.id,
                                 userId: existingAlarm.userId,
                                 label: label?.isEmpty == false ? label : nil,
@@ -392,7 +391,7 @@ public struct AlarmReducer: Reducer {
             }
             
             // 상태에서 찾은 경우
-            let updatedAlarm = AlarmEntity(
+            let updatedAlarm = AlarmsEntity(
                 id: existingAlarm.id,
                 userId: existingAlarm.userId,
                 label: label?.isEmpty == false ? label : nil,
@@ -434,11 +433,7 @@ public struct AlarmReducer: Reducer {
         case .stopAlarm(let id):
             return [
                 Effect { [self, id] emitter in
-                    do  {
-                        try await alarmScheduleUseCase.stopAlarm(id)
-                    } catch {
-                        
-                    }
+                    await alarmSchedulesUseCase.stopAlarm(id)
                 }
             ]
         }

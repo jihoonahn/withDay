@@ -15,9 +15,7 @@ public final class AlarmExecutionsServiceImpl: AlarmExecutionsService {
         self.supabaseService = supabaseService
     }
 
-    public func startExecution(alarmId: UUID) async throws -> AlarmExecutionsEntity {
-        let session = try await client.auth.session
-        let userId = session.user.id
+    public func startExecution(userId: UUID, alarmId: UUID) async throws -> AlarmExecutionsEntity {
         let execution = AlarmExecutionsEntity(
             id: UUID(),
             userId: userId,

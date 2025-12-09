@@ -1,6 +1,6 @@
 import SwiftUI
 import Rex
-import SettingFeatureInterface
+import SettingsFeatureInterface
 import RefineUIIcons
 import Designsystem
 import Localization

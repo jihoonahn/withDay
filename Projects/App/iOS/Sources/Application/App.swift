@@ -21,11 +21,11 @@ struct WithDayApp: App {
             rootFactory.makeView()
                 .preferredColorScheme(.dark)
                 .modelContainer(for: [
-                    AlarmModel.self,
-                    MemoModel.self,
+                    AlarmsModel.self,
+                    MemosModel.self,
                     AlarmExecutionsModel.self,
                     SchedulesModel.self,
-                    AlarmMissionModel.self,
+                    AlarmMissionsModel.self,
                     UserSettingsModel.self
                 ])
         }

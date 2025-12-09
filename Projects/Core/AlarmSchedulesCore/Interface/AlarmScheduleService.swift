@@ -1,5 +1,5 @@
 import Foundation
-import AlarmScheduleDomainInterface
+import AlarmsDomainInterface
 import ActivityKit
 
 public enum Weekday: Int {
@@ -59,10 +59,10 @@ public enum AlarmServiceError: Error, LocalizedError {
     }
 }
 
-public protocol AlarmScheduleService {
-    func scheduleAlarm(_ alarm: AlarmScheduleEntity) async throws
+public protocol AlarmSchedulesService {
+    func scheduleAlarm(_ alarm: AlarmsEntity) async throws
     func cancelAlarm(_ alarmId: UUID) async throws
-    func updateAlarm(_ alarm: AlarmScheduleEntity) async throws
+    func updateAlarm(_ alarm: AlarmsEntity) async throws
     func toggleAlarm(_ alarmId: UUID, isEnabled: Bool) async throws
     func stopAlarm(_ alarmId: UUID) async throws
     func getAlarmStatus(alarmId: UUID) async throws -> AlarmStatus?

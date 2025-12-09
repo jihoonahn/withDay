@@ -1,6 +1,6 @@
 import Foundation
 import Rex
 
-public struct RankState: StateType {
+public struct SchedulesState: StateType {
     public init() {}
 }
