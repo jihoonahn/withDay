@@ -21,7 +21,6 @@ public final class AlarmSchedulesServiceImpl: AlarmSchedulesService {
     // MARK: - Public Methods
 
     public func scheduleAlarm(_ alarm: AlarmsEntity) async throws {
-        // 권한 확인
         guard await checkAuthorization() else {
             throw AlarmServiceError.notificationAuthorizationDenied
         }
