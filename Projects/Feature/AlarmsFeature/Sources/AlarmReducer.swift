@@ -72,8 +72,6 @@ public struct AlarmReducer: Reducer {
         case .setAlarms(let alarms):
             state.isLoading = false
             state.alarms = alarms.sorted { $0.time < $1.time }            
-            // 스케줄링은 명시적으로 알람이 변경될 때만 수행
-            // (createAlarm, updateAlarm, toggleAlarm 등에서 처리)
             return []
             
         case .createAlarm(let time, let label, let repeatDays):
@@ -230,9 +228,14 @@ public struct AlarmReducer: Reducer {
                         // 1. 알람 삭제 (UseCase가 로컬/원격 모두 처리)
                         try await alarmsUseCase.delete(id: id)
                         
-                        // 2. 알람 스케줄링 취소
+                        // 2. 알람 스케줄링 취소 (실패해도 무시 - 이미 삭제되었거나 존재하지 않을 수 있음)
                         print("🔕 [AlarmReducer] 알람 스케줄링 취소: \(id)")
-                        try await alarmSchedulesUseCase.cancelAlarm(id)
+                        do {
+                            try await alarmSchedulesUseCase.cancelAlarm(id)
+                        } catch {
+                            // 취소 실패는 무시 (알람이 이미 없거나 취소되었을 수 있음)
+                            print("⚠️ [AlarmReducer] 알람 스케줄링 취소 실패 (무시됨): \(id) - \(error)")
+                        }
                         
                         print("✅ [AlarmReducer] 알람 삭제 완료: \(id)")
                     } catch {
