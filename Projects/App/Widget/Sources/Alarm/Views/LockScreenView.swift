@@ -1,6 +1,6 @@
 import SwiftUI
 import AlarmKit
-import AlarmScheduleCoreInterface
+import AlarmSchedulesCoreInterface
 import ActivityKit
 
 struct LockScreenView: View {

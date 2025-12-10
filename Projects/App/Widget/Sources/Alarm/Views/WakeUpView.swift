@@ -1,7 +1,7 @@
 import SwiftUI
 import RefineUIIcons
 import AlarmKit
-import AlarmScheduleCoreInterface
+import AlarmSchedulesCoreInterface
 
 struct WakeUpView: View {
     let attributes: AlarmAttributes<AlarmScheduleAttributes>
