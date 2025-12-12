@@ -72,7 +72,7 @@ public final class AlarmSchedulesServiceImpl: AlarmSchedulesService {
              
              let relTime = Alarm.Schedule.Relative.Time(hour: hour, minute: minute)
              let recurrence = Alarm.Schedule.Relative.Recurrence.weekly(weekdays)
-             schedule = .relative(.init(time: relTime, repeats: recurrence))
+             schedule = .relative(Alarm.Schedule.Relative(time: relTime, repeats: recurrence))
          }
          
          // 다음 알람 시간 계산 (Widget에서 사용)

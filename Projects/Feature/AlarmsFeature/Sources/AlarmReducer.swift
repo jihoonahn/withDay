@@ -7,6 +7,7 @@ import AlarmSchedulesCoreInterface
 import UsersDomainInterface
 import Dependency
 import Localization
+import Utility
 
 public struct AlarmReducer: Reducer {
     private let alarmsUseCase: AlarmsUseCase
@@ -22,30 +23,7 @@ public struct AlarmReducer: Reducer {
         self.alarmSchedulesUseCase = alarmSchedulesUseCase
         self.usersUseCase = usersUseCase
     }
-    
-    private func getCurrentUserId() async throws -> UUID {
-        guard let user = try await usersUseCase.getCurrentUser() else {
-            throw AlarmError.userNotFound
-        }
-        return user.id
-    }
-    
-    // MARK: - Error Handling
-    private func handleError(_ error: Error) -> String {
-        if let alarmError = error as? AlarmError {
-            return alarmError.localizedDescription
-        } else {
-            return error.localizedDescription
-        }
-    }
-    
-    private func formatErrorMessage(_ key: String, detail: String) -> String {
-        String(
-            format: key.localized(),
-            locale: Locale.appLocale,
-            detail
-        )
-    }
+    // MARK: - Reduce
     
     public func reduce(state: inout AlarmState, action: AlarmAction) -> [Effect<AlarmAction>] {
         switch action {
@@ -55,23 +33,21 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self] emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
-                            emitter.send(.setAlarms(alarms))
+                        guard let user = try await usersUseCase.getCurrentUser() else {
+                            throw AlarmError.userNotFound
+                        }
+                        let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
+                        emitter.send(.setAlarms(alarms))
                     } catch {
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorLoadFailed",
-                                detail: handleError(error)
-                            )
-                        ))
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorLoadFailed")
+                        emitter.send(.setError(errorMessage))
                     }
                 }
             ]
             
         case .setAlarms(let alarms):
             state.isLoading = false
-            state.alarms = alarms.sorted { $0.time < $1.time }            
+            state.alarms = alarms.sorted { $0.time < $1.time }
             return []
             
         case .createAlarm(let time, let label, let repeatDays):
@@ -79,11 +55,12 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self] emitter in
                     do {
-                        let userId = try await getCurrentUserId()
-                        
+                        guard let user = try await usersUseCase.getCurrentUser() else {
+                            throw AlarmError.userNotFound
+                        }
                         let newAlarm = AlarmsEntity(
                             id: UUID(),
-                            userId: userId,
+                            userId: user.id,
                             label: label?.isEmpty == false ? label : nil,
                             time: time,
                             repeatDays: repeatDays,
@@ -100,28 +77,21 @@ public struct AlarmReducer: Reducer {
                             createdAt: Date(),
                             updatedAt: Date()
                         )
-                        
                         emitter.send(.addAlarm(newAlarm))
                     } catch {
                         print("❌ [AlarmReducer] 알람 생성 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorCreateFailed",
-                                detail: handleError(error)
-                            )
-                        ))
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorCreateFailed")
+                        emitter.send(.setError(errorMessage))
                     }
                 }
             ]
             
         case .addAlarm(let alarm):
-            // 중복 체크
             if state.alarms.contains(where: { $0.id == alarm.id }) {
                 print("⚠️ [AlarmReducer] 이미 존재하는 알람입니다: \(alarm.id)")
                 return []
             }
             
-            // 낙관적 업데이트: UI에서 즉시 추가
             state.alarms.append(alarm)
             state.alarms.sort { $0.time < $1.time }
             state.errorMessage = nil
@@ -129,48 +99,42 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self, alarm] emitter in
                     do {
-                        // 1. 알람 저장 (UseCase가 로컬/원격 모두 처리)
                         try await alarmsUseCase.create(alarm)
                         
-                        // 2. 알람 스케줄링
                         if alarm.isEnabled {
                             print("🔔 [AlarmReducer] 알람 스케줄링 시작: \(alarm.id)")
                             try await alarmSchedulesUseCase.scheduleAlarm(alarm)
                         }
                         
                         print("✅ [AlarmReducer] 알람 추가 완료: \(alarm.id)")
-                        
-                        // 3. 최신 상태 다시 로드하여 UI 동기화
-                        let userId = try await getCurrentUserId()
-                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
-                        emitter.send(.setAlarms(alarms))
-                        
-                        // 4. 알람 추가 시트 닫기
-                        emitter.send(.showingAddAlarmState(false))
-                    } catch {
-                        // 실패 시 복구
-                        print("❌ [AlarmReducer] 알람 추가 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorAddFailed",
-                                detail: handleError(error)
-                            )
-                        ))
-                        
-                        // 실패 시 목록 다시 로드하여 복구
                         do {
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
                             emitter.send(.setAlarms(alarms))
                         } catch {
-                            print("❌ [AlarmReducer] 알람 목록 재로드 실패")
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
+                        }
+                        emitter.send(.showingAddAlarmState(false))
+                    } catch {
+                        print("❌ [AlarmReducer] 알람 추가 실패: \(error)")
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorAddFailed")
+                        emitter.send(.setError(errorMessage))
+                        do {
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
+                            emitter.send(.setAlarms(alarms))
+                        } catch {
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
                     }
                 }
             ]
             
         case .updateAlarm(let alarm):
-            // 낙관적 업데이트: UI에서 즉시 반영
             if let index = state.alarms.firstIndex(where: { $0.id == alarm.id }) {
                 state.alarms[index] = alarm
                 state.alarms.sort { $0.time < $1.time }
@@ -180,39 +144,32 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self, alarm] emitter in
                     do {
-                        // 1. 알람 업데이트 (UseCase가 로컬/원격 모두 처리)
                         try await alarmsUseCase.update(alarm)
-                        
-                        // 2. 알람 스케줄링 업데이트
                         print("🔔 [AlarmReducer] 알람 스케줄링 업데이트: \(alarm.id)")
                         try await alarmSchedulesUseCase.updateAlarm(alarm)
-                        
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
-                        
-                        // 3. 최신 상태 다시 로드하여 UI 동기화
-                        let userId = try await getCurrentUserId()
-                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
-                        emitter.send(.setAlarms(alarms))
-                        
-                        // 4. 편집 시트 닫기
-                        emitter.send(.showingEditAlarmState(nil))
-                    } catch {
-                        // 실패 시 복구
-                        print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorUpdateFailed",
-                                detail: handleError(error)
-                            )
-                        ))
-                        
-                        // 실패 시 목록 다시 로드하여 복구
                         do {
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
                             emitter.send(.setAlarms(alarms))
                         } catch {
-                            print("❌ [AlarmReducer] 알람 목록 재로드 실패")
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
+                        }
+                        emitter.send(.showingEditAlarmState(nil))
+                    } catch {
+                        print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorUpdateFailed")
+                        emitter.send(.setError(errorMessage))
+                        do {
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
+                            emitter.send(.setAlarms(alarms))
+                        } catch {
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
                     }
                 }
@@ -225,36 +182,28 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self, id] emitter in
                     do {
-                        // 1. 알람 삭제 (UseCase가 로컬/원격 모두 처리)
                         try await alarmsUseCase.delete(id: id)
                         
-                        // 2. 알람 스케줄링 취소 (실패해도 무시 - 이미 삭제되었거나 존재하지 않을 수 있음)
                         print("🔕 [AlarmReducer] 알람 스케줄링 취소: \(id)")
                         do {
                             try await alarmSchedulesUseCase.cancelAlarm(id)
                         } catch {
-                            // 취소 실패는 무시 (알람이 이미 없거나 취소되었을 수 있음)
                             print("⚠️ [AlarmReducer] 알람 스케줄링 취소 실패 (무시됨): \(id) - \(error)")
                         }
                         
                         print("✅ [AlarmReducer] 알람 삭제 완료: \(id)")
                     } catch {
-                        // 실패 시 에러 메시지만 표시 (이미 UI에서는 제거됨)
                         print("❌ [AlarmReducer] 알람 삭제 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorDeleteFailed",
-                                detail: handleError(error)
-                            )
-                        ))
-                        
-                        // 실패 시 목록 다시 로드하여 복구
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorDeleteFailed")
+                        emitter.send(.setError(errorMessage))
                         do {
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
                             emitter.send(.setAlarms(alarms))
                         } catch {
-                            print("❌ [AlarmReducer] 알람 목록 재로드 실패")
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
                     }
                 }
@@ -265,7 +214,6 @@ public struct AlarmReducer: Reducer {
                 return []
             }
             
-            // 낙관적 업데이트: UI에서 즉시 토글
             let newIsEnabled = !state.alarms[alarmIndex].isEnabled
             state.alarms[alarmIndex].isEnabled = newIsEnabled
             state.errorMessage = nil
@@ -273,42 +221,35 @@ public struct AlarmReducer: Reducer {
             return [
                 Effect { [self, id, newIsEnabled] emitter in
                     do {
-                        // 1. 알람 토글 (UseCase가 로컬/원격 모두 처리)
                         try await alarmsUseCase.toggle(id: id, isEnabled: newIsEnabled)
                         
-                        // 2. 알람 엔티티를 가져와서 스케줄링 토글
-                        let userId = try await getCurrentUserId()
-                        let alarms = try await alarmsUseCase.fetchAll(userId: userId)
+                        guard let user = try await usersUseCase.getCurrentUser() else {
+                            throw AlarmError.userNotFound
+                        }
+                        let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
                         guard let alarm = alarms.first(where: { $0.id == id }) else {
                             throw AlarmServiceError.entityNotFound
                         }
                         
                         print("🔔 [AlarmReducer] 알람 스케줄링 토글: \(id) -> \(newIsEnabled)")
-                        
                         if newIsEnabled {
                             try await alarmSchedulesUseCase.scheduleAlarm(alarm)
                         } else {
                             try await alarmSchedulesUseCase.cancelAlarm(id)
                         }
-                        
                         print("✅ [AlarmReducer] 알람 토글 완료: \(id) -> \(newIsEnabled)")
                     } catch {
-                        // 실패 시 원래 상태로 복구
                         print("❌ [AlarmReducer] 알람 토글 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorToggleFailed",
-                                detail: handleError(error)
-                            )
-                        ))
-                        
-                        // 실패 시 목록 다시 로드하여 복구
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorToggleFailed")
+                        emitter.send(.setError(errorMessage))
                         do {
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
                             emitter.send(.setAlarms(alarms))
                         } catch {
-                            print("❌ [AlarmReducer] 알람 목록 재로드 실패")
+                            print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
                     }
                 }
@@ -316,80 +257,44 @@ public struct AlarmReducer: Reducer {
             
         case .updateAlarmWithData(let id, let time, let label, let repeatDays):
             state.errorMessage = nil
-            
-            // 먼저 현재 상태에서 알람 찾기
-            guard let existingAlarm = state.alarms.first(where: { $0.id == id }) else {
-                // 상태에 없으면 UseCase를 통해 찾기
-                return [
-                    Effect { [self, id, time, label, repeatDays] emitter in
-                        do {
-                            let userId = try await getCurrentUserId()
-                            let alarms = try await alarmsUseCase.fetchAll(userId: userId)
-                            guard let existingAlarm = alarms.first(where: { $0.id == id }) else {
-                                emitter.send(.setError("AlarmErrorEntityNotFound".localized()))
-                                return
-                            }
-                            
-                            // 업데이트된 알람 엔티티 생성
-                            let updatedAlarm = AlarmsEntity(
-                                id: existingAlarm.id,
-                                userId: existingAlarm.userId,
-                                label: label?.isEmpty == false ? label : nil,
-                                time: time,
-                                repeatDays: repeatDays,
-                                snoozeEnabled: existingAlarm.snoozeEnabled,
-                                snoozeInterval: existingAlarm.snoozeInterval,
-                                snoozeLimit: existingAlarm.snoozeLimit,
-                                soundName: existingAlarm.soundName,
-                                soundURL: existingAlarm.soundURL,
-                                vibrationPattern: existingAlarm.vibrationPattern,
-                                volumeOverride: existingAlarm.volumeOverride,
-                                linkedMemoIds: existingAlarm.linkedMemoIds,
-                                showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
-                                isEnabled: existingAlarm.isEnabled,
-                                createdAt: existingAlarm.createdAt,
-                                updatedAt: Date()
-                            )
-                            
-                            // updateAlarm 액션으로 전달하여 처리
-                            emitter.send(.updateAlarm(updatedAlarm))
-                        } catch {
-                            print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
-                        emitter.send(.setError(
-                            formatErrorMessage(
-                                "AlarmErrorUpdateFailed",
-                                detail: handleError(error)
-                            )
-                        ))
-                        }
-                    }
-                ]
-            }
-            
-            // 상태에서 찾은 경우
-            let updatedAlarm = AlarmsEntity(
-                id: existingAlarm.id,
-                userId: existingAlarm.userId,
-                label: label?.isEmpty == false ? label : nil,
-                time: time,
-                repeatDays: repeatDays,
-                snoozeEnabled: existingAlarm.snoozeEnabled,
-                snoozeInterval: existingAlarm.snoozeInterval,
-                snoozeLimit: existingAlarm.snoozeLimit,
-                soundName: existingAlarm.soundName,
-                soundURL: existingAlarm.soundURL,
-                vibrationPattern: existingAlarm.vibrationPattern,
-                volumeOverride: existingAlarm.volumeOverride,
-                linkedMemoIds: existingAlarm.linkedMemoIds,
-                showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
-                isEnabled: existingAlarm.isEnabled,
-                createdAt: existingAlarm.createdAt,
-                updatedAt: Date()
-            )
-            
+
             return [
-                Effect { [updatedAlarm] emitter in
-                    emitter.send(.updateAlarm(updatedAlarm))
+                Effect { [self, id, time, label, repeatDays] emitter in
+                    do {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
+                            throw AlarmError.userNotFound
+                        }
+                        let alarms = try await alarmsUseCase.fetchAll(userId: user.id)
+                        guard let existingAlarm = alarms.first(where: { $0.id == id }) else {
+                            emitter.send(.setError("AlarmErrorEntityNotFound".localized()))
+                            return
+                        }
+                        
+                        let updatedAlarm = AlarmsEntity(
+                            id: existingAlarm.id,
+                            userId: existingAlarm.userId,
+                            label: label?.isEmpty == false ? label : nil,
+                            time: time,
+                            repeatDays: repeatDays,
+                            snoozeEnabled: existingAlarm.snoozeEnabled,
+                            snoozeInterval: existingAlarm.snoozeInterval,
+                            snoozeLimit: existingAlarm.snoozeLimit,
+                            soundName: existingAlarm.soundName,
+                            soundURL: existingAlarm.soundURL,
+                            vibrationPattern: existingAlarm.vibrationPattern,
+                            volumeOverride: existingAlarm.volumeOverride,
+                            linkedMemoIds: existingAlarm.linkedMemoIds,
+                            showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
+                            isEnabled: existingAlarm.isEnabled,
+                            createdAt: existingAlarm.createdAt,
+                            updatedAt: Date()
+                        )
+                        emitter.send(.updateAlarm(updatedAlarm))
+                    } catch {
+                        print("❌ [AlarmReducer] 알람 업데이트 실패: \(error)")
+                        let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorUpdateFailed")
+                        emitter.send(.setError(errorMessage))
+                    }
                 }
             ]
             
@@ -400,6 +305,10 @@ public struct AlarmReducer: Reducer {
             
         case let .showingAddAlarmState(status):
             state.showingAddAlarm = status
+            state.date = Date()
+            state.label = ""
+            state.selectedDays = []
+            state.isRepeating = false
             return []
             
         case let .showingEditAlarmState(alarm):
@@ -412,8 +321,79 @@ public struct AlarmReducer: Reducer {
                     do {
                         try await alarmSchedulesUseCase.stopAlarm(id)
                     } catch {
-                        print("Failed To Stop Alarm: \(error.localizedDescription)")
+                        print("❌ [AlarmReducer] 알람 중지 실패: \(error.localizedDescription)")
                     }
+                }
+            ]
+            
+        case let .labelTextFieldDidChange(text):
+            state.label = text
+            return []
+            
+        case let .datePickerDidChange(date):
+            state.date = date
+            return []
+            
+        case let .toggleRepeatDay(day):
+            if state.selectedDays.contains(day) {
+                state.selectedDays.remove(day)
+            } else {
+                state.selectedDays.insert(day)
+            }
+            state.isRepeating = !state.selectedDays.isEmpty
+            return []
+            
+        case let .setRepeatDays(days):
+            state.selectedDays = days
+            state.isRepeating = !days.isEmpty
+            return []
+            
+        case let .setIsRepeating(isRepeating):
+            state.isRepeating = isRepeating
+            return []
+            
+        case let .initializeEditAlarmState(alarm):
+            let components = alarm.time.split(separator: ":")
+            let hour = components.count >= 1 ? Int(components[0]) ?? 0 : 0
+            let minute = components.count >= 2 ? Int(components[1]) ?? 0 : 0
+            var dateComponents = DateComponents()
+            dateComponents.hour = hour
+            dateComponents.minute = minute
+            state.selectedTime = Calendar.current.date(from: dateComponents) ?? Date()
+            state.date = state.selectedTime
+            state.label = alarm.label ?? ""
+            state.selectedDays = Set(alarm.repeatDays)
+            state.isRepeating = !alarm.repeatDays.isEmpty
+            return []
+            
+        case .saveAddAlarm:
+            let timeString = String().formatTimeString(from: state.date)
+            let alarmLabel = state.label.isEmpty ? nil : state.label
+            let repeatDays = state.isRepeating ? Array(state.selectedDays).sorted() : []
+            
+            return [
+                Effect { [timeString, alarmLabel, repeatDays] emitter in
+                    emitter.send(.createAlarm(time: timeString, label: alarmLabel, repeatDays: repeatDays))
+                }
+            ]
+            
+        case .saveEditAlarm:
+            guard let editingAlarm = state.editingAlarm else {
+                return []
+            }
+            
+            let timeString = String().formatTimeString(from: state.date)
+            let alarmLabel = state.label.isEmpty ? nil : state.label
+            let repeatDays = state.isRepeating ? Array(state.selectedDays).sorted() : []
+            
+            return [
+                Effect { [editingAlarm, timeString, alarmLabel, repeatDays] emitter in
+                    emitter.send(.updateAlarmWithData(
+                        id: editingAlarm.id,
+                        time: timeString,
+                        label: alarmLabel,
+                        repeatDays: repeatDays
+                    ))
                 }
             ]
         }
@@ -421,6 +401,7 @@ public struct AlarmReducer: Reducer {
 }
 
 // MARK: - AlarmError
+
 enum AlarmError: Error {
     case userNotFound
     
@@ -430,10 +411,12 @@ enum AlarmError: Error {
             return "AlarmErrorUserNotFound".localized()
         }
     }
-}
-
-private extension Locale {
-    static var appLocale: Locale {
-        Locale(identifier: LocalizationController.shared.languageCode)
+    
+    static func formatErrorMessage(_ error: Error, key: String) -> String {
+        if let alarmError = error as? AlarmError {
+            return String(format: key.localized(), alarmError.localizedDescription)
+        } else {
+            return String(format: key.localized(), error.localizedDescription)
+        }
     }
 }

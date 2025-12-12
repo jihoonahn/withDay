@@ -19,4 +19,11 @@ extension String {
         let minute = components.last.flatMap { Int($0) } ?? 0
         return (hour, minute)
     }
+
+    public func formatTimeString(from date: Date) -> String {
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: date)
+        let minute = calendar.component(.minute, from: date)
+        return String(format: "%02d:%02d", hour, minute)
+    }
 }

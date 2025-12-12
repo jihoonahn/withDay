@@ -15,4 +15,12 @@ public enum AlarmAction: ActionType {
     case setAlarms([AlarmsEntity])
     case setError(String?)
     case stopAlarm(id: UUID)
+    case labelTextFieldDidChange(String)
+    case datePickerDidChange(Date)
+    case toggleRepeatDay(Int)
+    case setRepeatDays(Set<Int>)
+    case setIsRepeating(Bool)
+    case initializeEditAlarmState(AlarmsEntity)
+    case saveAddAlarm
+    case saveEditAlarm
 }
