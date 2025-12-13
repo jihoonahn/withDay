@@ -2,6 +2,8 @@ import Foundation
 import Rex
 import Utility
 import MemosDomainInterface
+import AlarmsDomainInterface
+import SchedulesDomainInterface
 
 public struct HomeState: StateType {
     public var homeTitle = Date.now.toString()
@@ -10,6 +12,9 @@ public struct HomeState: StateType {
     // Loaded data
     public var wakeDurationDescription: String?
     public var allMemos: [MemosEntity] = []
+    public var alarms: [AlarmsEntity] = []
+    public var schedules: [SchedulesEntity] = []
+    public var isLoading: Bool = false
     public var navigateToAllMemo: Bool = false
     public var presentedAddMemo: Bool = false
     public init() {}

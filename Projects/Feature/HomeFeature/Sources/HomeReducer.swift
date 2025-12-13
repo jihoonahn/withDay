@@ -4,6 +4,8 @@ import HomeFeatureInterface
 import MemosDomainInterface
 import UsersDomainInterface
 import AlarmExecutionsDomainInterface
+import AlarmsDomainInterface
+import SchedulesDomainInterface
 import Localization
 import BaseFeature
 
@@ -11,6 +13,8 @@ public struct HomeReducer: Reducer {
     private let memosUseCase: MemosUseCase
     private let usersUseCase: UsersUseCase
     private let alarmExecutionsUseCase: AlarmExecutionsUseCase
+    private let alarmsUseCase: AlarmsUseCase
+    private let schedulesUseCase: SchedulesUseCase
     private let dateProvider: () -> Date
     private let calendar = Calendar.current
     
@@ -18,11 +22,15 @@ public struct HomeReducer: Reducer {
         memosUseCase: MemosUseCase,
         usersUseCase: UsersUseCase,
         alarmExecutionsUseCase: AlarmExecutionsUseCase,
+        alarmsUseCase: AlarmsUseCase,
+        schedulesUseCase: SchedulesUseCase,
         dateProvider: @escaping () -> Date = Date.init
     ) {
         self.memosUseCase = memosUseCase
         self.usersUseCase = usersUseCase
         self.alarmExecutionsUseCase = alarmExecutionsUseCase
+        self.alarmsUseCase = alarmsUseCase
+        self.schedulesUseCase = schedulesUseCase
         self.dateProvider = dateProvider
     }
     
@@ -34,19 +42,53 @@ public struct HomeReducer: Reducer {
             return [.just(.loadHomeData)]
             
         case .loadHomeData:
+            state.isLoading = true
             return [
-                Effect { emitter in
+                Effect { [self] emitter in
+                    do {
+                        guard let user = try await usersUseCase.getCurrentUser() else {
+                            emitter.send(.setLoading(false))
+                            return
+                        }
                         
-    
+                        async let memosTask = memosUseCase.getMemos(userId: user.id)
+                        async let alarmsTask = alarmsUseCase.fetchAll(userId: user.id)
+                        async let schedulesTask = schedulesUseCase.getSchedules(userId: user.id)
+                        
+                        let memos = try await memosTask
+                        let alarms = try await alarmsTask
+                        let schedules = try await schedulesTask
+                        
+                        // Wake duration은 현재 UseCase에 fetchExecutions가 없으므로 nil로 처리
+                        // TODO: AlarmExecutionsUseCase에 fetchExecutions 메서드 추가 필요
+                        let wakeDuration: Int? = nil
+                        
+                        emitter.send(.setHomeData(
+                            wakeDuration: wakeDuration,
+                            memos: memos,
+                            alarms: alarms,
+                            schedules: schedules
+                        ))
+                    } catch {
+                        print("❌ [HomeReducer] 데이터 로드 실패: \(error)")
+                        emitter.send(.setLoading(false))
+                    }
                 }
             ]
             
-        case let .setHomeData(wakeDuration, memos):
+        case let .setHomeData(wakeDuration, memos, alarms, schedules):
+            state.isLoading = false
             if let wakeDuration = wakeDuration {
                 state.wakeDurationDescription = formatWakeDurationDescription(wakeDuration)
             }
             state.allMemos = memos.sorted(by: reminderSortPredicate)
+            state.alarms = alarms.sorted { $0.time < $1.time }
+            state.schedules = schedules
             state.homeTitle = dateProvider().toString()
+            return []
+            
+        case .setLoading(let isLoading):
+            state.isLoading = isLoading
             return []
         case let .showAllMemos(isNavigated):
             state.navigateToAllMemo = isNavigated

@@ -7,4 +7,8 @@ public extension String {
     ) -> String {
         Localization.localized(self, table: table, locale: locale)
     }
+    
+    func localizedArguments(with arguments: CVarArg...) -> String {
+        String(format: Localization.localized(self), arguments: arguments)
+    }
 }

@@ -1,6 +1,9 @@
 import SwiftUI
 import Rex
 import SchedulesFeatureInterface
+import SchedulesDomainInterface
+import UsersDomainInterface
+import Dependency
 
 public struct SchedulesFactoryImpl: SchedulesFactory {
     private let store: Store<SchedulesReducer>
@@ -21,17 +24,27 @@ public struct SchedulesFactoryImpl: SchedulesFactory {
 
 public extension SchedulesFactoryImpl {
     static func create() -> SchedulesFactoryImpl {
+        let container = DIContainer.shared
+        let reducer = SchedulesReducer(
+            schedulesUseCase: container.resolve(SchedulesUseCase.self),
+            usersUseCase: container.resolve(UsersUseCase.self)
+        )
         let store = Store<SchedulesReducer>(
             initialState: SchedulesState(),
-            reducer: SchedulesReducer()
+            reducer: reducer
         )
         return SchedulesFactoryImpl(store: store)
     }
     
     static func create(initialState: SchedulesState) -> SchedulesFactoryImpl {
+        let container = DIContainer.shared
+        let reducer = SchedulesReducer(
+            schedulesUseCase: container.resolve(SchedulesUseCase.self),
+            usersUseCase: container.resolve(UsersUseCase.self)
+        )
         let store = Store<SchedulesReducer>(
             initialState: initialState,
-            reducer: SchedulesReducer()
+            reducer: reducer
         )
         return SchedulesFactoryImpl(store: store)
     }
