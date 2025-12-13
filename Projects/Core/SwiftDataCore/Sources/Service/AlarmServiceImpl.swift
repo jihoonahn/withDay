@@ -47,8 +47,6 @@ public final class AlarmServiceImpl: AlarmService {
             existingModel.soundURL = alarm.soundURL
             existingModel.vibrationPattern = alarm.vibrationPattern
             existingModel.volumeOverride = alarm.volumeOverride
-            existingModel.linkedMemoIds = alarm.linkedMemoIds
-            existingModel.showMemosOnAlarm = alarm.showMemosOnAlarm
             existingModel.isEnabled = alarm.isEnabled
             existingModel.updatedAt = Date()
             try context.save()

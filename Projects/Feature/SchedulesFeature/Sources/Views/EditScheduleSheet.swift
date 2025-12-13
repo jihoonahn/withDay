@@ -112,7 +112,6 @@ struct EditScheduleSheet: View {
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 120)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -138,8 +137,6 @@ struct EditScheduleSheet: View {
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 120)
-                                .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(JColor.card)
@@ -147,11 +144,9 @@ struct EditScheduleSheet: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        
-                        Spacer(minLength: 40)
                     }
                     .padding(.top, 20)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("ScheduleEditNavigationTitle".localized())
@@ -186,4 +181,3 @@ struct EditScheduleSheet: View {
         }
     }
 }
-

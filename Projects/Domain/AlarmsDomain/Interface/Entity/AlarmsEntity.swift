@@ -13,8 +13,6 @@ public struct AlarmsEntity: Identifiable, Codable, Equatable, Sendable {
     public var soundURL: String?
     public var vibrationPattern: String?
     public var volumeOverride: Int?
-    public var linkedMemoIds: [UUID]
-    public var showMemosOnAlarm: Bool
     public var isEnabled: Bool
     public let createdAt: Date
     public let updatedAt: Date
@@ -32,8 +30,6 @@ public struct AlarmsEntity: Identifiable, Codable, Equatable, Sendable {
         case soundURL = "sound_url"
         case vibrationPattern = "vibration_pattern"
         case volumeOverride = "volume_override"
-        case linkedMemoIds = "linked_memo_ids"
-        case showMemosOnAlarm = "show_memos_on_alarm"
         case isEnabled
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -52,8 +48,6 @@ public struct AlarmsEntity: Identifiable, Codable, Equatable, Sendable {
         soundURL: String?,
         vibrationPattern: String?,
         volumeOverride: Int?,
-        linkedMemoIds: [UUID],
-        showMemosOnAlarm: Bool,
         isEnabled: Bool,
         createdAt: Date,
         updatedAt: Date
@@ -70,8 +64,6 @@ public struct AlarmsEntity: Identifiable, Codable, Equatable, Sendable {
         self.soundURL = soundURL
         self.vibrationPattern = vibrationPattern
         self.volumeOverride = volumeOverride
-        self.linkedMemoIds = linkedMemoIds
-        self.showMemosOnAlarm = showMemosOnAlarm
         self.isEnabled = isEnabled
         self.createdAt = createdAt
         self.updatedAt = updatedAt

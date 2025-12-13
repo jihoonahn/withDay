@@ -61,7 +61,6 @@ public final class ScheduleServiceImpl: SchedulesService {
             existingModel.date = updatedModel.date
             existingModel.startTime = updatedModel.startTime
             existingModel.endTime = updatedModel.endTime
-            existingModel.memoIds = updatedModel.memoIds
             existingModel.updatedAt = Date()
             try context.save()
         }

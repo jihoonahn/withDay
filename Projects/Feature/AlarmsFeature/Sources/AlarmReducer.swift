@@ -71,8 +71,6 @@ public struct AlarmReducer: Reducer {
                             soundURL: nil,
                             vibrationPattern: nil,
                             volumeOverride: nil,
-                            linkedMemoIds: [],
-                            showMemosOnAlarm: false,
                             isEnabled: true,
                             createdAt: Date(),
                             updatedAt: Date()
@@ -283,8 +281,6 @@ public struct AlarmReducer: Reducer {
                             soundURL: existingAlarm.soundURL,
                             vibrationPattern: existingAlarm.vibrationPattern,
                             volumeOverride: existingAlarm.volumeOverride,
-                            linkedMemoIds: existingAlarm.linkedMemoIds,
-                            showMemosOnAlarm: existingAlarm.showMemosOnAlarm,
                             isEnabled: existingAlarm.isEnabled,
                             createdAt: existingAlarm.createdAt,
                             updatedAt: Date()

@@ -14,7 +14,6 @@ public enum ScheduleDTO {
             date: entity.date,
             startTime: entity.startTime,
             endTime: entity.endTime,
-            memoIds: entity.memoIds,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt
         )
@@ -30,7 +29,6 @@ public enum ScheduleDTO {
             date: model.date,
             startTime: model.startTime,
             endTime: model.endTime,
-            memoIds: model.memoIds,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt
         )

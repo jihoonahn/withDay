@@ -7,6 +7,7 @@ public struct MemosEntity: Identifiable, Codable, Equatable, Sendable {
     public let description: String
     public let blocks: [MemoBlockEntity]
     public let alarmId: UUID?
+    public let scheduleId: UUID?
     public let reminderTime: String?
     public let createdAt: Date?
     public let updatedAt: Date?
@@ -18,6 +19,7 @@ public struct MemosEntity: Identifiable, Codable, Equatable, Sendable {
         case description
         case blocks
         case alarmId = "alarm_id"
+        case scheduleId = "schedule_id"
         case reminderTime = "reminder_time"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -30,6 +32,7 @@ public struct MemosEntity: Identifiable, Codable, Equatable, Sendable {
         description: String,
         blocks: [MemoBlockEntity],
         alarmId: UUID? = nil,
+        scheduleId: UUID? = nil,
         reminderTime: String? = nil,
         createdAt: Date? = nil,
         updatedAt: Date? = nil
@@ -40,6 +43,7 @@ public struct MemosEntity: Identifiable, Codable, Equatable, Sendable {
         self.description = description
         self.blocks = blocks
         self.alarmId = alarmId
+        self.scheduleId = scheduleId
         self.reminderTime = reminderTime
         self.createdAt = createdAt
         self.updatedAt = updatedAt

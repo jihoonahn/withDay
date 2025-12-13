@@ -15,8 +15,6 @@ struct AlarmsDTO: Codable {
     let soundUrl: String?
     let vibrationPattern: String?
     let volumeOverride: Int?
-    let linkedMemoIds: [UUID]
-    let showMemosOnAlarm: Bool
     let isEnabled: Bool
     let createdAt: Date
     let updatedAt: Date
@@ -34,8 +32,6 @@ struct AlarmsDTO: Codable {
         case soundUrl = "sound_url"
         case vibrationPattern = "vibration_pattern"
         case volumeOverride = "volume_override"
-        case linkedMemoIds = "linked_memo_ids"
-        case showMemosOnAlarm = "show_memos_on_alarm"
         case isEnabled = "is_enabled"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -54,8 +50,6 @@ struct AlarmsDTO: Codable {
         self.soundUrl = entity.soundURL
         self.vibrationPattern = entity.vibrationPattern
         self.volumeOverride = entity.volumeOverride
-        self.linkedMemoIds = entity.linkedMemoIds
-        self.showMemosOnAlarm = entity.showMemosOnAlarm
         self.isEnabled = entity.isEnabled
         self.createdAt = entity.createdAt
         self.updatedAt = entity.updatedAt
@@ -78,8 +72,6 @@ struct AlarmsDTO: Codable {
             soundURL: soundUrl,
             vibrationPattern: vibrationPattern,
             volumeOverride: volumeOverride,
-            linkedMemoIds: linkedMemoIds,
-            showMemosOnAlarm: showMemosOnAlarm,
             isEnabled: isEnabled,
             createdAt: createdAt,
             updatedAt: updatedAt

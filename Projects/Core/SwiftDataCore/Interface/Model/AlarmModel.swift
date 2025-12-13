@@ -15,8 +15,6 @@ public final class AlarmsModel {
     public var soundURL: String?
     public var vibrationPattern: String?
     public var volumeOverride: Int?
-    public var linkedMemoIds: [UUID]
-    public var showMemosOnAlarm: Bool
     public var isEnabled: Bool
     public var createdAt: Date
     public var updatedAt: Date
@@ -34,8 +32,6 @@ public final class AlarmsModel {
         soundURL: String? = nil,
         vibrationPattern: String? = nil,
         volumeOverride: Int? = nil,
-        linkedMemoIds: [UUID] = [],
-        showMemosOnAlarm: Bool = false,
         isEnabled: Bool = true,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -52,8 +48,6 @@ public final class AlarmsModel {
         self.soundURL = soundURL
         self.vibrationPattern = vibrationPattern
         self.volumeOverride = volumeOverride
-        self.linkedMemoIds = linkedMemoIds
-        self.showMemosOnAlarm = showMemosOnAlarm
         self.isEnabled = isEnabled
         self.createdAt = createdAt
         self.updatedAt = updatedAt

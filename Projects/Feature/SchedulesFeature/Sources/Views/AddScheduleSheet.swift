@@ -29,12 +29,12 @@ struct AddScheduleSheet: View {
                             }, set: { value in
                                 interface.send(.titleTextFieldDidChange(value))
                             }))
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(JColor.card)
-                                )
-                                .foregroundColor(JColor.textPrimary)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(JColor.card)
+                            )
+                            .foregroundColor(JColor.textPrimary)
                         }
                         .padding(.horizontal, 20)
                         
@@ -49,13 +49,13 @@ struct AddScheduleSheet: View {
                             }, set: { value in
                                 interface.send(.descriptionTextFieldDidChange(value))
                             }), axis: .vertical)
-                                .lineLimit(3...6)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(JColor.card)
-                                )
-                                .foregroundColor(JColor.textPrimary)
+                            .lineLimit(3...6)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(JColor.card)
+                            )
+                            .foregroundColor(JColor.textPrimary)
                         }
                         .padding(.horizontal, 20)
                         
@@ -109,7 +109,6 @@ struct AddScheduleSheet: View {
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 120)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -135,7 +134,6 @@ struct AddScheduleSheet: View {
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 120)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
@@ -144,11 +142,9 @@ struct AddScheduleSheet: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        
-                        Spacer(minLength: 40)
                     }
                     .padding(.top, 20)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("ScheduleAddNavigationTitle".localized())

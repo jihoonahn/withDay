@@ -19,8 +19,6 @@ public enum AlarmsDTO {
             soundURL: entity.soundURL,
             vibrationPattern: entity.vibrationPattern,
             volumeOverride: entity.volumeOverride,
-            linkedMemoIds: entity.linkedMemoIds,
-            showMemosOnAlarm: entity.showMemosOnAlarm,
             isEnabled: entity.isEnabled,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt
@@ -42,8 +40,6 @@ public enum AlarmsDTO {
             soundURL: model.soundURL,
             vibrationPattern: model.vibrationPattern,
             volumeOverride: model.volumeOverride,
-            linkedMemoIds: model.linkedMemoIds,
-            showMemosOnAlarm: model.showMemosOnAlarm,
             isEnabled: model.isEnabled,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt

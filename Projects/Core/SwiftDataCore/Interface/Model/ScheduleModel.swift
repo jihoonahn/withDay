@@ -10,7 +10,6 @@ public final class SchedulesModel {
     public var date: String
     public var startTime: String
     public var endTime: String
-    public var memoIds: [UUID]
     public var createdAt: Date
     public var updatedAt: Date
     
@@ -22,7 +21,6 @@ public final class SchedulesModel {
         date: String,
         startTime: String,
         endTime: String,
-        memoIds: [UUID] = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -33,7 +31,6 @@ public final class SchedulesModel {
         self.date = date
         self.startTime = startTime
         self.endTime = endTime
-        self.memoIds = memoIds
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

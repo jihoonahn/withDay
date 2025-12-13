@@ -8,7 +8,6 @@ public struct SchedulesEntity: Identifiable, Codable, Equatable, Sendable {
     public let date: String
     public let startTime: String
     public let endTime: String
-    public let memoIds: [UUID]
     public let createdAt: Date
     public let updatedAt: Date
     
@@ -20,7 +19,6 @@ public struct SchedulesEntity: Identifiable, Codable, Equatable, Sendable {
         case date
         case startTime = "start_time"
         case endTime = "end_time"
-        case memoIds = "memo_ids"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -33,7 +31,6 @@ public struct SchedulesEntity: Identifiable, Codable, Equatable, Sendable {
         date: String,
         startTime: String,
         endTime: String,
-        memoIds: [UUID],
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -44,7 +41,6 @@ public struct SchedulesEntity: Identifiable, Codable, Equatable, Sendable {
         self.date = date
         self.startTime = startTime
         self.endTime = endTime
-        self.memoIds = memoIds
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

@@ -10,7 +10,6 @@ struct SchedulesDTO: Codable {
     let date: String
     let startTime: String
     let endTime: String
-    let memoIds: [UUID]
     let createdAt: Date
     let updatedAt: Date
     
@@ -22,7 +21,6 @@ struct SchedulesDTO: Codable {
         case date
         case startTime = "start_time"
         case endTime = "end_time"
-        case memoIds = "memo_ids"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -35,7 +33,6 @@ struct SchedulesDTO: Codable {
         self.date = entity.date
         self.startTime = entity.startTime
         self.endTime = entity.endTime
-        self.memoIds = entity.memoIds
         self.createdAt = entity.createdAt
         self.updatedAt = entity.updatedAt
     }
@@ -49,7 +46,6 @@ struct SchedulesDTO: Codable {
             date: date,
             startTime: startTime,
             endTime: endTime,
-            memoIds: memoIds,
             createdAt: createdAt,
             updatedAt: updatedAt
         )

@@ -145,7 +145,6 @@ public struct SchedulesReducer: Reducer {
                             date: date,
                             startTime: startTime,
                             endTime: endTime,
-                            memoIds: [],
                             createdAt: Date(),
                             updatedAt: Date()
                         )
@@ -173,7 +172,6 @@ public struct SchedulesReducer: Reducer {
                             date: date,
                             startTime: startTime,
                             endTime: endTime,
-                            memoIds: schedule.memoIds,
                             createdAt: schedule.createdAt,
                             updatedAt: Date()
                         )
