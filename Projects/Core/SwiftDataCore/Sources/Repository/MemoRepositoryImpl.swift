@@ -38,4 +38,14 @@ public final class MemoRepositoryImpl: MemosRepository {
         let models = try await memoService.searchMemos(userId: userId, keyword: keyword)
         return models.map { MemosDTO.toEntity(from: $0) }
     }
+    
+    public func fetchMemosByAlarmId(alarmId: UUID) async throws -> [MemosEntity] {
+        let models = try await memoService.getMemosByAlarmId(alarmId: alarmId)
+        return models.map { MemosDTO.toEntity(from: $0) }
+    }
+    
+    public func fetchMemosByScheduleId(scheduleId: UUID) async throws -> [MemosEntity] {
+        let models = try await memoService.getMemosByScheduleId(scheduleId: scheduleId)
+        return models.map { MemosDTO.toEntity(from: $0) }
+    }
 }

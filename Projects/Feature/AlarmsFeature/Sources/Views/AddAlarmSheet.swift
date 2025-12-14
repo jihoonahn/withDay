@@ -176,6 +176,43 @@ struct AddAlarmSheet: View {
                         }
                         .padding(.horizontal, 20)
                         
+                        // 메모 추가 Toggle
+                        VStack(alignment: .leading, spacing: 12) {
+                            Toggle(isOn: Binding(get: {
+                                state.addMemoWithAlarm
+                            }, set: { value in
+                                interface.send(.toggleAddMemoWithAlarm(value))
+                            })) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("AlarmAddMemoTitle".localized())
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(JColor.textPrimary)
+                                    
+                                    Text("AlarmAddMemoDescription".localized())
+                                        .font(.system(size: 13))
+                                        .foregroundColor(JColor.textSecondary)
+                                }
+                            }
+                            .tint(JColor.primary)
+                            
+                            if state.addMemoWithAlarm {
+                                TextField("AlarmMemoContentPlaceholder".localized(), text: Binding(get: {
+                                    state.memoContent
+                                }, set: { value in
+                                    interface.send(.memoContentTextFieldDidChange(value))
+                                }), axis: .vertical)
+                                    .lineLimit(3...6)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(JColor.card)
+                                    )
+                                    .foregroundColor(JColor.textPrimary)
+                                    .padding(.top, 8)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        
                         
                         Spacer(minLength: 40)
                     }

@@ -31,4 +31,12 @@ public final class MemosUseCaseImpl: MemosUseCase {
     public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
         return try await memosRepository.searchMemos(userId: userId, keyword: keyword)
     }
+    
+    public func getMemosByAlarmId(alarmId: UUID) async throws -> [MemosEntity] {
+        return try await memosRepository.fetchMemosByAlarmId(alarmId: alarmId)
+    }
+    
+    public func getMemosByScheduleId(scheduleId: UUID) async throws -> [MemosEntity] {
+        return try await memosRepository.fetchMemosByScheduleId(scheduleId: scheduleId)
+    }
 }

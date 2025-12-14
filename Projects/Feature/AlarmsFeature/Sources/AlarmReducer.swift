@@ -5,6 +5,7 @@ import AlarmsFeatureInterface
 import AlarmsDomainInterface
 import AlarmSchedulesCoreInterface
 import UsersDomainInterface
+import MemosDomainInterface
 import Dependency
 import Localization
 import Utility
@@ -13,15 +14,18 @@ public struct AlarmReducer: Reducer {
     private let alarmsUseCase: AlarmsUseCase
     private let alarmSchedulesUseCase: AlarmSchedulesUseCase
     private let usersUseCase: UsersUseCase
+    private let memosUseCase: MemosUseCase
     
     public init(
         alarmsUseCase: AlarmsUseCase,
         alarmSchedulesUseCase: AlarmSchedulesUseCase,
-        usersUseCase: UsersUseCase
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
     ) {
         self.alarmsUseCase = alarmsUseCase
         self.alarmSchedulesUseCase = alarmSchedulesUseCase
         self.usersUseCase = usersUseCase
+        self.memosUseCase = memosUseCase
     }
     // MARK: - Reduce
     
@@ -94,14 +98,45 @@ public struct AlarmReducer: Reducer {
             state.alarms.sort { $0.time < $1.time }
             state.errorMessage = nil
             
+            let shouldAddMemo = state.addMemoWithAlarm
+            let memoContent = state.memoContent
+            
             return [
-                Effect { [self, alarm] emitter in
+                Effect { [self, alarm, shouldAddMemo, memoContent] emitter in
                     do {
                         try await alarmsUseCase.create(alarm)
                         
                         if alarm.isEnabled {
                             print("🔔 [AlarmReducer] 알람 스케줄링 시작: \(alarm.id)")
                             try await alarmSchedulesUseCase.scheduleAlarm(alarm)
+                        }
+                        
+                        // 메모 생성
+                        if shouldAddMemo && !memoContent.isEmpty {
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            
+                            let memo = MemosEntity(
+                                id: UUID(),
+                                userId: user.id,
+                                title: alarm.label ?? "AlarmMemoTitle".localized(),
+                                description: memoContent,
+                                blocks: [
+                                    MemoBlockEntity(
+                                        type: .text,
+                                        content: memoContent
+                                    )
+                                ],
+                                alarmId: alarm.id,
+                                scheduleId: nil,
+                                reminderTime: alarm.time,
+                                createdAt: Date(),
+                                updatedAt: Date()
+                            )
+                            
+                            try await memosUseCase.createMemo(memo)
+                            print("✅ [AlarmReducer] 알람 메모 추가 완료: \(memo.id)")
                         }
                         
                         print("✅ [AlarmReducer] 알람 추가 완료: \(alarm.id)")
@@ -115,6 +150,7 @@ public struct AlarmReducer: Reducer {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
                         emitter.send(.showingAddAlarmState(false))
+                        
                     } catch {
                         print("❌ [AlarmReducer] 알람 추가 실패: \(error)")
                         let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorAddFailed")
@@ -139,12 +175,77 @@ public struct AlarmReducer: Reducer {
             }
             state.errorMessage = nil
             
+            let shouldAddMemo = state.addMemoWithAlarm
+            let memoContent = state.memoContent
+            
             return [
-                Effect { [self, alarm] emitter in
+                Effect { [self, alarm, shouldAddMemo, memoContent] emitter in
                     do {
                         try await alarmsUseCase.update(alarm)
                         print("🔔 [AlarmReducer] 알람 스케줄링 업데이트: \(alarm.id)")
                         try await alarmSchedulesUseCase.updateAlarm(alarm)
+                        
+                        // 메모 처리
+                        if shouldAddMemo && !memoContent.isEmpty {
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw AlarmError.userNotFound
+                            }
+                            
+                            // 기존 메모가 있는지 확인
+                            let existingMemos = try await memosUseCase.getMemosByAlarmId(alarmId: alarm.id)
+                            
+                            if let existingMemo = existingMemos.first {
+                                // 기존 메모 업데이트
+                                let updatedMemo = MemosEntity(
+                                    id: existingMemo.id,
+                                    userId: existingMemo.userId,
+                                    title: alarm.label ?? "AlarmMemoTitle".localized(),
+                                    description: memoContent,
+                                    blocks: [
+                                        MemoBlockEntity(
+                                            type: .text,
+                                            content: memoContent
+                                        )
+                                    ],
+                                    alarmId: alarm.id,
+                                    scheduleId: nil,
+                                    reminderTime: alarm.time,
+                                    createdAt: existingMemo.createdAt,
+                                    updatedAt: Date()
+                                )
+                                try await memosUseCase.updateMemo(updatedMemo)
+                                print("✅ [AlarmReducer] 알람 메모 업데이트 완료: \(updatedMemo.id)")
+                            } else {
+                                // 새 메모 생성
+                                let memo = MemosEntity(
+                                    id: UUID(),
+                                    userId: user.id,
+                                    title: alarm.label ?? "AlarmMemoTitle".localized(),
+                                    description: memoContent,
+                                    blocks: [
+                                        MemoBlockEntity(
+                                            type: .text,
+                                            content: memoContent
+                                        )
+                                    ],
+                                    alarmId: alarm.id,
+                                    scheduleId: nil,
+                                    reminderTime: alarm.time,
+                                    createdAt: Date(),
+                                    updatedAt: Date()
+                                )
+                                try await memosUseCase.createMemo(memo)
+                                print("✅ [AlarmReducer] 알람 메모 추가 완료: \(memo.id)")
+                            }
+                        } else if shouldAddMemo && memoContent.isEmpty {
+                            // 메모 활성화되었지만 내용이 비어있으면 기존 메모 삭제
+                            let existingMemos = try await memosUseCase.getMemosByAlarmId(alarmId: alarm.id)
+                            for memo in existingMemos {
+                                try await memosUseCase.deleteMemo(id: memo.id)
+                                print("✅ [AlarmReducer] 알람 메모 삭제 완료: \(memo.id)")
+                            }
+                        }
+                        
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
                         do {
                             guard let user = try await usersUseCase.getCurrentUser() else {
@@ -155,7 +256,7 @@ public struct AlarmReducer: Reducer {
                         } catch {
                             print("❌ [AlarmReducer] 알람 목록 재로드 실패: \(error)")
                         }
-                        emitter.send(.showingEditAlarmState(nil))
+                        emitter.send(.showingEditAlarmState(nil))                        
                     } catch {
                         print("❌ [AlarmReducer] 알람 수정 실패: \(error)")
                         let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorUpdateFailed")
@@ -305,6 +406,8 @@ public struct AlarmReducer: Reducer {
             state.label = ""
             state.selectedDays = []
             state.isRepeating = false
+            state.addMemoWithAlarm = false
+            state.memoContent = ""
             return []
             
         case let .showingEditAlarmState(alarm):
@@ -360,6 +463,19 @@ public struct AlarmReducer: Reducer {
             state.label = alarm.label ?? ""
             state.selectedDays = Set(alarm.repeatDays)
             state.isRepeating = !alarm.repeatDays.isEmpty
+            state.addMemoWithAlarm = false
+            state.memoContent = ""
+            return []
+            
+        case .toggleAddMemoWithAlarm(let enabled):
+            state.addMemoWithAlarm = enabled
+            if !enabled {
+                state.memoContent = ""
+            }
+            return []
+            
+        case .memoContentTextFieldDidChange(let text):
+            state.memoContent = text
             return []
             
         case .saveAddAlarm:

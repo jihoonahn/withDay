@@ -23,4 +23,8 @@ public enum SchedulesAction: ActionType {
     case deleteSchedule(UUID)
     case saveAddSchedule
     case saveEditSchedule
+    
+    // Memo related
+    case toggleAddMemoWithSchedule(Bool)
+    case memoContentTextFieldDidChange(String)
 }

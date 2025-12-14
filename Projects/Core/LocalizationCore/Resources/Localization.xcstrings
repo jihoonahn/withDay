@@ -2574,6 +2574,132 @@
           }
         }
       }
+    },
+    "AlarmAddMemoTitle" : {
+      "comment" : "Add memo with alarm toggle title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 추가"
+          }
+        }
+      }
+    },
+    "AlarmAddMemoDescription" : {
+      "comment" : "Add memo with alarm toggle description",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a memo linked to this alarm"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 알람과 연결된 메모를 생성합니다"
+          }
+        }
+      }
+    },
+    "AlarmMemoContentPlaceholder" : {
+      "comment" : "Placeholder for alarm memo content",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter memo content..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 내용을 입력하세요..."
+          }
+        }
+      }
+    },
+    "ScheduleAddMemoTitle" : {
+      "comment" : "Add memo with schedule toggle title",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 추가"
+          }
+        }
+      }
+    },
+    "ScheduleAddMemoDescription" : {
+      "comment" : "Add memo with schedule toggle description",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a memo linked to this schedule"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 스케줄과 연결된 메모를 생성합니다"
+          }
+        }
+      }
+    },
+    "ScheduleMemoContentPlaceholder" : {
+      "comment" : "Placeholder for schedule memo content",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter memo content..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 내용을 입력하세요..."
+          }
+        }
+      }
+    },
+    "AlarmMemoTitle" : {
+      "comment" : "Default title for alarm memo",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm Memo"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알람 메모"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -12,42 +12,59 @@ import MemosDomainInterface
 import AlarmsDomainInterface
 import SchedulesDomainInterface
 import Utility
+import Combine
 
 public struct HomeView: View {
     let interface: HomeInterface
     @State private var state = HomeState()
+    @State private var lastRefreshTime: Date = Date()
 
-    let memoFactory: MemoFactory
-
-    public init(
-        interface: HomeInterface,
-    ) {
+    public init(interface: HomeInterface) {
         self.interface = interface
-        self.memoFactory = DIContainer.shared.resolve(MemoFactory.self)
     }
     
     public var body: some View {
         NavigationStack {
-            ZStack {
+            ZStack(alignment: .top) {
                 JColor.background.ignoresSafeArea()
                 
                 if state.isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: JColor.primary))
                 } else {
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            headerSection
-                            
-                            if timelineItems.isEmpty {
-                                emptyTimelineView
-                            } else {
-                                timelineView
+                    ZStack(alignment: .top) {
+                        ScrollView {
+                            ZStack(alignment: .topLeading) {
+                                timelineBackgroundLine
+                                    .padding(.horizontal, 20)
+                                
+                                VStack(spacing: 0) {
+                                    if timelineItems.isEmpty {
+                                        emptyTimelineView
+                                    } else {
+                                        timelineContentView
+                                    }
+                                    
+                                    if state.isLoadingNextDay {
+                                        loadingNextDayView
+                                    }
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 100)
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
-                        .padding(.bottom, 100)
+                        headerView
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+                            .padding(.bottom, 16)
+                            .background(
+                                ZStack {
+                                    Color(.systemBackground).opacity(0.8)
+                                }
+                                .blur(radius: 30)
+                            )
                     }
                 }
             }
@@ -64,88 +81,67 @@ public struct HomeView: View {
             }
         }
     }
-}
-
-// MARK: - TimelineItem
-private enum TimelineItemType {
-    case alarm(AlarmsEntity)
-    case schedule(SchedulesEntity)
-}
-
-private struct TimelineItem: Identifiable {
-    let id: UUID
-    let type: TimelineItemType
-    let time: String
-    let timeValue: Int // 시간을 분 단위로 변환한 값 (정렬용)
-}
-
-// MARK: - Components
-private extension HomeView {
-    var headerSection: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(state.homeTitle)
+    
+    // MARK: - Header
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(formatDateTitle(state.currentDisplayDate))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(JColor.textPrimary)
-                
-                if let wakeDuration = state.wakeDurationDescription {
-                    Text(wakeDuration)
-                        .font(.system(size: 14))
-                        .foregroundStyle(JColor.textSecondary)
-                } else {
-                    Text("HomeWakeDurationSubtitle".localized())
-                        .font(.system(size: 14))
-                        .foregroundStyle(JColor.textSecondary)
-                }
-            }
-            Spacer()
         }
-        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    var timelineItems: [TimelineItem] {
-        var items: [TimelineItem] = []
-        
-        // 알람 추가
-        for alarm in todayAlarms {
-            let time = extractTime(from: alarm.time)
-            let timeValue = timeToMinutes(time)
-            items.append(TimelineItem(
-                id: alarm.id,
-                type: .alarm(alarm),
-                time: time,
-                timeValue: timeValue
-            ))
+    // MARK: - Timeline Background
+    private var timelineBackgroundLine: some View {
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(JColor.textSecondary.opacity(0.2))
+                .frame(width: 2)
+                .frame(width: 50)
         }
-        
-        // 스케줄 추가
-        for schedule in todaySchedules {
-            let timeValue = timeToMinutes(schedule.startTime)
-            items.append(TimelineItem(
-                id: schedule.id,
-                type: .schedule(schedule),
-                time: schedule.startTime,
-                timeValue: timeValue
-            ))
-        }
-        
-        // 시간순으로 정렬
-        return items.sorted { $0.timeValue < $1.timeValue }
     }
     
-    var timelineView: some View {
+    // MARK: - Timeline Content
+    private var timelineItems: [TimelineItem] {
+        let alarms = state.currentAlarms.map {
+            TimelineItem(
+                id: $0.id,
+                type: .alarm($0),
+                time: extractTime(from: $0.time),
+                timeValue: timeToMinutes(extractTime(from: $0.time))
+            )
+        }
+        let schedules = state.currentSchedules.map {
+            TimelineItem(
+                id: $0.id,
+                type: .schedule($0),
+                time: $0.startTime,
+                timeValue: timeToMinutes($0.startTime)
+            )
+        }
+        return (alarms + schedules).sorted { $0.timeValue < $1.timeValue }
+    }
+    
+    private var timelineContentView: some View {
         VStack(spacing: 0) {
             ForEach(Array(timelineItems.enumerated()), id: \.element.id) { index, item in
-                TimelineRow(
-                    item: item,
-                    isFirst: index == 0,
-                    isLast: index == timelineItems.count - 1
-                )
+                TimelineRow(item: item, relatedMemos: relatedMemos(for: item))
             }
         }
     }
     
-    var emptyTimelineView: some View {
+    private func relatedMemos(for item: TimelineItem) -> [MemosEntity] {
+        switch item.type {
+        case .alarm(let alarm):
+            return state.allMemos.filter { $0.alarmId == alarm.id }
+        case .schedule(let schedule):
+            return state.allMemos.filter { $0.scheduleId == schedule.id }
+        }
+    }
+    
+    // MARK: - Empty State
+    private var emptyTimelineView: some View {
         VStack(spacing: 16) {
             Image(refineUIIcon: .calendar32Regular)
                 .foregroundColor(JColor.textSecondary)
@@ -164,211 +160,148 @@ private extension HomeView {
         .padding(.vertical, 60)
     }
     
-    var todayAlarms: [AlarmsEntity] {
-        let today = Date()
-        let calendar = Calendar.current
-        let todayWeekday = calendar.component(.weekday, from: today) - 1 // 0: 일요일, 6: 토요일
-        
-        return state.alarms.filter { alarm in
-            if alarm.repeatDays.isEmpty {
-                return alarm.isEnabled
-            } else {
-                return alarm.isEnabled && alarm.repeatDays.contains(todayWeekday)
-            }
-        }
+    private var loadingNextDayView: some View {
+        ProgressView()
+            .progressViewStyle(CircularProgressViewStyle(tint: JColor.primary))
+            .padding(.vertical, 20)
     }
     
-    var todaySchedules: [SchedulesEntity] {
-        let todayString = formatTodayDateString()
-        return state.schedules.filter { schedule in
-            schedule.date == todayString
-        }.sorted { schedule1, schedule2 in
-            schedule1.startTime < schedule2.startTime
-        }
+    // MARK: - Date Formatting
+    private func formatDateTitle(_ date: Date) -> String {
+        return date.toString()
     }
     
-    func formatTodayDateString() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
+    // MARK: - Time Formatting
+    private func extractTime(from timeString: String) -> String {
+        timeString.split(separator: " ").last.map(String.init) ?? timeString
     }
     
-    func extractTime(from timeString: String) -> String {
-        if timeString.contains(" ") {
-            let parts = timeString.split(separator: " ")
-            return parts.count >= 2 ? String(parts[1]) : timeString
-        }
-        return timeString
-    }
-    
-    func timeToMinutes(_ timeString: String) -> Int {
+    private func timeToMinutes(_ timeString: String) -> Int {
         let components = timeString.split(separator: ":")
         guard components.count >= 2,
               let hour = Int(components[0]),
-              let minute = Int(components[1]) else {
-            return 0
-        }
+              let minute = Int(components[1]) else { return 0 }
         return hour * 60 + minute
+    }
+    
+    private func formatTime(_ timeString: String) -> String {
+        let cleanTime = extractTime(from: timeString)
+        let components = cleanTime.split(separator: ":")
+        guard components.count == 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]) else { return timeString }
+        return String(format: "%02d:%02d", hour, minute)
     }
 }
 
 // MARK: - TimelineRow
 private struct TimelineRow: View {
     let item: TimelineItem
-    let isFirst: Bool
-    let isLast: Bool
+    let relatedMemos: [MemosEntity]
     
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            // Timeline line & time
-            VStack(spacing: 0) {
-                // Time label
-                Text(formatTime(item.time))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(JColor.textSecondary)
-                    .frame(width: 60, alignment: .trailing)
-                    .padding(.top, 4)
-                
-                // Timeline dot & line
-                ZStack(alignment: .top) {
-                    // Vertical line
-                    if !isLast {
-                        Rectangle()
-                            .fill(dotColor.opacity(0.3))
-                            .frame(width: 2)
-                            .padding(.top, 12)
-                    }
-                    
-                    // Dot
-                    Circle()
-                        .fill(dotColor)
-                        .frame(width: 12, height: 12)
-                        .overlay(
-                            Circle()
-                                .stroke(JColor.background, lineWidth: 2)
-                        )
-                        .shadow(color: dotColor.opacity(0.5), radius: 4, x: 0, y: 2)
-                }
-                .frame(width: 60)
-                
-                Spacer()
-            }
-            
-            // Content card
+            timelineIndicator
             contentCard
-                .padding(.top, 4)
-            
-            Spacer()
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
+    }
+    
+    private var timelineIndicator: some View {
+        VStack(spacing: 0) {
+            Circle()
+                .frame(width: 15, height: 15)
+                .glassEffect()
+                .frame(width: 50)
+                .padding(.top, 25)
+        }
+    }
+    
+    private var contentCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            itemContent
+            
+            if !relatedMemos.isEmpty {
+                memoSection
+            }
+        }
+        .padding(16)
+        .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
     }
     
     @ViewBuilder
-    private var contentCard: some View {
+    private var itemContent: some View {
         switch item.type {
         case .alarm(let alarm):
-            AlarmTimelineCard(alarm: alarm)
+            AlarmContentCard(alarm: alarm)
         case .schedule(let schedule):
-            ScheduleTimelineCard(schedule: schedule)
+            ScheduleContentCard(schedule: schedule)
         }
     }
     
-    private var dotColor: Color {
-        switch item.type {
-        case .alarm:
-            return JColor.primary
-        case .schedule:
-            return JColor.success
+    private var memoSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(relatedMemos, id: \.id) { memo in
+                MemoCard(memo: memo)
+            }
         }
     }
-    
+
     private func formatTime(_ timeString: String) -> String {
-        let components = timeString.split(separator: ":")
-        guard components.count >= 2,
+        let cleanTime = timeString.split(separator: " ").last.map(String.init) ?? timeString
+        let components = cleanTime.split(separator: ":")
+        guard components.count == 2,
               let hour = Int(components[0]),
-              let minute = Int(components[1]) else {
-            return timeString
-        }
+              let minute = Int(components[1]) else { return timeString }
         return String(format: "%02d:%02d", hour, minute)
     }
 }
 
-// MARK: - AlarmTimelineCard
-private struct AlarmTimelineCard: View {
+// MARK: - AlarmContentCard
+private struct AlarmContentCard: View {
     let alarm: AlarmsEntity
     
     var body: some View {
         HStack(spacing: 12) {
-            // Icon
             Image(refineUIIcon: .clockAlarm20Regular)
-                .foregroundColor(JColor.primary)
+                .foregroundColor(JColor.textPrimary)
                 .font(.system(size: 20))
                 .frame(width: 24)
             
-            // Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(formatTime(alarm.time))
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(JColor.textPrimary)
                 
-                if let label = alarm.label, !label.isEmpty {
-                    Text(label)
-                        .font(.system(size: 14))
-                        .foregroundColor(JColor.textSecondary)
-                } else {
-                    Text("HomeAlarmDefaultLabel".localized())
-                        .font(.system(size: 14))
-                        .foregroundColor(JColor.textSecondary.opacity(0.6))
-                }
+                Text(alarm.label?.isEmpty == false ? alarm.label! : "HomeAlarmDefaultLabel".localized())
+                    .font(.system(size: 14))
+                    .foregroundColor(alarm.label?.isEmpty == false ? JColor.textSecondary : JColor.textSecondary.opacity(0.6))
             }
-            
             Spacer()
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(JColor.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(JColor.primary.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: JColor.primary.opacity(0.1), radius: 8, x: 0, y: 2)
-        )
     }
     
     private func formatTime(_ timeString: String) -> String {
-        let cleanTime: String
-        if timeString.contains(" ") {
-            let parts = timeString.split(separator: " ")
-            cleanTime = parts.count >= 2 ? String(parts[1]) : timeString
-        } else {
-            cleanTime = timeString
-        }
-        
+        let cleanTime = timeString.split(separator: " ").last.map(String.init) ?? timeString
         let components = cleanTime.split(separator: ":")
         guard components.count == 2,
               let hour = Int(components[0]),
-              let minute = Int(components[1]) else {
-            return timeString
-        }
-        
+              let minute = Int(components[1]) else { return timeString }
         return String(format: "%02d:%02d", hour, minute)
     }
 }
 
-// MARK: - ScheduleTimelineCard
-private struct ScheduleTimelineCard: View {
+// MARK: - ScheduleContentCard
+private struct ScheduleContentCard: View {
     let schedule: SchedulesEntity
     
     var body: some View {
         HStack(spacing: 12) {
-            // Icon
             Image(refineUIIcon: .calendar20Regular)
                 .foregroundColor(JColor.success)
                 .font(.system(size: 20))
                 .frame(width: 24)
             
-            // Content
             VStack(alignment: .leading, spacing: 4) {
                 Text(schedule.title)
                     .font(.system(size: 18, weight: .bold))
@@ -376,19 +309,13 @@ private struct ScheduleTimelineCard: View {
                 
                 HStack(spacing: 4) {
                     Text(formatTime(schedule.startTime))
-                        .font(.system(size: 14))
-                        .foregroundColor(JColor.textSecondary)
-                    
                     if schedule.startTime != schedule.endTime {
                         Text("~")
-                            .font(.system(size: 14))
-                            .foregroundColor(JColor.textSecondary)
-                        
                         Text(formatTime(schedule.endTime))
-                            .font(.system(size: 14))
-                            .foregroundColor(JColor.textSecondary)
                     }
                 }
+                .font(.system(size: 14))
+                .foregroundColor(JColor.textSecondary)
                 
                 if !schedule.description.isEmpty {
                     Text(schedule.description)
@@ -398,28 +325,57 @@ private struct ScheduleTimelineCard: View {
                         .padding(.top, 2)
                 }
             }
-            
             Spacer()
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(JColor.card)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(JColor.success.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: JColor.success.opacity(0.1), radius: 8, x: 0, y: 2)
-        )
     }
     
     private func formatTime(_ timeString: String) -> String {
-        let components = timeString.split(separator: ":")
-        guard components.count >= 2,
+        let cleanTime = timeString.split(separator: " ").last.map(String.init) ?? timeString
+        let components = cleanTime.split(separator: ":")
+        guard components.count == 2,
               let hour = Int(components[0]),
-              let minute = Int(components[1]) else {
-            return timeString
-        }
+              let minute = Int(components[1]) else { return timeString }
         return String(format: "%02d:%02d", hour, minute)
     }
+}
+
+// MARK: - MemoCard
+private struct MemoCard: View {
+    let memo: MemosEntity
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "note.text")
+                    .foregroundColor(JColor.warning)
+                    .font(.system(size: 14))
+                Text(memo.title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(JColor.textPrimary)
+                Spacer()
+            }
+            if !memo.description.isEmpty {
+                Text(memo.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(JColor.textSecondary)
+                    .lineLimit(3)
+            }
+        }
+        .padding(12)
+        .shadow(color: JColor.warning.opacity(0.2), radius: 8, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(JColor.warning.opacity(0.3), lineWidth: 1))
+    }
+}
+
+// MARK: - TimelineItem
+private enum TimelineItemType {
+    case alarm(AlarmsEntity)
+    case schedule(SchedulesEntity)
+}
+
+private struct TimelineItem: Identifiable {
+    let id: UUID
+    let type: TimelineItemType
+    let time: String
+    let timeValue: Int
 }

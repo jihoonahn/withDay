@@ -8,4 +8,6 @@ public protocol MemosService: Sendable {
     func getMemo(id: UUID) async throws -> MemosEntity
     func getMemos(userId: UUID) async throws -> [MemosEntity]
     func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity]
+    func getMemosByAlarmId(alarmId: UUID) async throws -> [MemosEntity]
+    func getMemosByScheduleId(scheduleId: UUID) async throws -> [MemosEntity]
 }

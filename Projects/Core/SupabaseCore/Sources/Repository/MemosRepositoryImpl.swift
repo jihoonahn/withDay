@@ -35,4 +35,12 @@ public final class MemosRepositoryImpl: MemosRepository {
     public func searchMemos(userId: UUID, keyword: String) async throws -> [MemosEntity] {
         try await memosService.searchMemos(userId: userId, keyword: keyword)
     }
+
+    public func fetchMemosByAlarmId(alarmId: UUID) async throws -> [MemosEntity] {
+        try await memosService.getMemosByAlarmId(alarmId: alarmId)
+    }
+    
+    public func fetchMemosByScheduleId(scheduleId: UUID) async throws -> [MemosEntity] {
+        try await memosService.getMemosByScheduleId(scheduleId: scheduleId)
+    }
 }

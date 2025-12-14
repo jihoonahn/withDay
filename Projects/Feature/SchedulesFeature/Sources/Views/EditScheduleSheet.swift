@@ -144,9 +144,46 @@ struct EditScheduleSheet: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        
+                        // 메모 추가 Toggle
+                        VStack(alignment: .leading, spacing: 12) {
+                            Toggle(isOn: Binding(get: {
+                                state.addMemoWithSchedule
+                            }, set: { value in
+                                interface.send(.toggleAddMemoWithSchedule(value))
+                            })) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("ScheduleAddMemoTitle".localized())
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(JColor.textPrimary)
+                                    
+                                    Text("ScheduleAddMemoDescription".localized())
+                                        .font(.system(size: 13))
+                                        .foregroundColor(JColor.textSecondary)
+                                }
+                            }
+                            .tint(JColor.primary)
+                            
+                            if state.addMemoWithSchedule {
+                                TextField("ScheduleMemoContentPlaceholder".localized(), text: Binding(get: {
+                                    state.memoContent
+                                }, set: { value in
+                                    interface.send(.memoContentTextFieldDidChange(value))
+                                }), axis: .vertical)
+                                    .lineLimit(3...6)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(JColor.card)
+                                    )
+                                    .foregroundColor(JColor.textPrimary)
+                                    .padding(.top, 8)
+                            }
+                        }
+                        .padding(.horizontal, 20)
                     }
                     .padding(.top, 20)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 100)
                 }
             }
             .navigationTitle("ScheduleEditNavigationTitle".localized())

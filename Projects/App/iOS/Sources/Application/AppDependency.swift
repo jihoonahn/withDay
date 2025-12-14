@@ -322,7 +322,8 @@ public class AppDependencies {
             return AlarmFactoryImpl.create(
                 alarmsUseCase: container.resolve(AlarmsUseCase.self),
                 alarmSchedulesUseCase: container.resolve(AlarmSchedulesUseCase.self),
-                usersUseCase: container.resolve(UsersUseCase.self)
+                usersUseCase: container.resolve(UsersUseCase.self),
+                memosUseCase: container.resolve(MemosUseCase.self)
             )
         }
 

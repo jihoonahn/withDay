@@ -23,4 +23,8 @@ public enum AlarmAction: ActionType {
     case initializeEditAlarmState(AlarmsEntity)
     case saveAddAlarm
     case saveEditAlarm
+    
+    // Memo related
+    case toggleAddMemoWithAlarm(Bool)
+    case memoContentTextFieldDidChange(String)
 }

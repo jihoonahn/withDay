@@ -10,13 +10,15 @@ public struct HomeState: StateType {
     public var addMemoSheetIsPresented = false
     public var editMemoSheetIsPresented = false
     // Loaded data
-    public var wakeDurationDescription: String?
     public var allMemos: [MemosEntity] = []
     public var alarms: [AlarmsEntity] = []
     public var schedules: [SchedulesEntity] = []
     public var isLoading: Bool = false
     public var navigateToAllMemo: Bool = false
     public var presentedAddMemo: Bool = false
+    // Infinite scroll
+    public var currentDisplayDate: Date = Date()
+    public var isLoadingNextDay: Bool = false
     public init() {}
 }
 
@@ -44,5 +46,35 @@ public extension HomeState {
             return leftDate < rightDate
         }
         return (lhs.reminderTime ?? "") < (rhs.reminderTime ?? "")
+    }
+    
+    // 현재 표시 날짜의 알람들
+    var currentAlarms: [AlarmsEntity] {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: currentDisplayDate) - 1
+        return alarms.filter {
+            $0.isEnabled && ($0.repeatDays.isEmpty || $0.repeatDays.contains(weekday))
+        }
+    }
+    
+    // 현재 표시 날짜의 스케줄들
+    var currentSchedules: [SchedulesEntity] {
+        let calendar = Calendar.current
+        let targetDate = calendar.startOfDay(for: currentDisplayDate)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        let dateString = formatter.string(from: targetDate)
+        
+        return schedules.filter { schedule in
+            // 날짜 형식 정규화 (공백, 시간 부분 제거)
+            let normalizedScheduleDate = schedule.date.trimmingCharacters(in: .whitespaces)
+                .components(separatedBy: " ").first ?? schedule.date
+                .components(separatedBy: "T").first ?? schedule.date
+            
+            return normalizedScheduleDate == dateString
+        }
+        .sorted { $0.startTime < $1.startTime }
     }
 }

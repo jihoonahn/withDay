@@ -3,19 +3,23 @@ import Rex
 import SchedulesFeatureInterface
 import SchedulesDomainInterface
 import UsersDomainInterface
+import MemosDomainInterface
 import Localization
 import Utility
 
 public struct SchedulesReducer: Reducer {
     private let schedulesUseCase: SchedulesUseCase
     private let usersUseCase: UsersUseCase
+    private let memosUseCase: MemosUseCase
     
     public init(
         schedulesUseCase: SchedulesUseCase,
-        usersUseCase: UsersUseCase
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
     ) {
         self.schedulesUseCase = schedulesUseCase
         self.usersUseCase = usersUseCase
+        self.memosUseCase = memosUseCase
     }
     
     public func reduce(state: inout SchedulesState, action: SchedulesAction) -> [Effect<SchedulesAction>] {
@@ -63,6 +67,8 @@ public struct SchedulesReducer: Reducer {
             state.selectedDate = Date()
             state.startTime = Date()
             state.endTime = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+            state.addMemoWithSchedule = false
+            state.memoContent = ""
             return []
             
         case .showingEditSchedule(let schedule):
@@ -125,13 +131,18 @@ public struct SchedulesReducer: Reducer {
                 dateComponents.minute = minute
                 state.endTime = Calendar.current.date(from: dateComponents) ?? Date()
             }
+            state.addMemoWithSchedule = false
+            state.memoContent = ""
             
             return []
             
         case .createSchedule(let title, let description, let date, let startTime, let endTime):
             state.errorMessage = nil
+            let shouldAddMemo = state.addMemoWithSchedule
+            let memoContent = state.memoContent
+            
             return [
-                Effect { [self] emitter in
+                Effect { [self, shouldAddMemo, memoContent] emitter in
                     do {
                         guard let user = try await usersUseCase.getCurrentUser() else {
                             throw SchedulesError.userNotFound
@@ -150,6 +161,31 @@ public struct SchedulesReducer: Reducer {
                         )
                         
                         try await schedulesUseCase.createSchedule(newSchedule)
+                        
+                        // 메모 생성
+                        if shouldAddMemo && !memoContent.isEmpty {
+                            let memo = MemosEntity(
+                                id: UUID(),
+                                userId: user.id,
+                                title: title,
+                                description: memoContent,
+                                blocks: [
+                                    MemoBlockEntity(
+                                        type: .text,
+                                        content: memoContent
+                                    )
+                                ],
+                                alarmId: nil,
+                                scheduleId: newSchedule.id,
+                                reminderTime: startTime,
+                                createdAt: Date(),
+                                updatedAt: Date()
+                            )
+                            
+                            try await memosUseCase.createMemo(memo)
+                            print("✅ [SchedulesReducer] 스케줄 메모 추가 완료: \(memo.id)")
+                        }
+                        
                         emitter.send(.loadSchedules)
                         emitter.send(.showingAddSchedule(false))
                     } catch {
@@ -161,8 +197,11 @@ public struct SchedulesReducer: Reducer {
             
         case .updateSchedule(let schedule, let title, let description, let date, let startTime, let endTime):
             state.errorMessage = nil
+            let shouldAddMemo = state.addMemoWithSchedule
+            let memoContent = state.memoContent
+            
             return [
-                Effect { [self] emitter in
+                Effect { [self, shouldAddMemo, memoContent] emitter in
                     do {
                         let updatedSchedule = SchedulesEntity(
                             id: schedule.id,
@@ -177,6 +216,68 @@ public struct SchedulesReducer: Reducer {
                         )
                         
                         try await schedulesUseCase.updateSchedule(updatedSchedule)
+                        
+                        // 메모 처리
+                        if shouldAddMemo && !memoContent.isEmpty {
+                            guard let user = try await usersUseCase.getCurrentUser() else {
+                                throw SchedulesError.userNotFound
+                            }
+                            
+                            // 기존 메모가 있는지 확인
+                            let existingMemos = try await memosUseCase.getMemosByScheduleId(scheduleId: updatedSchedule.id)
+                            
+                            if let existingMemo = existingMemos.first {
+                                // 기존 메모 업데이트
+                                let updatedMemo = MemosEntity(
+                                    id: existingMemo.id,
+                                    userId: existingMemo.userId,
+                                    title: title,
+                                    description: memoContent,
+                                    blocks: [
+                                        MemoBlockEntity(
+                                            type: .text,
+                                            content: memoContent
+                                        )
+                                    ],
+                                    alarmId: nil,
+                                    scheduleId: updatedSchedule.id,
+                                    reminderTime: startTime,
+                                    createdAt: existingMemo.createdAt,
+                                    updatedAt: Date()
+                                )
+                                try await memosUseCase.updateMemo(updatedMemo)
+                                print("✅ [SchedulesReducer] 스케줄 메모 업데이트 완료: \(updatedMemo.id)")
+                            } else {
+                                // 새 메모 생성
+                                let memo = MemosEntity(
+                                    id: UUID(),
+                                    userId: user.id,
+                                    title: title,
+                                    description: memoContent,
+                                    blocks: [
+                                        MemoBlockEntity(
+                                            type: .text,
+                                            content: memoContent
+                                        )
+                                    ],
+                                    alarmId: nil,
+                                    scheduleId: updatedSchedule.id,
+                                    reminderTime: startTime,
+                                    createdAt: Date(),
+                                    updatedAt: Date()
+                                )
+                                try await memosUseCase.createMemo(memo)
+                                print("✅ [SchedulesReducer] 스케줄 메모 추가 완료: \(memo.id)")
+                            }
+                        } else if shouldAddMemo && memoContent.isEmpty {
+                            // 메모 활성화되었지만 내용이 비어있으면 기존 메모 삭제
+                            let existingMemos = try await memosUseCase.getMemosByScheduleId(scheduleId: updatedSchedule.id)
+                            for memo in existingMemos {
+                                try await memosUseCase.deleteMemo(id: memo.id)
+                                print("✅ [SchedulesReducer] 스케줄 메모 삭제 완료: \(memo.id)")
+                            }
+                        }
+                        
                         emitter.send(.loadSchedules)
                         emitter.send(.showingEditSchedule(nil))
                     } catch {
@@ -192,7 +293,7 @@ public struct SchedulesReducer: Reducer {
                 Effect { [self] emitter in
                     do {
                         try await schedulesUseCase.deleteSchedule(id: id)
-                        emitter.send(.loadSchedules)
+                        emitter.send(.loadSchedules)                        
                     } catch {
                         let errorMessage = SchedulesError.formatErrorMessage(error, key: "SchedulesErrorDeleteFailed")
                         emitter.send(.setError(errorMessage))
@@ -270,6 +371,16 @@ public struct SchedulesReducer: Reducer {
                     ))
                 }
             ]
+        case .toggleAddMemoWithSchedule(let enabled):
+            state.addMemoWithSchedule = enabled
+            if !enabled {
+                state.memoContent = ""
+            }
+            return []
+            
+        case .memoContentTextFieldDidChange(let text):
+            state.memoContent = text
+            return []
         }
     }
 }

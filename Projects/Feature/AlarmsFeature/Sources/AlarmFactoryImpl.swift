@@ -4,6 +4,7 @@ import AlarmsFeatureInterface
 import AlarmsDomainInterface
 import AlarmSchedulesDomainInterface
 import UsersDomainInterface
+import MemosDomainInterface
 
 public struct AlarmFactoryImpl: AlarmFactory {
     private let store: Store<AlarmReducer>
@@ -27,14 +28,16 @@ public extension AlarmFactoryImpl {
     static func create(
         alarmsUseCase: AlarmsUseCase,
         alarmSchedulesUseCase: AlarmSchedulesUseCase,
-        usersUseCase: UsersUseCase
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
     ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: AlarmState(),
             reducer: AlarmReducer(
                 alarmsUseCase: alarmsUseCase,
                 alarmSchedulesUseCase: alarmSchedulesUseCase,
-                usersUseCase: usersUseCase
+                usersUseCase: usersUseCase,
+                memosUseCase: memosUseCase
             )
         )
         return AlarmFactoryImpl(store: store)
@@ -44,14 +47,16 @@ public extension AlarmFactoryImpl {
         initialState: AlarmState,
         alarmsUseCase: AlarmsUseCase,
         alarmSchedulesUseCase: AlarmSchedulesUseCase,
-        usersUseCase: UsersUseCase
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
     ) -> AlarmFactoryImpl {
         let store = Store<AlarmReducer>(
             initialState: initialState,
             reducer: AlarmReducer(
                 alarmsUseCase: alarmsUseCase,
                 alarmSchedulesUseCase: alarmSchedulesUseCase,
-                usersUseCase: usersUseCase
+                usersUseCase: usersUseCase,
+                memosUseCase: memosUseCase
             )
         )
         return AlarmFactoryImpl(store: store)

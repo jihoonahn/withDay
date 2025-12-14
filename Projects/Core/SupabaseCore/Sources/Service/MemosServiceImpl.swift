@@ -78,4 +78,26 @@ public final class MemosServiceImpl: MemosService {
         
         return memos.map { $0.toEntity() }
     }
+
+    public func getMemosByAlarmId(alarmId: UUID) async throws -> [MemosEntity] {
+        let memos: [MemosDTO] = try await client
+            .from("memos")
+            .select()
+            .eq("alarm_id", value: alarmId.uuidString)
+            .single()
+            .execute()
+            .value
+        return memos.map { $0.toEntity() }
+    }
+    
+    public func getMemosByScheduleId(scheduleId: UUID) async throws -> [MemosEntity] {
+        let memos: [MemosDTO] = try await client
+            .from("memos")
+            .select()
+            .eq("schedule_id", value: scheduleId.uuidString)
+            .single()
+            .execute()
+            .value
+        return memos.map { $0.toEntity() }
+    }
 }

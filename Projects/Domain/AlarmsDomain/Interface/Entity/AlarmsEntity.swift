@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AlarmsEntity: Identifiable, Codable, Equatable, Sendable {
+public struct AlarmsEntity: Identifiable, Hashable, Codable, Equatable, Sendable {
     public let id: UUID
     public let userId: UUID
     public var label: String?

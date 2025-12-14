@@ -12,7 +12,8 @@ public enum MemosDTO {
             title: entity.title,
             content: entity.description,
             blocks: entity.blocks.map { toBlockModel(from: $0) },
-            alarmId: entity.alarmId ?? UUID(),
+            alarmId: entity.alarmId,
+            scheduleId: entity.scheduleId,
             reminderTime: entity.reminderTime,
             createdAt: entity.createdAt ?? Date(),
             updatedAt: entity.updatedAt ?? Date()
@@ -28,6 +29,7 @@ public enum MemosDTO {
             description: model.content,
             blocks: model.blocks.map { toBlockEntity(from: $0) },
             alarmId: model.alarmId,
+            scheduleId: model.scheduleId,
             reminderTime: model.reminderTime,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt

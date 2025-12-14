@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SchedulesEntity: Identifiable, Codable, Equatable, Sendable {
+public struct SchedulesEntity: Identifiable, Hashable, Codable, Equatable, Sendable {
     public let id: UUID
     public let userId: UUID
     public let title: String

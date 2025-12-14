@@ -3,6 +3,7 @@ import Rex
 import SchedulesFeatureInterface
 import SchedulesDomainInterface
 import UsersDomainInterface
+import MemosDomainInterface
 import Dependency
 
 public struct SchedulesFactoryImpl: SchedulesFactory {
@@ -27,7 +28,8 @@ public extension SchedulesFactoryImpl {
         let container = DIContainer.shared
         let reducer = SchedulesReducer(
             schedulesUseCase: container.resolve(SchedulesUseCase.self),
-            usersUseCase: container.resolve(UsersUseCase.self)
+            usersUseCase: container.resolve(UsersUseCase.self),
+            memosUseCase: container.resolve(MemosUseCase.self)
         )
         let store = Store<SchedulesReducer>(
             initialState: SchedulesState(),
@@ -40,7 +42,8 @@ public extension SchedulesFactoryImpl {
         let container = DIContainer.shared
         let reducer = SchedulesReducer(
             schedulesUseCase: container.resolve(SchedulesUseCase.self),
-            usersUseCase: container.resolve(UsersUseCase.self)
+            usersUseCase: container.resolve(UsersUseCase.self),
+            memosUseCase: container.resolve(MemosUseCase.self)
         )
         let store = Store<SchedulesReducer>(
             initialState: initialState,

@@ -21,7 +21,8 @@ public final class MemosModel {
         }
     }
 
-    public var alarmId: UUID
+    public var alarmId: UUID?
+    public var scheduleId: UUID?
     public var reminderTime: String?
     public var createdAt: Date
     public var updatedAt: Date
@@ -32,7 +33,8 @@ public final class MemosModel {
         title: String,
         content: String,
         blocks: [MemoBlockModel],
-        alarmId: UUID,
+        alarmId: UUID? = nil,
+        scheduleId: UUID? = nil,
         reminderTime: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -45,6 +47,7 @@ public final class MemosModel {
         self.blocksData = try? JSONEncoder().encode(blocks)
         self.reminderTime = reminderTime
         self.alarmId = alarmId
+        self.scheduleId = scheduleId
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

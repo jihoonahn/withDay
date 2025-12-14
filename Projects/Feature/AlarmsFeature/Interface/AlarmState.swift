@@ -11,6 +11,10 @@ public struct AlarmState: StateType {
     public var selectedDays: Set<Int> = []
     public var isRepeating: Bool = false
     
+    // Memo related
+    public var addMemoWithAlarm: Bool = false
+    public var memoContent: String = ""
+    
     public var errorMessage: String?
     public var showingAddAlarm: Bool = false
     public var editingAlarm: AlarmsEntity? = nil

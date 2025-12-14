@@ -16,6 +16,10 @@ public struct SchedulesState: StateType {
     public var startTime: Date = Date()
     public var endTime: Date = Date()
     
+    // Memo related
+    public var addMemoWithSchedule: Bool = false
+    public var memoContent: String = ""
+    
     public init() {}
 }
 

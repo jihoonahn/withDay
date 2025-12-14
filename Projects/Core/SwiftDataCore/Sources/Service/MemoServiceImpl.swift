@@ -66,4 +66,26 @@ public final class MemoServiceImpl: MemosService {
         )
         return try context.fetch(descriptor)
     }
+    
+    public func getMemosByAlarmId(alarmId: UUID) async throws -> [MemosModel] {
+        let context = await container.mainContext
+        let descriptor = FetchDescriptor<MemosModel>(
+            predicate: #Predicate { memo in
+                memo.alarmId == alarmId
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return try context.fetch(descriptor)
+    }
+    
+    public func getMemosByScheduleId(scheduleId: UUID) async throws -> [MemosModel] {
+        let context = await container.mainContext
+        let descriptor = FetchDescriptor<MemosModel>(
+            predicate: #Predicate { memo in
+                memo.scheduleId == scheduleId
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return try context.fetch(descriptor)
+    }
 }
