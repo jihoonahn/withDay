@@ -20,11 +20,11 @@ public final class SchedulesRepositoryImpl: SchedulesRepository {
         return try await schedulesService.getSchedule(id: id)
     }
     
-    public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func createSchedule(_ schedule: SchedulesEntity) async throws {
         return try await schedulesService.createSchedule(schedule)
     }
     
-    public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func updateSchedule(_ schedule: SchedulesEntity) async throws {
         return try await schedulesService.updateSchedule(schedule)
     }
     

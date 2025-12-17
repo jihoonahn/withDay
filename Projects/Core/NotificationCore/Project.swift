@@ -19,7 +19,7 @@ struct NotificationCore: Module {
             Interface(
                 name: typeName,
                 dependencies: [
-                    .domain(target: "AlarmsDomain", type: .interface),
+                    .domain(target: "SchedulesDomain", type: .interface),
                     .domain(target: "NotificationDomain", type: .interface),
                 ]
             )

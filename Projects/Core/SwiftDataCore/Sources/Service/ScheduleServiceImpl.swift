@@ -36,15 +36,14 @@ public final class ScheduleServiceImpl: SchedulesService {
         return ScheduleDTO.toEntity(from: model)
     }
 
-    public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func createSchedule(_ schedule: SchedulesEntity) async throws {
         let context = await container.mainContext
         let model = ScheduleDTO.toModel(from: schedule)
         context.insert(model)
         try context.save()
-        return schedule
     }
 
-    public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func updateSchedule(_ schedule: SchedulesEntity) async throws {
         let context = await container.mainContext
         let scheduleId = schedule.id
         let descriptor = FetchDescriptor<SchedulesModel>(
@@ -64,7 +63,6 @@ public final class ScheduleServiceImpl: SchedulesService {
             existingModel.updatedAt = Date()
             try context.save()
         }
-        return schedule
     }
     
     public func deleteSchedule(id: UUID) async throws {

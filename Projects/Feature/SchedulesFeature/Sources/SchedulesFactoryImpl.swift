@@ -24,12 +24,15 @@ public struct SchedulesFactoryImpl: SchedulesFactory {
 }
 
 public extension SchedulesFactoryImpl {
-    static func create() -> SchedulesFactoryImpl {
-        let container = DIContainer.shared
+    static func create(
+        schedulesUseCase: SchedulesUseCase,
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
+    ) -> SchedulesFactoryImpl {
         let reducer = SchedulesReducer(
-            schedulesUseCase: container.resolve(SchedulesUseCase.self),
-            usersUseCase: container.resolve(UsersUseCase.self),
-            memosUseCase: container.resolve(MemosUseCase.self)
+            schedulesUseCase: schedulesUseCase,
+            usersUseCase: usersUseCase,
+            memosUseCase: memosUseCase
         )
         let store = Store<SchedulesReducer>(
             initialState: SchedulesState(),
@@ -38,12 +41,16 @@ public extension SchedulesFactoryImpl {
         return SchedulesFactoryImpl(store: store)
     }
     
-    static func create(initialState: SchedulesState) -> SchedulesFactoryImpl {
-        let container = DIContainer.shared
+    static func create(
+        initialState: SchedulesState,
+        schedulesUseCase: SchedulesUseCase,
+        usersUseCase: UsersUseCase,
+        memosUseCase: MemosUseCase
+    ) -> SchedulesFactoryImpl {
         let reducer = SchedulesReducer(
-            schedulesUseCase: container.resolve(SchedulesUseCase.self),
-            usersUseCase: container.resolve(UsersUseCase.self),
-            memosUseCase: container.resolve(MemosUseCase.self)
+            schedulesUseCase: schedulesUseCase,
+            usersUseCase: usersUseCase,
+            memosUseCase: memosUseCase
         )
         let store = Store<SchedulesReducer>(
             initialState: initialState,

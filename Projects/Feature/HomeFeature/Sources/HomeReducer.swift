@@ -6,6 +6,7 @@ import UsersDomainInterface
 import AlarmExecutionsDomainInterface
 import AlarmsDomainInterface
 import SchedulesDomainInterface
+import NotificationCoreInterface
 import Localization
 import BaseFeature
 
@@ -15,6 +16,7 @@ public struct HomeReducer: Reducer {
     private let alarmExecutionsUseCase: AlarmExecutionsUseCase
     private let alarmsUseCase: AlarmsUseCase
     private let schedulesUseCase: SchedulesUseCase
+    private let notificationService: NotificationService
     private let dateProvider: () -> Date
     private let calendar = Calendar.current
     
@@ -24,6 +26,7 @@ public struct HomeReducer: Reducer {
         alarmExecutionsUseCase: AlarmExecutionsUseCase,
         alarmsUseCase: AlarmsUseCase,
         schedulesUseCase: SchedulesUseCase,
+        notificationService: NotificationService,
         dateProvider: @escaping () -> Date = Date.init
     ) {
         self.memosUseCase = memosUseCase
@@ -31,6 +34,7 @@ public struct HomeReducer: Reducer {
         self.alarmExecutionsUseCase = alarmExecutionsUseCase
         self.alarmsUseCase = alarmsUseCase
         self.schedulesUseCase = schedulesUseCase
+        self.notificationService = notificationService
         self.dateProvider = dateProvider
     }
     
@@ -99,7 +103,12 @@ public struct HomeReducer: Reducer {
                 state.currentDisplayDate = todayStart
             }
             
-            return []
+            // 스케줄 notification 등록
+            return [
+                Effect { [notificationService, uniqueSchedules] _ in
+                    await notificationService.scheduleNotifications(for: uniqueSchedules)
+                }
+            ]
             
         case .loadNextDayData:
             guard !state.isLoadingNextDay else { return [] }

@@ -29,7 +29,7 @@ struct TimelineCalculator {
         for items: [any TimelineItemProtocol],
         memoCounts: [UUID: Int]
     ) -> TimelineData {
-        // 기본 타임라인 높이: 24시간 * 40픽셀 = 960픽셀
+        // 기본 타임라인 높이: 각 구간 12시간 * 40픽셀 = 480픽셀
         let baseMorningHeight: CGFloat = 12 * Constants.pixelsPerHour // 480픽셀
         let baseAfternoonHeight: CGFloat = 12 * Constants.pixelsPerHour // 480픽셀
         
@@ -39,11 +39,53 @@ struct TimelineCalculator {
             return TimelineData(
                 morningHeight: baseMorningHeight,
                 afternoonHeight: baseAfternoonHeight,
-                totalHeight: Constants.baseTimelineHeight + Constants.dividerHeight + bottomPadding
+                totalHeight: baseMorningHeight + baseAfternoonHeight + Constants.dividerHeight + bottomPadding
             )
         }
         
-        // 아이템들이 겹치지 않도록 필요한 추가 높이 계산
+        // 오전(0-720분)과 오후(720-1440분) 아이템 분리
+        let morningItems = items.filter { $0.timeValue < 720 }
+        let afternoonItems = items.filter { $0.timeValue >= 720 }
+        
+        // 오전 구간 높이 계산
+        let calculatedMorningHeight = calculatePeriodHeight(
+            items: morningItems,
+            memoCounts: memoCounts,
+            baseHeight: baseMorningHeight,
+            startOffset: 0
+        )
+        
+        // 오후 구간 높이 계산
+        let calculatedAfternoonHeight = calculatePeriodHeight(
+            items: afternoonItems,
+            memoCounts: memoCounts,
+            baseHeight: baseAfternoonHeight,
+            startOffset: calculatedMorningHeight
+        )
+        
+        // 전체 높이 = 오전 + 구분선 + 오후 + 하단 여백
+        let bottomPadding: CGFloat = 100
+        let totalHeight = calculatedMorningHeight + Constants.dividerHeight + calculatedAfternoonHeight + bottomPadding
+        
+        return TimelineData(
+            morningHeight: calculatedMorningHeight,
+            afternoonHeight: calculatedAfternoonHeight,
+            totalHeight: totalHeight
+        )
+    }
+    
+    // MARK: - Period Height Calculation
+    private static func calculatePeriodHeight(
+        items: [any TimelineItemProtocol],
+        memoCounts: [UUID: Int],
+        baseHeight: CGFloat,
+        startOffset: CGFloat
+    ) -> CGFloat {
+        // 아이템이 없으면 기본 높이 반환
+        guard !items.isEmpty else {
+            return baseHeight
+        }
+        
         var lastItemEndY: CGFloat = 0
         var lastItemTimeValue: Int? = nil
         
@@ -60,7 +102,7 @@ struct TimelineCalculator {
             
             let itemHeight = max(100, itemTimeHeight) + memoHeight
             
-            // 아이템의 시작 Y 위치 (시간 기반)
+            // 아이템의 시작 Y 위치 (시간 기반) - 구간 시작점 기준
             let itemStartY = CGFloat(item.timeValue) * Constants.pixelsPerMinute
             
             // 간격 계산 (시간 차이에 비례)
@@ -82,37 +124,10 @@ struct TimelineCalculator {
             lastItemTimeValue = item.timeValue
         }
         
-        // 전체 높이 계산
-        // 마지막 아이템의 실제 끝 위치(메모 포함)를 기준으로 계산
-        let bottomPadding: CGFloat = 100
+        // 구간 높이 = max(기본 높이, 마지막 아이템 끝 위치)
+        let periodHeight = max(baseHeight, lastItemEndY)
         
-        // 마지막 아이템이 있으면 그 끝 위치를, 없으면 기본 타임라인 높이 사용
-        let finalEndY: CGFloat
-        if lastItemEndY > 0 && lastItemEndY.isFinite {
-            // 마지막 아이템의 끝 위치(메모 포함) 사용
-            finalEndY = lastItemEndY
-        } else {
-            // 아이템이 없거나 계산 오류인 경우 기본 타임라인 높이 사용
-            finalEndY = Constants.baseTimelineHeight
-        }
-        
-        // 전체 높이 = 마지막 아이템 끝 위치 + 구분선 + 하단 여백
-        // 기본 타임라인보다 작으면 기본 타임라인 높이 사용
-        let totalHeight = max(
-            Constants.baseTimelineHeight,
-            finalEndY
-        ) + Constants.dividerHeight + bottomPadding
-        
-        // 안전한 높이 값 보장
-        let safeTotalHeight = totalHeight.isFinite && totalHeight > 0 
-            ? totalHeight 
-            : Constants.baseTimelineHeight + Constants.dividerHeight + bottomPadding
-        
-        return TimelineData(
-            morningHeight: baseMorningHeight,
-            afternoonHeight: baseAfternoonHeight,
-            totalHeight: safeTotalHeight
-        )
+        return periodHeight.isFinite && periodHeight > 0 ? periodHeight : baseHeight
     }
     
     // MARK: - Item Position Calculation
@@ -122,6 +137,60 @@ struct TimelineCalculator {
         memoCounts: [UUID: Int]
     ) -> [ItemPosition] {
         // 빈 배열 처리
+        guard !items.isEmpty else {
+            return []
+        }
+        
+        // 오전/오후 아이템 분리
+        let morningItems = items.filter { $0.timeValue < 720 }
+        let afternoonItems = items.filter { $0.timeValue >= 720 }
+        
+        var positions: [ItemPosition] = []
+        
+        // 오전 아이템 위치 계산
+        let morningPositions = calculatePeriodPositions(
+            items: morningItems,
+            memoCounts: memoCounts,
+            offsetY: 0
+        )
+        
+        // 오후 아이템 위치 계산 (오전 높이 + 구분선만큼 오프셋)
+        let afternoonOffset = timelineData.morningHeight + Constants.dividerHeight
+        let afternoonPositions = calculatePeriodPositions(
+            items: afternoonItems,
+            memoCounts: memoCounts,
+            offsetY: afternoonOffset
+        )
+        
+        // 원래 items 순서대로 positions 재구성
+        for item in items {
+            if item.timeValue < 720 {
+                // 오전 아이템
+                if let index = morningItems.firstIndex(where: { $0.id == item.id }) {
+                    positions.append(morningPositions[index])
+                }
+            } else {
+                // 오후 아이템
+                if let index = afternoonItems.firstIndex(where: { $0.id == item.id }) {
+                    positions.append(afternoonPositions[index])
+                }
+            }
+        }
+        
+        // items와 positions의 길이가 반드시 일치해야 함
+        guard positions.count == items.count else {
+            return []
+        }
+        
+        return positions
+    }
+    
+    // MARK: - Period Position Calculation
+    private static func calculatePeriodPositions(
+        items: [any TimelineItemProtocol],
+        memoCounts: [UUID: Int],
+        offsetY: CGFloat
+    ) -> [ItemPosition] {
         guard !items.isEmpty else {
             return []
         }
@@ -170,13 +239,8 @@ struct TimelineCalculator {
             lastEndY = safeFinalY + safeItemHeight
             lastItemTimeValue = item.timeValue
             
-            positions.append(ItemPosition(y: safeFinalY, pixelsPerMinute: Constants.pixelsPerMinute))
-        }
-        
-        // items와 positions의 길이가 반드시 일치해야 함
-        // 길이가 다르면 빈 배열 반환 (에러 방지)
-        guard positions.count == items.count else {
-            return []
+            // offsetY를 더해서 최종 위치 결정
+            positions.append(ItemPosition(y: safeFinalY + offsetY, pixelsPerMinute: Constants.pixelsPerMinute))
         }
         
         return positions

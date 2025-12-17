@@ -81,12 +81,12 @@ public struct HomeView: View {
                     .glassEffect(.clear.interactive(), in: .circle)
             }
             
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(spacing: 6) {
                 Text(formatDateTitle(state.currentDisplayDate))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(JColor.textPrimary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .center)
             
             // 다음 날짜 버튼
             Button(action: {
@@ -133,24 +133,18 @@ public struct HomeView: View {
             timelineBackgroundLine(height: timelineData.totalHeight)
             timelinePeriodDividers(timelineData: timelineData)
             
-            if items.isEmpty {
-                emptyTimelineView
-                    .frame(height: timelineData.totalHeight)
-                    .padding(.top, TimelineConstants.headerTopPadding)
-            } else {
-                // items와 itemPositions의 길이가 일치하는지 확인
-                if items.count == itemPositions.count && !items.isEmpty {
-                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        if index < itemPositions.count {
-                            let position = itemPositions[index]
-                            let safeY = position.y.isFinite ? position.y : 0
-                            
-                            timelineItemView(
-                                item: item,
-                                relatedMemos: relatedMemos(for: item)
-                            )
-                            .offset(y: safeY)
-                        }
+            // items와 itemPositions의 길이가 일치하는지 확인
+            if items.count == itemPositions.count && !items.isEmpty {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    if index < itemPositions.count {
+                        let position = itemPositions[index]
+                        let safeY = position.y.isFinite ? position.y : 0
+                        
+                        timelineItemView(
+                            item: item,
+                            relatedMemos: relatedMemos(for: item)
+                        )
+                        .offset(y: safeY)
                     }
                 }
             }

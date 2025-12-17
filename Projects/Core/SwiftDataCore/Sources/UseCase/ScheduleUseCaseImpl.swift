@@ -16,12 +16,12 @@ public final class ScheduleUseCaseImpl: SchedulesUseCase {
         return try await schedulesRepository.fetchSchedule(id: id)
     }
     
-    public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
-        return try await schedulesRepository.createSchedule(schedule)
+    public func createSchedule(_ schedule: SchedulesEntity) async throws {
+        try await schedulesRepository.createSchedule(schedule)
     }
     
-    public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
-        return try await schedulesRepository.updateSchedule(schedule)
+    public func updateSchedule(_ schedule: SchedulesEntity) async throws {
+        try await schedulesRepository.updateSchedule(schedule)
     }
     
     public func deleteSchedule(id: UUID) async throws {

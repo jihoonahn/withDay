@@ -352,7 +352,11 @@ public class AppDependencies {
         }
 
         container.register(SchedulesFactory.self) {
-            return SchedulesFactoryImpl.create()
+            return SchedulesFactoryImpl.create(
+                schedulesUseCase: container.resolve(SchedulesUseCase.self),
+                usersUseCase: container.resolve(UsersUseCase.self),
+                memosUseCase: container.resolve(MemosUseCase.self)
+            )
         }
 
         Task {

@@ -39,33 +39,27 @@ public final class SchedulesServiceImpl: SchedulesService {
         return schedule.toEntity()
     }
     
-    public func createSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func createSchedule(_ schedule: SchedulesEntity) async throws {
         let dto = SchedulesDTO(from: schedule)
         
-        let created: SchedulesDTO = try await client
+        try await client
             .from("schedules")
             .insert(dto)
             .select()
             .single()
             .execute()
-            .value
-        
-        return created.toEntity()
     }
     
-    public func updateSchedule(_ schedule: SchedulesEntity) async throws -> SchedulesEntity {
+    public func updateSchedule(_ schedule: SchedulesEntity) async throws {
         let dto = SchedulesDTO(from: schedule)
         
-        let updated: SchedulesDTO = try await client
+        try await client
             .from("schedules")
             .update(dto)
             .eq("id", value: schedule.id.uuidString)
             .select()
             .single()
             .execute()
-            .value
-        
-        return updated.toEntity()
     }
     
     public func deleteSchedule(id: UUID) async throws {

@@ -1,5 +1,6 @@
 import SwiftUI
 import RefineUIIcons
+import Utility
 
 public struct TabBar<ID: Hashable>: View {
     private let items: [TabBarItem<ID>]

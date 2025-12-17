@@ -7,6 +7,7 @@ import UsersDomainInterface
 import AlarmExecutionsDomainInterface
 import AlarmsDomainInterface
 import SchedulesDomainInterface
+import NotificationCoreInterface
 import Dependency
 
 public struct HomeFactoryImpl: HomeFactory {
@@ -36,7 +37,8 @@ public extension HomeFactoryImpl {
             usersUseCase: container.resolve(UsersUseCase.self),
             alarmExecutionsUseCase: container.resolve(AlarmExecutionsUseCase.self),
             alarmsUseCase: container.resolve(AlarmsUseCase.self),
-            schedulesUseCase: container.resolve(SchedulesUseCase.self)
+            schedulesUseCase: container.resolve(SchedulesUseCase.self),
+            notificationService: container.resolve(NotificationService.self)
         )
         let store = Store<HomeReducer>(
             initialState: HomeState(),
@@ -53,7 +55,8 @@ public extension HomeFactoryImpl {
             usersUseCase: container.resolve(UsersUseCase.self),
             alarmExecutionsUseCase: container.resolve(AlarmExecutionsUseCase.self),
             alarmsUseCase: container.resolve(AlarmsUseCase.self),
-            schedulesUseCase: container.resolve(SchedulesUseCase.self)
+            schedulesUseCase: container.resolve(SchedulesUseCase.self),
+            notificationService: container.resolve(NotificationService.self)
         )
         let store = Store<HomeReducer>(
             initialState: initialState,

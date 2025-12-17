@@ -74,6 +74,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         let userInfoKeys = Array(userInfo.keys)
         print("📋 [AppDelegate] userInfo 키: \(userInfoKeys)")
         
+        // source 확인 (schedule인 경우 별도 처리)
+        if let source = userInfo["source"] as? String, source == "schedule" {
+            handleScheduleNotification(notification: notification)
+            return
+        }
+        
         // alarmId 추출 (String 또는 UUID 타입 모두 처리)
         let alarmId: UUID?
         if let alarmIdString = userInfo["alarmId"] as? String,
@@ -121,6 +127,34 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
                 print("✅ [AppDelegate] GlobalEventBus.publish 완료")
             }
         }
+    }
+    
+    // 스케줄 Notification 처리
+    private func handleScheduleNotification(notification: UNNotification) {
+        let userInfo = notification.request.content.userInfo
+        let content = notification.request.content
+        
+        print("📅 [AppDelegate] 스케줄 Notification 수신: \(content.title)")
+        
+        // scheduleId 추출
+        let scheduleId: UUID?
+        if let scheduleIdString = userInfo["scheduleId"] as? String,
+           let parsedUUID = UUID(uuidString: scheduleIdString) {
+            scheduleId = parsedUUID
+        } else if let scheduleIdUUID = userInfo["scheduleId"] as? UUID {
+            scheduleId = scheduleIdUUID
+        } else {
+            print("⚠️ [AppDelegate] 스케줄 ID를 찾을 수 없음")
+            return
+        }
+        
+        guard let finalScheduleId = scheduleId else {
+            print("⚠️ [AppDelegate] scheduleId가 nil입니다")
+            return
+        }
+        
+        print("✅ [AppDelegate] scheduleId 추출 성공: \(finalScheduleId)")
+        // 스케줄 notification은 단순 알림이므로 추가 처리 없이 로그만 남김
     }
  
     // MARK: UISceneSession Lifecycle
