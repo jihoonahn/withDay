@@ -297,4 +297,3 @@ protocol TimelineItemProtocol {
     var timeValue: Int { get }
     var endTimeValue: Int? { get }
 }
-

@@ -6,6 +6,7 @@ import UsersDomainInterface
 import MemosDomainInterface
 import Localization
 import Utility
+import BaseFeature
 
 public struct SchedulesReducer: Reducer {
     private let schedulesUseCase: SchedulesUseCase
@@ -161,6 +162,10 @@ public struct SchedulesReducer: Reducer {
                         )
                         
                         try await schedulesUseCase.createSchedule(newSchedule)
+                        print("✅ [SchedulesReducer] 스케줄 추가 완료: \(newSchedule.id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(ScheduleDataEvent.created)
                         
                         // 메모 생성
                         if shouldAddMemo && !memoContent.isEmpty {
@@ -216,6 +221,10 @@ public struct SchedulesReducer: Reducer {
                         )
                         
                         try await schedulesUseCase.updateSchedule(updatedSchedule)
+                        print("✅ [SchedulesReducer] 스케줄 수정 완료: \(updatedSchedule.id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(ScheduleDataEvent.updated)
                         
                         // 메모 처리
                         if shouldAddMemo && !memoContent.isEmpty {
@@ -293,6 +302,11 @@ public struct SchedulesReducer: Reducer {
                 Effect { [self] emitter in
                     do {
                         try await schedulesUseCase.deleteSchedule(id: id)
+                        print("✅ [SchedulesReducer] 스케줄 삭제 완료: \(id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(ScheduleDataEvent.deleted)
+                        
                         emitter.send(.loadSchedules)                        
                     } catch {
                         let errorMessage = SchedulesError.formatErrorMessage(error, key: "SchedulesErrorDeleteFailed")

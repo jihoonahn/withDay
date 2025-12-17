@@ -16,3 +16,17 @@ public enum AlarmEvent: EventType {
     case triggered(alarmId: UUID, executionId: UUID?)
     case stopped(alarmId: UUID)
 }
+
+// MARK: - Data Change Events
+public enum AlarmDataEvent: EventType {
+    case created
+    case updated
+    case deleted
+    case toggled
+}
+
+public enum ScheduleDataEvent: EventType {
+    case created
+    case updated
+    case deleted
+}

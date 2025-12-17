@@ -9,6 +9,7 @@ import MemosDomainInterface
 import Dependency
 import Localization
 import Utility
+import BaseFeature
 
 public struct AlarmReducer: Reducer {
     private let alarmsUseCase: AlarmsUseCase
@@ -140,6 +141,10 @@ public struct AlarmReducer: Reducer {
                         }
                         
                         print("✅ [AlarmReducer] 알람 추가 완료: \(alarm.id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(AlarmDataEvent.created)
+                        
                         do {
                             guard let user = try await usersUseCase.getCurrentUser() else {
                                 throw AlarmError.userNotFound
@@ -247,6 +252,10 @@ public struct AlarmReducer: Reducer {
                         }
                         
                         print("✅ [AlarmReducer] 알람 수정 완료: \(alarm.id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(AlarmDataEvent.updated)
+                        
                         do {
                             guard let user = try await usersUseCase.getCurrentUser() else {
                                 throw AlarmError.userNotFound
@@ -291,6 +300,9 @@ public struct AlarmReducer: Reducer {
                         }
                         
                         print("✅ [AlarmReducer] 알람 삭제 완료: \(id)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(AlarmDataEvent.deleted)
                     } catch {
                         print("❌ [AlarmReducer] 알람 삭제 실패: \(error)")
                         let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorDeleteFailed")
@@ -337,6 +349,9 @@ public struct AlarmReducer: Reducer {
                             try await alarmSchedulesUseCase.cancelAlarm(id)
                         }
                         print("✅ [AlarmReducer] 알람 토글 완료: \(id) -> \(newIsEnabled)")
+                        
+                        // EventBus로 데이터 변경 알림
+                        await GlobalEventBus.shared.publish(AlarmDataEvent.toggled)
                     } catch {
                         print("❌ [AlarmReducer] 알람 토글 실패: \(error)")
                         let errorMessage = AlarmError.formatErrorMessage(error, key: "AlarmErrorToggleFailed")
