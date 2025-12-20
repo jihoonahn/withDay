@@ -26,4 +26,31 @@ extension String {
         let minute = calendar.component(.minute, from: date)
         return String(format: "%02d:%02d", hour, minute)
     }
+    
+    // MARK: - Time Utilities
+    
+    /// "2025-10-26 22:12" 또는 "22:12" 형식에서 시간 부분만 추출
+    public func extractTime() -> String {
+        split(separator: " ").last.map(String.init) ?? self
+    }
+    
+    /// 시간 문자열을 분(minutes)으로 변환 (예: "22:30" → 1350)
+    public func timeToMinutes() -> Int {
+        let cleanTime = extractTime()
+        let components = cleanTime.split(separator: ":")
+        guard components.count >= 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]) else { return 0 }
+        return hour * 60 + minute
+    }
+    
+    /// 시간 문자열을 "HH:mm" 형식으로 포맷
+    public func formatTime() -> String {
+        let cleanTime = extractTime()
+        let components = cleanTime.split(separator: ":")
+        guard components.count == 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]) else { return self }
+        return String(format: "%02d:%02d", hour, minute)
+    }
 }

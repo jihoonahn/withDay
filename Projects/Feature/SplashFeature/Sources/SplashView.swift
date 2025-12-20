@@ -21,14 +21,12 @@ public struct SplashView: View {
             
             VStack {
                 Spacer()
-                
                 Image("launch", bundle: .main)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 82, height: 76)
-                
+                    .padding(.top, 27)
                 Spacer()
-                
                 VStack(spacing: 10) {
                     Text("from")
                         .font(.system(size: 16, weight: .semibold))

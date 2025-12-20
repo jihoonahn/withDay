@@ -5,18 +5,18 @@ import SwiftUI
 struct TimelineCalculator {
     // MARK: - Constants
     enum Constants {
-        static let defaultAlarmDuration: Int = 30 // 알람 기본 지속 시간 (분)
-        static let pixelsPerHour: CGFloat = 40 // 시간당 픽셀 수
-        static let baseTimelineHeight: CGFloat = 24 * 40 // 24시간 * 40픽셀 = 960픽셀
-        static let dividerHeight: CGFloat = 20 // 12시 구분선 높이
-        static let pixelsPerMinute: CGFloat = pixelsPerHour / 60.0 // 분당 픽셀 수
+        static let defaultAlarmDuration: Int = 30
+        static let pixelsPerHour: CGFloat = 40
+        static let baseTimelineHeight: CGFloat = 24 * 40
+        static let dividerHeight: CGFloat = 20
+        static let pixelsPerMinute: CGFloat = pixelsPerHour / 60.0
     }
     
     // MARK: - Data Structures
     struct TimelineData {
-        let morningHeight: CGFloat // 오전 구간 높이 (12시간 * 40픽셀)
-        let afternoonHeight: CGFloat // 오후 구간 높이 (12시간 * 40픽셀)
-        let totalHeight: CGFloat // 전체 높이 (아이템 확장 포함)
+        let morningHeight: CGFloat
+        let afternoonHeight: CGFloat
+        let totalHeight: CGFloat
     }
     
     struct ItemPosition {
@@ -176,12 +176,12 @@ struct TimelineCalculator {
                 }
             }
         }
-        
+
         // items와 positions의 길이가 반드시 일치해야 함
         guard positions.count == items.count else {
             return []
         }
-        
+
         return positions
     }
     
@@ -289,11 +289,4 @@ struct TimelineCalculator {
         // 메모 섹션 상단 여백(12) + 메모 카드들(평균 90픽셀) + 메모 카드 간 간격(8 * (개수-1))
         return 12.0 + CGFloat(memoCount) * 90.0 + CGFloat(max(0, memoCount - 1)) * 8.0
     }
-}
-
-// MARK: - TimelineItem Protocol
-protocol TimelineItemProtocol {
-    var id: UUID { get }
-    var timeValue: Int { get }
-    var endTimeValue: Int? { get }
 }

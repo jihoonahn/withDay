@@ -34,18 +34,11 @@ public class HomeStore: HomeInterface {
     
     // MARK: - Event Bus Observer
     private func setupEventBusObserver() {
-        // Alarm 데이터 변경 이벤트 구독
         Task {
             await GlobalEventBus.shared.subscribe(AlarmDataEvent.self) { [weak self] event in
-                print("📢 [HomeStore] AlarmDataEvent received: \(event)")
                 self?.send(.loadHomeData)
             }
-        }
-        
-        // Schedule 데이터 변경 이벤트 구독
-        Task {
             await GlobalEventBus.shared.subscribe(ScheduleDataEvent.self) { [weak self] event in
-                print("📢 [HomeStore] ScheduleDataEvent received: \(event)")
                 self?.send(.loadHomeData)
             }
         }
