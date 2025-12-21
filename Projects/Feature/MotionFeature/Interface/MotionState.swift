@@ -1,6 +1,6 @@
 import Foundation
 import Rex
-import MotionRawDataDomainInterface
+import MotionDomainInterface
 import Utility
 
 public struct MotionState: StateType {

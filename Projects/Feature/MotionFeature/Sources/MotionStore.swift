@@ -1,7 +1,7 @@
 import Foundation
 import Rex
 import MotionFeatureInterface
-import MotionRawDataDomainInterface
+import MotionDomainInterface
 import BaseFeature
 
 public class MotionStore: MotionInterface {
@@ -157,7 +157,7 @@ public class MotionStore: MotionInterface {
                     guard let self = self else { return }
                     
                     let now = Date.now
-                    let motionData = MotionRawDataEntity(
+                    let motionData = MotionEntity(
                         id: UUID(),
                         executionId: executionId,
                         timestamp: now,

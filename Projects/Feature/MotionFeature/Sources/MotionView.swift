@@ -4,7 +4,7 @@ import Rex
 import MotionFeatureInterface
 import Designsystem
 import Localization
-import MotionRawDataDomainInterface
+import MotionDomainInterface
 
 public struct MotionView: View {
     let interface: MotionInterface

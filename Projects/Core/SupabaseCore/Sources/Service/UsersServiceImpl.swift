@@ -92,7 +92,15 @@ public final class UsersServiceImpl: UsersService {
     }
 
     public func fetchCurrentUser() async throws -> UsersEntity {
-        let session = try await client.auth.session
+        // 세션 가져오기 (세션이 없거나 만료된 경우 예외 발생 가능)
+        let session: Session
+        do {
+            session = try await client.auth.session
+        } catch {
+            print("⚠️ [UsersServiceImpl] 세션을 가져오는 중 오류 발생: \(error)")
+            throw error
+        }
+        
         let userId = session.user.id
         let user: UsersDTO = try await client
             .from("users")
